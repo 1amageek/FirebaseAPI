@@ -15,7 +15,7 @@ public class Firestore {
     var database: Database
     
     /// The gRPC channel for communication with the Firestore API.
-    public var channel: ClientConnection
+    var channel: ClientConnection
     
     /**
      Initializes a `Firestore` instance with a given `FirebaseApp` instance.
