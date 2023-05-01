@@ -24,8 +24,12 @@ extension DocumentReference {
             $0.name = name
         }
         let call = client.getDocument(request, callOptions: callOptions)
-        let document = try await call.response.get()
-        return DocumentSnapshot(document: document, documentReference: self)
+        do {
+            let document = try await call.response.get()
+            return DocumentSnapshot(document: document, documentReference: self)
+        } catch {
+            return DocumentSnapshot(documentReference: self)
+        }
     }
 
     public func setData(_ documentData: [String: Any], merge: Bool = false, firestore: Firestore, headers: HPACKHeaders) async throws {

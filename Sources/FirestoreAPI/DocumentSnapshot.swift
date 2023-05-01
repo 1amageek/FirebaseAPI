@@ -17,6 +17,11 @@ public struct DocumentSnapshot: Identifiable {
     /// The ID of the Firestore document.
     public var id: String { documentReference.documentID }
 
+    /// A boolean value indicating whether the container is empty.
+    ///
+    /// If the `document` property is `nil`, the container is considered empty.
+    public var isEmpty: Bool { document == nil }
+
     /// The path of the Firestore document.
     var path: String { documentReference.path }
 
@@ -24,7 +29,7 @@ public struct DocumentSnapshot: Identifiable {
     public var documentReference: DocumentReference
 
     /// The `Google_Firestore_V1_Document` instance associated with the Firestore document.
-    private var document: Google_Firestore_V1_Document
+    private var document: Google_Firestore_V1_Document?
 
     /**
      Initializes a `DocumentSnapshot` instance with the specified `Google_Firestore_V1_Document` and `DocumentReference` instances.
@@ -33,7 +38,7 @@ public struct DocumentSnapshot: Identifiable {
         - document: The `Google_Firestore_V1_Document` instance associated with the Firestore document.
         - documentReference: The `DocumentReference` instance associated with the Firestore document.
      */
-    init(document: Google_Firestore_V1_Document, documentReference: DocumentReference) {
+    init(document: Google_Firestore_V1_Document? = nil, documentReference: DocumentReference) {
         self.document = document
         self.documentReference = documentReference
     }
@@ -44,10 +49,11 @@ public struct DocumentSnapshot: Identifiable {
      - Returns: A dictionary representing the data in the Firestore document.
      - Note: If a field has a value of `null`, it will be represented in the dictionary as `NSNull()`.
      */
-    public func data() -> [String: Any] {
+    public func data() -> [String: Any]? {
+        guard let fields = document?.fields else { return nil }
         var visitor = DocumentDataVisitor()
         var data: [String: Any] = [:]
-        for (key, value) in document.fields {
+        for (key, value) in fields {
             try! value.traverse(visitor: &visitor)
             data[key] = visitor.value
         }
