@@ -40,8 +40,8 @@ protoc \
  ./google/longrunning/operations.proto \
  ./google/rpc/status.proto \
  ./google/type/latlng.proto \
- --swift_out=../Sources/Firestore/Proto \
- --grpc-swift_out=../Sources/Firestore/Proto \
+ --swift_out=../Sources/FirestoreAPI/Proto \
+ --grpc-swift_out=../Sources/FirestoreAPI/Proto \
  --swift_opt=Visibility=Public \
  --grpc-swift_opt=Visibility=Public
 ```

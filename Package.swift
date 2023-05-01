@@ -10,8 +10,8 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "Firestore",
-            targets: ["Firestore"]),
+            name: "FirestoreAPI",
+            targets: ["FirestoreAPI"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.21.0"),
@@ -19,7 +19,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Firestore",
+            name: "FirestoreAPI",
             dependencies: [
                 .product(name: "GRPC", package: "grpc-swift"),
                 .product(name: "protoc-gen-swift", package: "swift-protobuf")
@@ -29,7 +29,7 @@ let package = Package(
             dependencies: [
                 .product(name: "GRPC", package: "grpc-swift"),
                 .product(name: "protoc-gen-swift", package: "swift-protobuf"),
-                "Firestore"
+                "FirestoreAPI"
             ]),
     ]
 )
