@@ -11,14 +11,11 @@ import NIOHPACK
  */
 public class Firestore {
     
-    /// The access token used for authentication with the Firestore database.
-    var accessToken: String?
-    
     /// The Firestore database instance.
     var database: Database
     
     /// The gRPC channel for communication with the Firestore API.
-    var channel: ClientConnection
+    public var channel: ClientConnection
     
     /**
      Initializes a `Firestore` instance with a given `FirebaseApp` instance.
