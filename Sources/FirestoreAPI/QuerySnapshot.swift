@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct QuerySnapshot {
+public struct QuerySnapshot: Sendable {
 
 //    public var metadata: SnapshotMetadata
 

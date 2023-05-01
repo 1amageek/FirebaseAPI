@@ -12,7 +12,7 @@ import Foundation
 
  The `DocumentReference` struct provides methods for updating, deleting, and retrieving data for a specific Firestore document. It requires a `Firestore` instance to be initialized, along with the ID of the document and its parent path.
  */
-public struct DocumentReference {
+public struct DocumentReference: Sendable {
 
     /// The `Database` instance associated with the document reference.
     var database: Database

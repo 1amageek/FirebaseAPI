@@ -12,7 +12,7 @@ import Foundation
 
  The `DocumentSnapshot` struct provides methods for retrieving data and metadata for a specific Firestore document. It conforms to the `Identifiable` protocol and requires a `DocumentReference` instance and a `Google_Firestore_V1_Document` instance to be initialized.
  */
-public struct DocumentSnapshot: Identifiable {
+public struct DocumentSnapshot: Identifiable, Sendable {
 
     /// The ID of the Firestore document.
     public var id: String { documentReference.documentID }

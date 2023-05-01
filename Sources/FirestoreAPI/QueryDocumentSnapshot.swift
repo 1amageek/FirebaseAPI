@@ -12,7 +12,7 @@ import Foundation
 
  The `QueryDocumentSnapshot` struct provides methods for retrieving data and metadata for a specific Firestore document returned by a query. It conforms to the `Identifiable` protocol and requires a `DocumentReference` instance and a `Google_Firestore_V1_Document` instance to be initialized.
  */
-public struct QueryDocumentSnapshot: Identifiable {
+public struct QueryDocumentSnapshot: Identifiable, Sendable {
 
     /// The ID of the Firestore document.
     public var id: String { documentReference.documentID }
