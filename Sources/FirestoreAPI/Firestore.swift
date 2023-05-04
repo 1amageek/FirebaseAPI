@@ -18,7 +18,7 @@ public class Firestore {
     var channel: ClientConnection
 
     /// A provider that provides access tokens for Firestore
-    public var accessTokenProvider: AccessTokenProvider?
+    public var accessTokenProvider: (any AccessTokenProvider)?
     
     /**
      Initializes a `Firestore` instance with a given `FirebaseApp` instance.
