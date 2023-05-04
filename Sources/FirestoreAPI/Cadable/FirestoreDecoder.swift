@@ -46,13 +46,13 @@ class _FirestoreDecoder: Decoder {
 
     func unkeyedContainer() throws -> UnkeyedDecodingContainer {
         guard let data = data as? [Any] else {
-            throw DecodingError.typeMismatch([String: Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected keyed container"))
+            throw DecodingError.typeMismatch([String: Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected unkeyed container"))
         }
         return _UnkeyedDecodingContainer(decoder: self, data: data)
     }
 
     func singleValueContainer() throws -> SingleValueDecodingContainer {
-        _SingleValueDecodingContainer(decoder: self, data: data)
+        return _SingleValueDecodingContainer(decoder: self, data: data)
     }
 }
 
@@ -353,6 +353,10 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected value of type \(type)"))
         }
         let value = data[currentIndex]
+        if decoder.passthroughTypes.contains(where: { $0 == type }) {
+            currentIndex += 1
+            return value as! T
+        }
         let decoder = _FirestoreDecoder(data: value, passthroughTypes: decoder.passthroughTypes)
         let decodedValue = try T(from: decoder)
         currentIndex += 1

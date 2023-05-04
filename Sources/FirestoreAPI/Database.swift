@@ -17,7 +17,7 @@ import Foundation
  You can also access the `database` property to get the path of the database in the format `projects/{projectID}/databases/{databaseID}`.
 
  */
-struct Database: Codable {
+struct Database: Codable, Sendable {
 
     /// The ID of the Firestore project associated with the database.
     var projectId: String

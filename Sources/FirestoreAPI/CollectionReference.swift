@@ -18,7 +18,7 @@ import Foundation
  A `CollectionReference` instance also provides a `parent` property that returns the parent collection reference, if any. You can use the parent reference to navigate up the collection hierarchy.
 
  */
-public struct CollectionReference {
+public struct CollectionReference: Sendable {
 
     /// The `Database` instance associated with the document reference.
     var database: Database

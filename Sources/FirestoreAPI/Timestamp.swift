@@ -33,12 +33,22 @@ public struct Timestamp: Codable, Equatable, Sendable {
      Initializes a new `Timestamp` instance with the specified number of seconds and nanoseconds.
 
      - Parameters:
-        - seconds: The number of seconds since the Unix epoch (1970-01-01T00:00:00Z).
-        - nanos: The number of nanoseconds within the second.
+     - seconds: The number of seconds since the Unix epoch (1970-01-01T00:00:00Z).
+     - nanos: The number of nanoseconds within the second.
      */
     public init(seconds: Int64, nanos: Int32) {
         self.seconds = seconds
         self.nanos = nanos
+    }
+
+    /**
+     Initializes a new `Timestamp` instance with the specified `Date` value.
+
+     - Parameters:
+     - date: The `Date` value to initialize the `Timestamp` instance with.
+     */
+    public init(_ date: Date) {
+        self.init(seconds: Int64(date.timeIntervalSince1970), nanos: 0)
     }
 
     /**
