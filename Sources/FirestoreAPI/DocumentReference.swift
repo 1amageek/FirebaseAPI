@@ -47,7 +47,7 @@ public struct DocumentReference: Sendable {
         let projectID = String(components[1])
         let databaseID = String(components[3])
         let database = Database(projectId: projectID, databaseId: databaseID)
-        let pathCompoennts = components[4...]
+        let pathCompoennts = components[5...]
         let parentPath = pathCompoennts.dropLast(1).joined(separator: "/")
         let documentID = String(pathCompoennts.last!)
         self.init(database, parentPath: parentPath, documentID: documentID)
