@@ -24,7 +24,7 @@ public struct QueryDocumentSnapshot: Identifiable, Sendable {
     public var documentReference: DocumentReference
 
     /// The `Google_Firestore_V1_Document` instance associated with the Firestore document.
-    private var document: Google_Firestore_V1_Document
+    private var document: Google_Firestore_V1_Document?
 
     /**
      Initializes a `QueryDocumentSnapshot` instance with the specified `Google_Firestore_V1_Document` and `DocumentReference` instances.
@@ -33,7 +33,7 @@ public struct QueryDocumentSnapshot: Identifiable, Sendable {
         - document: The `Google_Firestore_V1_Document` instance associated with the Firestore document.
         - documentReference: The `DocumentReference` instance associated with the Firestore document.
      */
-    init(document: Google_Firestore_V1_Document, documentReference: DocumentReference) {
+    init(document: Google_Firestore_V1_Document?, documentReference: DocumentReference) {
         self.document = document
         self.documentReference = documentReference
     }
@@ -44,10 +44,11 @@ public struct QueryDocumentSnapshot: Identifiable, Sendable {
      - Returns: A dictionary representing the data in the Firestore document.
      - Note: If a field has a value of `null`, it will be represented in the dictionary as `NSNull()`.
      */
-    public func data() -> [String: Any] {
+    public func data() -> [String: Any]? {
+        guard let fields = document?.fields else { return nil }
         var visitor = DocumentDataVisitor()
         var data: [String: Any] = [:]
-        for (key, value) in document.fields {
+        for (key, value) in fields {
             try! value.traverse(visitor: &visitor)
             data[key] = visitor.value
         }

@@ -20,6 +20,16 @@ extension CollectionReference {
         return "\(database.path)".normalized
     }
 
+    public func getDocuments<T: Decodable>(type: T.Type, firestore: Firestore, headers: HPACKHeaders) async throws -> [T] {
+        let snapshot = try await getDocuments(firestore: firestore, headers: headers)
+        return try snapshot.documents.compactMap { queryDocumentSnapshot in
+            guard let data = queryDocumentSnapshot.data() else {
+                return nil
+            }
+            return try FirestoreDecoder().decode(type, from: data)
+        }
+    }
+
     public func getDocuments(firestore: Firestore, headers: HPACKHeaders) async throws -> QuerySnapshot {
         let client = Google_Firestore_V1_FirestoreNIOClient(channel: firestore.channel)
         let callOptions = CallOptions(customMetadata: headers)

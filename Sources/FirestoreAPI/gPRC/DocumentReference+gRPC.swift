@@ -17,6 +17,17 @@ extension DocumentReference {
         return "\(database.path)/\(path)".normalized
     }
 
+    public func getDocument<T: Decodable>(type: T.Type, firestore: Firestore, headers: HPACKHeaders) async throws -> T? {
+        let snapshot = try await getDocument(firestore: firestore, headers: headers)
+        if snapshot.isEmpty {
+            return nil
+        }
+        guard let data = snapshot.data() else {
+            return nil
+        }
+        return try FirestoreDecoder().decode(type, from: data)
+    }
+
     public func getDocument(firestore: Firestore, headers: HPACKHeaders) async throws -> DocumentSnapshot {
         let client = Google_Firestore_V1_FirestoreNIOClient(channel: firestore.channel)
         let callOptions = CallOptions(customMetadata: headers)
