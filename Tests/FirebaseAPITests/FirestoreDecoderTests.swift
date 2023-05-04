@@ -10,6 +10,38 @@ import XCTest
 
 final class FirestoreDecoderTests: XCTestCase {
 
+    func testDecoderDocumentID() async throws {
+        struct Nested: Identifiable, Codable, Equatable {
+            @DocumentID var id: String
+        }
+        struct Object: Identifiable, Codable, Equatable {
+            @DocumentID var id: String
+            var nested: Nested = Nested(id: "id")
+        }
+        let database = Database(projectId: "project")
+        let ref = DocumentReference(database, parentPath: "objects", documentID: "objectID")
+        let data = try! FirestoreDecoder().decode(Object.self, from: ["nested": ["id": "nestedID"]] as [String: Any], in: ref)
+
+        XCTAssertEqual(data.id, "objectID")
+        XCTAssertEqual(data.nested.id, "nestedID")
+    }
+
+    func testDecoderNull() async throws {
+        struct Object: Codable, Equatable {
+            var value: String?
+        }
+        let data = try! FirestoreDecoder().decode(Object.self, from: [:] as [String: Any])
+        XCTAssertNil(data.value)
+    }
+
+    func testDecoderExplicitNull() async throws {
+        struct Object: Codable, Equatable {
+            @ExplicitNull var value: String?
+        }
+        let data = try! FirestoreDecoder().decode(Object.self, from: ["value": NSNull()] as [String: Any])
+        XCTAssertNil(data.value)
+    }
+
     func testDecoderString() async throws {
         struct Object: Codable, Equatable {
             var value: String = "string"

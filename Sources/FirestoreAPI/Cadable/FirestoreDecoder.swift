@@ -10,21 +10,22 @@ import Foundation
 
 public struct FirestoreDecoder {
 
+    static let documentRefUserInfoKey = CodingUserInfoKey(rawValue: "DocumentRefUserInfoKey")
+
     var passthroughTypes: [Any.Type]
 
     public init(passthroughTypes: [Any.Type] = [Timestamp.self, GeoPoint.self, DocumentReference.self]) {
         self.passthroughTypes = passthroughTypes
     }
 
-    public func decode<T: Decodable>(_ type: T.Type, from data: Any) throws -> T {
-        return try T.init(from: _FirestoreDecoder(data: data, passthroughTypes: passthroughTypes))
+    public func decode<T: Decodable>(_ type: T.Type, from data: Any, in reference: DocumentReference? = nil) throws -> T {
+        return try T.init(from: _FirestoreDecoder(data: data, codingPath: [], passthroughTypes: passthroughTypes, in: reference))
     }
 }
 
-
 class _FirestoreDecoder: Decoder {
 
-    var codingPath: [CodingKey] = []
+    var codingPath: [CodingKey]
 
     var userInfo: [CodingUserInfoKey : Any] = [:]
 
@@ -40,23 +41,27 @@ class _FirestoreDecoder: Decoder {
         return dateFormatter
     }()
 
-    init(data: Any, passthroughTypes: [Any.Type] = []) {
+    init(data: Any, codingPath: [CodingKey], passthroughTypes: [Any.Type] = [], in reference: DocumentReference? = nil) {
         self.data = data
+        self.codingPath = codingPath
         self.passthroughTypes = passthroughTypes
+        if let reference {
+            self.userInfo[FirestoreDecoder.documentRefUserInfoKey!] = reference
+        }
     }
 
     func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> where Key : CodingKey {
         guard let data = data as? [String: Any] else {
             throw DecodingError.typeMismatch([String: Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected keyed container"))
         }
-        return KeyedDecodingContainer(_KeyedDecodingContainer(decoder: self, data: data))
+        return KeyedDecodingContainer(_KeyedDecodingContainer(codingPath: codingPath, decoder: self, data: data))
     }
 
     func unkeyedContainer() throws -> UnkeyedDecodingContainer {
         guard let data = data as? [Any] else {
             throw DecodingError.typeMismatch([String: Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected unkeyed container"))
         }
-        return _UnkeyedDecodingContainer(decoder: self, data: data)
+        return _UnkeyedDecodingContainer(codingPath: codingPath, decoder: self, data: data)
     }
 
     func singleValueContainer() throws -> SingleValueDecodingContainer {
@@ -66,9 +71,9 @@ class _FirestoreDecoder: Decoder {
 
 struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
 
-    var decoder: _FirestoreDecoder
-
     var codingPath: [CodingKey] = []
+
+    var decoder: _FirestoreDecoder
 
     var allKeys: [Key] { data.keys.compactMap { Key(stringValue: $0) } }
 
@@ -181,16 +186,26 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
     }
 
     func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T : Decodable {
-        guard let value = data[key.stringValue] else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected value of type \(type)"))
-        }
-        if decoder.passthroughTypes.contains(where: { $0 == type }) {
-            return value as! T
-        } else if type == Date.self, let value = data[key.stringValue] as? String {
-            return decoder.dateForamatter.date(from: value) as! T
+//        guard let value = data[key.stringValue] else {
+//            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected value of type \(type)"))
+//        }
+
+        if contains(key), let value = data[key.stringValue] {
+            if decoder.passthroughTypes.contains(where: { $0 == type }) {
+                return value as! T
+            } else if type == Date.self, let value = data[key.stringValue] as? String {
+                return decoder.dateForamatter.date(from: value) as! T
+            } else {
+                decoder.codingPath.append(key)
+                defer { decoder.codingPath.removeLast() }
+                let decoder = _FirestoreDecoder(data: value, codingPath: decoder.codingPath, passthroughTypes: decoder.passthroughTypes)
+                return try T(from: decoder)
+            }
         } else {
-            let decoder = _FirestoreDecoder(data: value, passthroughTypes: decoder.passthroughTypes)
-            return try T(from: decoder)
+            let reference = decoder.userInfo[
+                FirestoreDecoder.documentRefUserInfoKey!
+            ] as! DocumentReference
+            return DocumentID(wrappedValue: reference.documentID) as! T
         }
     }
 
@@ -198,7 +213,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         guard let value = data[key.stringValue] as? [String: Any] else {
             throw DecodingError.typeMismatch([String: Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected keyed container"))
         }
-        let nestedDecoder = _FirestoreDecoder(data: value, passthroughTypes: decoder.passthroughTypes)
+        let nestedDecoder = _FirestoreDecoder(data: value, codingPath: codingPath, passthroughTypes: decoder.passthroughTypes)
         return try nestedDecoder.container(keyedBy: type)
     }
 
@@ -206,7 +221,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         guard let value = data[key.stringValue] as? [Any] else {
             throw DecodingError.typeMismatch([Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected unkeyed container"))
         }
-        let nestedDecoder = _FirestoreDecoder(data: value, passthroughTypes: decoder.passthroughTypes)
+        let nestedDecoder = _FirestoreDecoder(data: value, codingPath: codingPath, passthroughTypes: decoder.passthroughTypes)
         return try nestedDecoder.unkeyedContainer()
     }
 
@@ -221,9 +236,9 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
 
 struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
 
-    var decoder: _FirestoreDecoder
-
     var codingPath: [CodingKey] = []
+
+    var decoder: _FirestoreDecoder
 
     var count: Int? { data.count }
 
@@ -233,7 +248,8 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
 
     var data: [Any]
 
-    init(decoder: _FirestoreDecoder, data: [Any]) {
+    init(codingPath: [CodingKey], decoder: _FirestoreDecoder, data: [Any]) {
+        self.codingPath = codingPath
         self.decoder = decoder
         self.data = data
     }
@@ -371,7 +387,9 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
             return decoder.dateForamatter.date(from: value) as! T
         } else {
             let value = data[currentIndex]
-            let decoder = _FirestoreDecoder(data: value, passthroughTypes: decoder.passthroughTypes)
+            codingPath.append(FirestoreKey(index: currentIndex))
+            defer { codingPath.removeLast() }
+            let decoder = _FirestoreDecoder(data: value, codingPath: codingPath, passthroughTypes: decoder.passthroughTypes)
             let decodedValue = try T(from: decoder)
             currentIndex += 1
             return decodedValue
@@ -382,16 +400,20 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         guard !isAtEnd, let value = data[currentIndex] as? [String: Any] else {
             throw DecodingError.typeMismatch([String: Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected unkeyed container"))
         }
+        codingPath.append(FirestoreKey(index: currentIndex))
+        defer { codingPath.removeLast() }
         currentIndex += 1
-        return KeyedDecodingContainer(_KeyedDecodingContainer(decoder: decoder, data: value))
+        return KeyedDecodingContainer(_KeyedDecodingContainer(codingPath: codingPath, decoder: decoder, data: value))
     }
 
     mutating func nestedUnkeyedContainer() throws -> UnkeyedDecodingContainer {
         guard !isAtEnd, let value = data[currentIndex] as? [Any] else {
             throw DecodingError.typeMismatch([Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected unkeyed container"))
         }
+        codingPath.append(FirestoreKey(index: currentIndex))
+        defer { codingPath.removeLast() }
         currentIndex += 1
-        return _UnkeyedDecodingContainer(decoder: decoder, data: value)
+        return _UnkeyedDecodingContainer(codingPath: codingPath, decoder: decoder, data: value)
     }
 
     mutating func superDecoder() throws -> Decoder {
@@ -513,7 +535,7 @@ struct _SingleValueDecodingContainer: SingleValueDecodingContainer {
     }
 
     func decode<T>(_ type: T.Type) throws -> T where T : Decodable {
-        let decoder = _FirestoreDecoder(data: data, passthroughTypes: decoder.passthroughTypes)
+        let decoder = _FirestoreDecoder(data: data, codingPath: codingPath, passthroughTypes: decoder.passthroughTypes)
         return try T(from: decoder)
     }
 }

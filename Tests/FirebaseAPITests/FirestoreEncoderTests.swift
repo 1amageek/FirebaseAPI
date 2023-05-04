@@ -11,6 +11,42 @@ final class FirestoreEncoderTests: XCTestCase {
         return dateFormatter
     }()
 
+    func testEncoderDocumentID() async throws {
+        struct Nested: Identifiable, Codable, Equatable {
+            @DocumentID var id: String
+        }
+        struct Object: Identifiable, Codable, Equatable {
+            @DocumentID var id: String
+            var nested: Nested = Nested(id: "id")
+        }
+        let data = try! FirestoreEncoder().encode(Object(id: "id"))
+        XCTAssertEqual(data["nested"] as! [String: String], ["id": "id"])
+    }
+
+    func testEncoderNull() async throws {
+        struct Object: Codable, Equatable {
+            var key: String?
+        }
+        let data = try! FirestoreEncoder().encode(Object())
+        let key = data.keys.first
+        let value = data["key"] as? String
+
+        XCTAssertNil(key)
+        XCTAssertNil(value)
+    }
+
+    func testEncoderExplicitNull() async throws {
+        struct Object: Codable, Equatable {
+            @ExplicitNull var key: String?
+        }
+        let data = try! FirestoreEncoder().encode(Object())
+        let key = data.keys.first!
+        let value = data["key"] as? String
+
+        XCTAssertEqual(key, "key")
+        XCTAssertNil(value)
+    }
+
     func testEncoderString() async throws {
         struct Object: Codable, Equatable {
             var key: String = "string"

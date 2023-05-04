@@ -114,6 +114,6 @@ extension DocumentReference {
         guard let data = snapshot.data() else {
             return nil
         }
-        return try FirestoreDecoder().decode(type, from: data)
+        return try FirestoreDecoder().decode(type, from: data, in: self)
     }
 }
