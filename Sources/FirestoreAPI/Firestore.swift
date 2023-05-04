@@ -16,6 +16,9 @@ public class Firestore {
     
     /// The gRPC channel for communication with the Firestore API.
     var channel: ClientConnection
+
+    /// A provider that provides access tokens for Firestore
+    var accessTokenProvider: AccessTokenProvider?
     
     /**
      Initializes a `Firestore` instance with a given `FirebaseApp` instance.
