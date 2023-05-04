@@ -72,7 +72,10 @@ class DocumentDataVisitor: SwiftProtobuf.Visitor {
     }
 
     func visitSingularStringField(value: String, fieldNumber: Int) throws {
-        self.value = value
+        switch fieldNumber {
+            case 5: self.value = DocumentReference(name: value)
+            default: self.value = value
+        }
     }
 
     func visitSingularInt64Field(value: Int64, fieldNumber: Int) throws {

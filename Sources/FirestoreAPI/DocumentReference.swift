@@ -40,6 +40,19 @@ public struct DocumentReference: Sendable {
         self.documentID = documentID
     }
 
+    init(name: String) {
+        let components = name
+            .split(separator: "/")
+            .filter({ !$0.isEmpty })
+        let projectID = String(components[1])
+        let databaseID = String(components[3])
+        let database = Database(projectId: projectID, databaseId: databaseID)
+        let pathCompoennts = components[4...]
+        let parentPath = pathCompoennts.dropLast(1).joined(separator: "/")
+        let documentID = String(pathCompoennts.last!)
+        self.init(database, parentPath: parentPath, documentID: documentID)
+    }
+
     /// The parent collection reference of the document reference.
     public var parent: CollectionReference {
         let components = parentPath
