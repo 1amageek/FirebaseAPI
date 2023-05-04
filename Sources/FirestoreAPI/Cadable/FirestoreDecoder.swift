@@ -12,7 +12,7 @@ public struct FirestoreDecoder {
 
     var passthroughTypes: [Any.Type]
 
-    public init(passthroughTypes: [Any.Type] = [Date.self, Timestamp.self, GeoPoint.self, DocumentReference.self]) {
+    public init(passthroughTypes: [Any.Type] = [Timestamp.self, GeoPoint.self, DocumentReference.self]) {
         self.passthroughTypes = passthroughTypes
     }
 
@@ -31,6 +31,14 @@ class _FirestoreDecoder: Decoder {
     var passthroughTypes: [Any.Type]
 
     var data: Any
+
+    lazy var dateForamatter: DateFormatter = {
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeZone = .autoupdatingCurrent
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
+        return dateFormatter
+    }()
 
     init(data: Any, passthroughTypes: [Any.Type] = []) {
         self.data = data
@@ -178,6 +186,8 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         }
         if decoder.passthroughTypes.contains(where: { $0 == type }) {
             return value as! T
+        } else if type == Date.self, let value = data[key.stringValue] as? String {
+            return decoder.dateForamatter.date(from: value) as! T
         } else {
             let decoder = _FirestoreDecoder(data: value, passthroughTypes: decoder.passthroughTypes)
             return try T(from: decoder)
@@ -352,15 +362,20 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         guard !isAtEnd else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected value of type \(type)"))
         }
-        let value = data[currentIndex]
         if decoder.passthroughTypes.contains(where: { $0 == type }) {
+            let value = data[currentIndex]
             currentIndex += 1
             return value as! T
+        } else if type == Date.self, let value = data[currentIndex] as? String {
+            currentIndex += 1
+            return decoder.dateForamatter.date(from: value) as! T
+        } else {
+            let value = data[currentIndex]
+            let decoder = _FirestoreDecoder(data: value, passthroughTypes: decoder.passthroughTypes)
+            let decodedValue = try T(from: decoder)
+            currentIndex += 1
+            return decodedValue
         }
-        let decoder = _FirestoreDecoder(data: value, passthroughTypes: decoder.passthroughTypes)
-        let decodedValue = try T(from: decoder)
-        currentIndex += 1
-        return decodedValue
     }
 
     mutating func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {

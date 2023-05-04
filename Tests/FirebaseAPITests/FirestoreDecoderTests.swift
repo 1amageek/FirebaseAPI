@@ -38,7 +38,14 @@ final class FirestoreDecoderTests: XCTestCase {
         struct Object: Codable, Equatable {
             var value: Date = Date(timeIntervalSince1970: 0)
         }
-        let data = try! FirestoreDecoder().decode(Object.self, from: ["value": Date(timeIntervalSince1970: 0)])
+        let dateForamatter: DateFormatter = {
+            let dateFormatter = DateFormatter()
+            dateFormatter.timeZone = .autoupdatingCurrent
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
+            return dateFormatter
+        }()
+        let data = try! FirestoreDecoder().decode(Object.self, from: ["value": dateForamatter.string(from: Date(timeIntervalSince1970: 0))])
         XCTAssertEqual(data.value, Date(timeIntervalSince1970: 0))
     }
 
@@ -86,9 +93,16 @@ final class FirestoreDecoderTests: XCTestCase {
         struct Object: Codable, Equatable {
             var value: [Date] = [Date(timeIntervalSince1970: 0), Date(timeIntervalSince1970: 1)]
         }
+        let dateForamatter: DateFormatter = {
+            let dateFormatter = DateFormatter()
+            dateFormatter.timeZone = .autoupdatingCurrent
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
+            return dateFormatter
+        }()
         let data = try! FirestoreDecoder().decode(Object.self, from: ["value": [
-            Date(timeIntervalSince1970: 0),
-            Date(timeIntervalSince1970: 1)
+            dateForamatter.string(from: Date(timeIntervalSince1970: 0)),
+            dateForamatter.string(from: Date(timeIntervalSince1970: 1))
         ]])
         XCTAssertEqual(data.value, [Date(timeIntervalSince1970: 0), Date(timeIntervalSince1970: 1)])
     }
@@ -177,13 +191,21 @@ final class FirestoreDecoderTests: XCTestCase {
             var reference: DocumentReference = DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id")
         }
 
+        let dateForamatter: DateFormatter = {
+            let dateFormatter = DateFormatter()
+            dateFormatter.timeZone = .autoupdatingCurrent
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
+            return dateFormatter
+        }()
+
         let deepNestedData: [String: Any] = [
             "number": 0,
             "string": "string",
             "bool": true,
             "array": ["0", "1"],
             "map": ["key": "value"],
-            "date": Date(timeIntervalSince1970: 0),
+            "date": dateForamatter.string(from: Date(timeIntervalSince1970: 0)),
             "timestamp": Timestamp(seconds: 0, nanos: 0),
             "geoPoint": GeoPoint(latitude: 0, longitude: 0),
             "reference": DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id")
@@ -195,7 +217,7 @@ final class FirestoreDecoderTests: XCTestCase {
             "bool": true,
             "array": ["0", "1"],
             "map": ["key": "value"],
-            "date": Date(timeIntervalSince1970: 0),
+            "date": dateForamatter.string(from: Date(timeIntervalSince1970: 0)),
             "timestamp": Timestamp(seconds: 0, nanos: 0),
             "geoPoint": GeoPoint(latitude: 0, longitude: 0),
             "reference": DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"),
@@ -208,7 +230,7 @@ final class FirestoreDecoderTests: XCTestCase {
             "bool": true,
             "array": ["0", "1"],
             "map": ["key": "value"],
-            "date": Date(timeIntervalSince1970: 0),
+            "date": dateForamatter.string(from: Date(timeIntervalSince1970: 0)),
             "timestamp": Timestamp(seconds: 0, nanos: 0),
             "geoPoint": GeoPoint(latitude: 0, longitude: 0),
             "reference": DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"),

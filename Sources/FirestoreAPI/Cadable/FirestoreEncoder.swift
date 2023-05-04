@@ -12,7 +12,7 @@ public struct FirestoreEncoder {
 
     private var encoder: _FirestoreEncoder
 
-    public init(passthroughTypes: [Any.Type] = [Date.self, Timestamp.self, GeoPoint.self, DocumentReference.self]) {
+    public init(passthroughTypes: [Any.Type] = [Timestamp.self, GeoPoint.self, DocumentReference.self]) {
         self.encoder = _FirestoreEncoder(passthroughTypes: passthroughTypes)
     }
 
@@ -141,6 +141,9 @@ struct _FirestoreUnkeyedEncodingContainer: UnkeyedEncodingContainer {
     mutating func encode<T>(_ value: T) throws where T : Encodable {
         if encoder.passthroughTypes.contains(where: { type(of: value) == $0 }) {
             data.append(value)
+        } else if let date = value as? Date {
+            let dateString = encoder.dateForamatter.string(from: date)
+            data.append(dateString)
         } else {
             let subencoder = _FirestoreEncoder(passthroughTypes: encoder.passthroughTypes)
             subencoder.codingPath = encoder.codingPath
@@ -322,6 +325,9 @@ struct FirestoreKeyedEncodingContainer<K: CodingKey>: KeyedEncodingContainerProt
     mutating func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
         if encoder.passthroughTypes.contains(where: { type(of: value) == $0 }) {
             data[key.stringValue] = value
+        } else if let date = value as? Date {
+            let dateString = encoder.dateForamatter.string(from: date)
+            data[key.stringValue] = dateString
         } else {
             let subencoder = _FirestoreEncoder(passthroughTypes: encoder.passthroughTypes)
             try value.encode(to: subencoder)

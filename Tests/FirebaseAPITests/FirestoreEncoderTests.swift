@@ -3,6 +3,14 @@ import XCTest
 
 final class FirestoreEncoderTests: XCTestCase {
 
+    let dateForamatter: DateFormatter = {
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeZone = .autoupdatingCurrent
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
+        return dateFormatter
+    }()
+
     func testEncoderString() async throws {
         struct Object: Codable, Equatable {
             var key: String = "string"
@@ -45,10 +53,10 @@ final class FirestoreEncoderTests: XCTestCase {
         }
         let data = try! FirestoreEncoder().encode(Object())
         let key = data.keys.first!
-        let value = data["key"] as! Date
+        let value = data["key"] as! String
 
         XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, Date(timeIntervalSince1970: 0))
+        XCTAssertEqual(value, dateForamatter.string(from: Date(timeIntervalSince1970: 0)))
     }
 
     func testEncoderTimestamp() async throws {
@@ -117,10 +125,10 @@ final class FirestoreEncoderTests: XCTestCase {
         }
         let data = try! FirestoreEncoder().encode(Object())
         let key = data.keys.first!
-        let value = data["key"] as! [Date]
+        let value = data["key"] as! [String]
 
         XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, [Date(timeIntervalSince1970: 0), Date(timeIntervalSince1970: 1)])
+        XCTAssertEqual(value, [dateForamatter.string(from: Date(timeIntervalSince1970: 0)), dateForamatter.string(from: Date(timeIntervalSince1970: 1))])
     }
 
     func testEncoderArrayTimestamp() async throws {
@@ -212,7 +220,7 @@ final class FirestoreEncoderTests: XCTestCase {
         XCTAssertEqual(data["bool"] as! Bool, true)
         XCTAssertEqual(data["array"] as! [String], ["0", "1"])
         XCTAssertEqual(data["map"] as! [String: String], ["key": "value"])
-        XCTAssertEqual(data["date"] as! Date, Date(timeIntervalSince1970: 0))
+        XCTAssertEqual(data["date"] as! String, dateForamatter.string(from: Date(timeIntervalSince1970: 0)))
         XCTAssertEqual(data["timestamp"] as! Timestamp, Timestamp(seconds: 0, nanos: 0))
         XCTAssertEqual(data["geoPoint"] as! GeoPoint, GeoPoint(latitude: 0, longitude: 0))
         XCTAssertEqual(data["reference"] as! DocumentReference, DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))
@@ -222,7 +230,7 @@ final class FirestoreEncoderTests: XCTestCase {
         XCTAssertEqual(next["bool"] as! Bool, true)
         XCTAssertEqual(next["array"] as! [String], ["0", "1"])
         XCTAssertEqual(next["map"] as! [String: String], ["key": "value"])
-        XCTAssertEqual(next["date"] as! Date, Date(timeIntervalSince1970: 0))
+        XCTAssertEqual(next["date"] as! String, dateForamatter.string(from: Date(timeIntervalSince1970: 0)))
         XCTAssertEqual(next["timestamp"] as! Timestamp, Timestamp(seconds: 0, nanos: 0))
         XCTAssertEqual(next["geoPoint"] as! GeoPoint, GeoPoint(latitude: 0, longitude: 0))
         XCTAssertEqual(next["reference"] as! DocumentReference, DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))
@@ -232,7 +240,7 @@ final class FirestoreEncoderTests: XCTestCase {
         XCTAssertEqual(deep["bool"] as! Bool, true)
         XCTAssertEqual(deep["array"] as! [String], ["0", "1"])
         XCTAssertEqual(deep["map"] as! [String: String], ["key": "value"])
-        XCTAssertEqual(deep["date"] as! Date, Date(timeIntervalSince1970: 0))
+        XCTAssertEqual(data["date"] as! String, dateForamatter.string(from: Date(timeIntervalSince1970: 0)))
         XCTAssertEqual(deep["timestamp"] as! Timestamp, Timestamp(seconds: 0, nanos: 0))
         XCTAssertEqual(deep["geoPoint"] as! GeoPoint, GeoPoint(latitude: 0, longitude: 0))
         XCTAssertEqual(deep["reference"] as! DocumentReference, DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))
