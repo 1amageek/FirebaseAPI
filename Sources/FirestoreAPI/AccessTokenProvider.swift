@@ -12,5 +12,5 @@ public protocol AccessScope {
 }
 
 public protocol AccessTokenProvider {
-    func getAccessToken(scope: AccessScope, expirationDuration: TimeInterval) async throws -> String
+    func getAccessToken(scope: any AccessScope, expirationDuration: TimeInterval) async throws -> String
 }
