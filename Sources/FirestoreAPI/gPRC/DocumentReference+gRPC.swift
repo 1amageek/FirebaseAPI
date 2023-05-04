@@ -17,17 +17,6 @@ extension DocumentReference {
         return "\(database.path)/\(path)".normalized
     }
 
-    public func getDocument<T: Decodable>(type: T.Type, firestore: Firestore, headers: HPACKHeaders) async throws -> T? {
-        let snapshot = try await getDocument(firestore: firestore, headers: headers)
-        if snapshot.isEmpty {
-            return nil
-        }
-        guard let data = snapshot.data() else {
-            return nil
-        }
-        return try FirestoreDecoder().decode(type, from: data)
-    }
-
     public func getDocument(firestore: Firestore, headers: HPACKHeaders) async throws -> DocumentSnapshot {
         let client = Google_Firestore_V1_FirestoreNIOClient(channel: firestore.channel)
         let callOptions = CallOptions(customMetadata: headers)
@@ -99,5 +88,32 @@ extension DocumentReference {
         }
         let call = client.deleteDocument(request, callOptions: callOptions)
         _ = try await call.response.get()
+    }
+}
+
+extension DocumentReference {
+
+    public func setData<T: Encodable>(_ data: T, merge: Bool = false, firestore: Firestore, headers: HPACKHeaders) async throws {
+        let documentData = try FirestoreEncoder().encode(data)
+        return try await self.setData(documentData, firestore: firestore, headers: headers)
+    }
+    
+    public func updateData<T: Encodable>(_ data: T, firestore: Firestore, headers: HPACKHeaders) async throws {
+        let updateData = try FirestoreEncoder().encode(data)
+        return try await self.updateData(updateData, firestore: firestore, headers: headers)
+    }
+}
+
+extension DocumentReference {
+    
+    public func getDocument<T: Decodable>(type: T.Type, firestore: Firestore, headers: HPACKHeaders) async throws -> T? {
+        let snapshot = try await getDocument(firestore: firestore, headers: headers)
+        if snapshot.isEmpty {
+            return nil
+        }
+        guard let data = snapshot.data() else {
+            return nil
+        }
+        return try FirestoreDecoder().decode(type, from: data)
     }
 }
