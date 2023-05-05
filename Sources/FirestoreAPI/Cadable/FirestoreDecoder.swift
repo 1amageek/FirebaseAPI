@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 public struct FirestoreDecoder {
 
     static let documentRefUserInfoKey = CodingUserInfoKey(rawValue: "DocumentRefUserInfoKey")
@@ -118,10 +117,12 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
     func decode(_ type: Double.Type, forKey key: Key) throws -> Double {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
-        guard let value = data[key.stringValue] as? Double else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Double"))
+        if let value = data[key.stringValue] as? Double {
+            return value
+        } else if let value = data[key.stringValue] as? Int {
+            return Double(value)
         }
-        return value
+        throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Double"))
     }
 
     func decode(_ type: Float.Type, forKey key: Key) throws -> Float {
@@ -136,10 +137,12 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
     func decode(_ type: Int.Type, forKey key: Key) throws -> Int {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
-        guard let value = data[key.stringValue] as? Int else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Int"))
+        if let value = data[key.stringValue] as? Int {
+            return value
+        } else if let value = data[key.stringValue] as? Double {
+            return Int(value)
         }
-        return value
+        throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Int"))
     }
 
     func decode(_ type: Int8.Type, forKey key: Key) throws -> Int8 {
