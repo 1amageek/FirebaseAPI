@@ -19,19 +19,21 @@ public struct FirestoreDecoder {
     }
 
     public func decode<T: Decodable>(_ type: T.Type, from data: Any, in reference: DocumentReference? = nil) throws -> T {
-        return try T.init(from: _FirestoreDecoder(data: data, codingPath: [], passthroughTypes: passthroughTypes, in: reference))
+        return try T.init(from: _FirestoreDecoder(type, from: data, passthroughTypes: passthroughTypes, manager: CodingKeyManager(), in: reference))
     }
 }
 
 class _FirestoreDecoder: Decoder {
 
-    var codingPath: [CodingKey]
+    var codingPath: [CodingKey] { manager.codingPath }
 
     var userInfo: [CodingUserInfoKey : Any] = [:]
 
     var passthroughTypes: [Any.Type]
 
     var data: Any
+
+    let manager: CodingKeyManager
 
     lazy var dateForamatter: DateFormatter = {
         let dateFormatter = DateFormatter()
@@ -41,10 +43,10 @@ class _FirestoreDecoder: Decoder {
         return dateFormatter
     }()
 
-    init(data: Any, codingPath: [CodingKey], passthroughTypes: [Any.Type] = [], in reference: DocumentReference? = nil) {
+    init(_ type: Any.Type, from data: Any, passthroughTypes: [Any.Type] = [], manager: CodingKeyManager, in reference: DocumentReference? = nil) {
         self.data = data
-        self.codingPath = codingPath
         self.passthroughTypes = passthroughTypes
+        self.manager = manager
         if let reference {
             self.userInfo[FirestoreDecoder.documentRefUserInfoKey!] = reference
         }
@@ -54,30 +56,38 @@ class _FirestoreDecoder: Decoder {
         guard let data = data as? [String: Any] else {
             throw DecodingError.typeMismatch([String: Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected keyed container"))
         }
-        return KeyedDecodingContainer(_KeyedDecodingContainer(codingPath: codingPath, decoder: self, data: data))
+        return KeyedDecodingContainer(_KeyedDecodingContainer(decoder: self, data: data, manager: manager))
     }
 
     func unkeyedContainer() throws -> UnkeyedDecodingContainer {
         guard let data = data as? [Any] else {
             throw DecodingError.typeMismatch([String: Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected unkeyed container"))
         }
-        return _UnkeyedDecodingContainer(codingPath: codingPath, decoder: self, data: data)
+        return _UnkeyedDecodingContainer(decoder: self, data: data, manager: manager)
     }
 
     func singleValueContainer() throws -> SingleValueDecodingContainer {
-        return _SingleValueDecodingContainer(decoder: self, data: data)
+        return _SingleValueDecodingContainer(decoder: self, data: data, manager: manager)
     }
 }
 
 struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
 
-    var codingPath: [CodingKey] = []
+    var codingPath: [CodingKey] { manager.codingPath }
 
     var decoder: _FirestoreDecoder
 
     var allKeys: [Key] { data.keys.compactMap { Key(stringValue: $0) } }
 
     var data: [String: Any]
+
+    var manager: CodingKeyManager
+
+    init(decoder: _FirestoreDecoder, data: [String : Any], manager: CodingKeyManager) {
+        self.decoder = decoder
+        self.data = data
+        self.manager = manager
+    }
 
     func contains(_ key: Key) -> Bool {
         return data[key.stringValue] != nil
@@ -88,117 +98,141 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
     }
 
     func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? Bool else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Bool"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Bool"))
         }
         return value
     }
 
     func decode(_ type: String.Type, forKey key: Key) throws -> String {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? String else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a String"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a String"))
         }
         return value
     }
 
     func decode(_ type: Double.Type, forKey key: Key) throws -> Double {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? Double else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Double"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Double"))
         }
         return value
     }
 
     func decode(_ type: Float.Type, forKey key: Key) throws -> Float {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? Float else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Float"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Float"))
         }
         return value
     }
 
     func decode(_ type: Int.Type, forKey key: Key) throws -> Int {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? Int else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Int"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Int"))
         }
         return value
     }
 
     func decode(_ type: Int8.Type, forKey key: Key) throws -> Int8 {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? Int8 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Int8"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Int8"))
         }
         return value
     }
 
     func decode(_ type: Int16.Type, forKey key: Key) throws -> Int16 {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? Int16 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Int16"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Int16"))
         }
         return value
     }
 
     func decode(_ type: Int32.Type, forKey key: Key) throws -> Int32 {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? Int32 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Int32"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Int32"))
         }
         return value
     }
 
     func decode(_ type: Int64.Type, forKey key: Key) throws -> Int64 {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? Int64 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Int64"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Int64"))
         }
         return value
     }
 
     func decode(_ type: UInt.Type, forKey key: Key) throws -> UInt {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? UInt else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a UInt"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a UInt"))
         }
         return value
     }
 
     func decode(_ type: UInt8.Type, forKey key: Key) throws -> UInt8 {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? UInt8 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a UInt8"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a UInt8"))
         }
         return value
     }
 
     func decode(_ type: UInt16.Type, forKey key: Key) throws -> UInt16 {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? UInt16 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a UInt16"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a UInt16"))
         }
         return value
     }
 
     func decode(_ type: UInt32.Type, forKey key: Key) throws -> UInt32 {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? UInt32 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a UInt32"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a UInt32"))
         }
         return value
     }
 
     func decode(_ type: UInt64.Type, forKey key: Key) throws -> UInt64 {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? UInt64 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a UInt64"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a UInt64"))
         }
         return value
     }
 
     func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T : Decodable {
-//        guard let value = data[key.stringValue] else {
-//            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected value of type \(type)"))
-//        }
-
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         if contains(key), let value = data[key.stringValue] {
             if decoder.passthroughTypes.contains(where: { $0 == type }) {
                 return value as! T
             } else if type == Date.self, let value = data[key.stringValue] as? String {
                 return decoder.dateForamatter.date(from: value) as! T
             } else {
-                decoder.codingPath.append(key)
-                defer { decoder.codingPath.removeLast() }
-                let decoder = _FirestoreDecoder(data: value, codingPath: decoder.codingPath, passthroughTypes: decoder.passthroughTypes)
+                let decoder = _FirestoreDecoder(type, from: value, passthroughTypes: decoder.passthroughTypes, manager: manager)
                 return try T(from: decoder)
             }
         } else {
@@ -210,18 +244,22 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
     }
 
     func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? [String: Any] else {
             throw DecodingError.typeMismatch([String: Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected keyed container"))
         }
-        let nestedDecoder = _FirestoreDecoder(data: value, codingPath: codingPath, passthroughTypes: decoder.passthroughTypes)
+        let nestedDecoder = _FirestoreDecoder(type, from: value, passthroughTypes: decoder.passthroughTypes, manager: manager)
         return try nestedDecoder.container(keyedBy: type)
     }
 
     func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
+        manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
+        defer { manager.codingPath.removeLast() }
         guard let value = data[key.stringValue] as? [Any] else {
             throw DecodingError.typeMismatch([Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected unkeyed container"))
         }
-        let nestedDecoder = _FirestoreDecoder(data: value, codingPath: codingPath, passthroughTypes: decoder.passthroughTypes)
+        let nestedDecoder = _FirestoreDecoder([Any].self, from: value, passthroughTypes: decoder.passthroughTypes, manager: manager)
         return try nestedDecoder.unkeyedContainer()
     }
 
@@ -236,7 +274,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
 
 struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
 
-    var codingPath: [CodingKey] = []
+    var codingPath: [CodingKey] { manager.codingPath }
 
     var decoder: _FirestoreDecoder
 
@@ -248,133 +286,167 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
 
     var data: [Any]
 
-    init(codingPath: [CodingKey], decoder: _FirestoreDecoder, data: [Any]) {
-        self.codingPath = codingPath
+    var manager: CodingKeyManager
+
+    init(decoder: _FirestoreDecoder, data: [Any], manager: CodingKeyManager) {
         self.decoder = decoder
         self.data = data
+        self.manager = manager
     }
 
     mutating func decodeNil() throws -> Bool {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd, data[currentIndex] is NSNull else {
-            throw DecodingError.valueNotFound(Any?.self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected NSNull"))
+            throw DecodingError.valueNotFound(Any?.self, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[currentIndex]): Expected NSNull"))
         }
         currentIndex += 1
         return true
     }
 
     mutating func decode(_ type: Bool.Type) throws -> Bool {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd, let value = data[currentIndex] as? Bool else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Bool"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[currentIndex]): Expected a Bool"))
         }
         currentIndex += 1
         return value
     }
 
     mutating func decode(_ type: String.Type) throws -> String {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd, let value = data[currentIndex] as? String else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a String"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[currentIndex]): Expected a String"))
         }
         currentIndex += 1
         return value
     }
 
     mutating func decode(_ type: Double.Type) throws -> Double {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd, let value = data[currentIndex] as? Double else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Double"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[currentIndex]): Expected a Double"))
         }
         currentIndex += 1
         return value
     }
 
     mutating func decode(_ type: Float.Type) throws -> Float {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd, let value = data[currentIndex] as? Float else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Float"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[currentIndex]): Expected a Float"))
         }
         currentIndex += 1
         return value
     }
 
     mutating func decode(_ type: Int.Type) throws -> Int {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd, let value = data[currentIndex] as? Int else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Int"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[currentIndex]): Expected a Int"))
         }
         currentIndex += 1
         return value
     }
 
     mutating func decode(_ type: Int8.Type) throws -> Int8 {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd, let value = data[currentIndex] as? Int8 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Int8"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[currentIndex]): Expected a Int8"))
         }
         currentIndex += 1
         return value
     }
 
     mutating func decode(_ type: Int16.Type) throws -> Int16 {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd, let value = data[currentIndex] as? Int16 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Int16"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[currentIndex]): Expected a Int16"))
         }
         currentIndex += 1
         return value
     }
 
     mutating func decode(_ type: Int32.Type) throws -> Int32 {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd, let value = data[currentIndex] as? Int32 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Int32"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[currentIndex]): Expected a Int32"))
         }
         currentIndex += 1
         return value
     }
 
     mutating func decode(_ type: Int64.Type) throws -> Int64 {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd, let value = data[currentIndex] as? Int64 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Int64"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[currentIndex]): Expected a Int64"))
         }
         currentIndex += 1
         return value
     }
 
     mutating func decode(_ type: UInt.Type) throws -> UInt {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd, let value = data[currentIndex] as? UInt else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a UInt"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[currentIndex]): Expected a UInt"))
         }
         currentIndex += 1
         return value
     }
 
     mutating func decode(_ type: UInt8.Type) throws -> UInt8 {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd, let value = data[currentIndex] as? UInt8 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a UInt8"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[currentIndex]): Expected a UInt8"))
         }
         currentIndex += 1
         return value
     }
 
     mutating func decode(_ type: UInt16.Type) throws -> UInt16 {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd, let value = data[currentIndex] as? UInt16 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a UInt16"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[currentIndex]): Expected a UInt16"))
         }
         currentIndex += 1
         return value
     }
 
     mutating func decode(_ type: UInt32.Type) throws -> UInt32 {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd, let value = data[currentIndex] as? UInt32 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a UInt32"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[currentIndex]): Expected a UInt32"))
         }
         currentIndex += 1
         return value
     }
 
     mutating func decode(_ type: UInt64.Type) throws -> UInt64 {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd, let value = data[currentIndex] as? UInt64 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a UInt64"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[currentIndex]): Expected a UInt64"))
         }
         currentIndex += 1
         return value
     }
 
     mutating func decode<T>(_ type: T.Type) throws -> T where T : Decodable {
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         guard !isAtEnd else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected value of type \(type)"))
         }
@@ -387,9 +459,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
             return decoder.dateForamatter.date(from: value) as! T
         } else {
             let value = data[currentIndex]
-            codingPath.append(FirestoreKey(index: currentIndex))
-            defer { codingPath.removeLast() }
-            let decoder = _FirestoreDecoder(data: value, codingPath: codingPath, passthroughTypes: decoder.passthroughTypes)
+            let decoder = _FirestoreDecoder(type, from: value, passthroughTypes: decoder.passthroughTypes, manager: manager)
             let decodedValue = try T(from: decoder)
             currentIndex += 1
             return decodedValue
@@ -400,20 +470,22 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         guard !isAtEnd, let value = data[currentIndex] as? [String: Any] else {
             throw DecodingError.typeMismatch([String: Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected unkeyed container"))
         }
-        codingPath.append(FirestoreKey(index: currentIndex))
-        defer { codingPath.removeLast() }
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         currentIndex += 1
-        return KeyedDecodingContainer(_KeyedDecodingContainer(codingPath: codingPath, decoder: decoder, data: value))
+        let nestedDecoder = _FirestoreDecoder(type, from: value, passthroughTypes: decoder.passthroughTypes, manager: manager)
+        return KeyedDecodingContainer(try nestedDecoder.container(keyedBy: type))
     }
 
     mutating func nestedUnkeyedContainer() throws -> UnkeyedDecodingContainer {
         guard !isAtEnd, let value = data[currentIndex] as? [Any] else {
             throw DecodingError.typeMismatch([Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected unkeyed container"))
         }
-        codingPath.append(FirestoreKey(index: currentIndex))
-        defer { codingPath.removeLast() }
+        manager.codingPath.append(FirestoreKey(index: currentIndex))
+        defer { manager.codingPath.removeLast() }
         currentIndex += 1
-        return _UnkeyedDecodingContainer(codingPath: codingPath, decoder: decoder, data: value)
+        let nestedDecoder = _FirestoreDecoder([Any].self, from: value, passthroughTypes: decoder.passthroughTypes, manager: manager)
+        return try nestedDecoder.unkeyedContainer()
     }
 
     mutating func superDecoder() throws -> Decoder {
@@ -423,119 +495,122 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
 
 struct _SingleValueDecodingContainer: SingleValueDecodingContainer {
 
-    var decoder: _FirestoreDecoder
+    var codingPath: [CodingKey] { manager.codingPath }
 
-    var codingPath: [CodingKey] = []
+    var decoder: _FirestoreDecoder
 
     var data: Any
 
-    init(decoder: _FirestoreDecoder, data: Any) {
+    var manager: CodingKeyManager
+
+    init(decoder: _FirestoreDecoder, data: Any, manager: CodingKeyManager) {
         self.decoder = decoder
         self.data = data
+        self.manager = manager
     }
 
     func decodeNil() -> Bool { data is NSNull }
 
     func decode(_ type: Bool.Type) throws -> Bool {
         guard let value = data as? Bool else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Bool"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Bool"))
         }
         return value
     }
 
     func decode(_ type: String.Type) throws -> String {
         guard let value = data as? String else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a String"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a String"))
         }
         return value
     }
 
     func decode(_ type: Double.Type) throws -> Double {
         guard let value = data as? Double else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Double"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Double"))
         }
         return value
     }
 
     func decode(_ type: Float.Type) throws -> Float {
         guard let value = data as? Float else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Float"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Float"))
         }
         return value
     }
 
     func decode(_ type: Int.Type) throws -> Int {
         guard let value = data as? Int else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Int"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Int"))
         }
         return value
     }
 
     func decode(_ type: Int8.Type) throws -> Int8 {
         guard let value = data as? Int8 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Int8"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Int8"))
         }
         return value
     }
 
     func decode(_ type: Int16.Type) throws -> Int16 {
         guard let value = data as? Int16 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Int16"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Int16"))
         }
         return value
     }
 
     func decode(_ type: Int32.Type) throws -> Int32 {
         guard let value = data as? Int32 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Int32"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Int32"))
         }
         return value
     }
 
     func decode(_ type: Int64.Type) throws -> Int64 {
         guard let value = data as? Int64 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a Int64"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Int64"))
         }
         return value
     }
 
     func decode(_ type: UInt.Type) throws -> UInt {
         guard let value = data as? UInt else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a UInt"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a UInt"))
         }
         return value
     }
 
     func decode(_ type: UInt8.Type) throws -> UInt8 {
         guard let value = data as? UInt8 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a UInt8"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a UInt8"))
         }
         return value
     }
 
     func decode(_ type: UInt16.Type) throws -> UInt16 {
         guard let value = data as? UInt16 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a UInt16"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a UInt16"))
         }
         return value
     }
 
     func decode(_ type: UInt32.Type) throws -> UInt32 {
         guard let value = data as? UInt32 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a UInt32"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a UInt32"))
         }
         return value
     }
 
     func decode(_ type: UInt64.Type) throws -> UInt64 {
         guard let value = data as? UInt64 else {
-            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected a UInt64"))
+            throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a UInt64"))
         }
         return value
     }
 
     func decode<T>(_ type: T.Type) throws -> T where T : Decodable {
-        let decoder = _FirestoreDecoder(data: data, codingPath: codingPath, passthroughTypes: decoder.passthroughTypes)
+        let decoder = _FirestoreDecoder(type, from: data, passthroughTypes: decoder.passthroughTypes, manager: manager)
         return try T(from: decoder)
     }
 }

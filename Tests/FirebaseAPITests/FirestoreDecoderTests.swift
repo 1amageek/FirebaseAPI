@@ -10,6 +10,39 @@ import XCTest
 
 final class FirestoreDecoderTests: XCTestCase {
 
+    func testDecoderCodingPath() async throws {
+        struct Deep: Identifiable, Codable, Equatable {
+            @DocumentID var id: String
+            var intValue: [Int] = []
+            var stringValue: Int = 0
+        }
+        struct Nested: Identifiable, Codable, Equatable {
+            @DocumentID var id: String
+            var second: Deep = Deep(id: "id")
+        }
+        struct Object: Identifiable, Codable, Equatable {
+            @DocumentID var id: String
+            var first: Nested = Nested(id: "id")
+        }
+        let database = Database(projectId: "project")
+        let ref = DocumentReference(database, parentPath: "objects", documentID: "objectID")
+
+        do {
+            let data = try FirestoreDecoder().decode(Object.self, from: [
+                "first": [
+                    "id": "nestedID",
+                    "second": [
+                        "id": "deepID",
+                        "intValue": ["0"],
+                        "stringValue": "0"
+                    ]
+                ]
+            ] as [String: Any], in: ref)
+        } catch {
+            print(error)
+        }
+    }
+
     func testDecoderDocumentID() async throws {
         struct Nested: Identifiable, Codable, Equatable {
             @DocumentID var id: String
@@ -185,6 +218,10 @@ final class FirestoreDecoderTests: XCTestCase {
 
     func testDecoderNest() async throws {
 
+        enum EnumValue: String, Codable {
+            case value
+        }
+
         struct DeepNestObject: Codable, Equatable {
             var number: Int = 0
             var string: String = "string"
@@ -218,6 +255,7 @@ final class FirestoreDecoderTests: XCTestCase {
             var map: [String: String] = ["value": "value"]
             var date: Date = Date(timeIntervalSince1970: 0)
             var nested: NestObject = NestObject()
+            var enumValue: EnumValue = .value
             var timestamp: Timestamp = Timestamp(seconds: 0, nanos: 0)
             var geoPoint: GeoPoint = GeoPoint(latitude: 0, longitude: 0)
             var reference: DocumentReference = DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id")
@@ -263,6 +301,7 @@ final class FirestoreDecoderTests: XCTestCase {
             "array": ["0", "1"],
             "map": ["key": "value"],
             "date": dateForamatter.string(from: Date(timeIntervalSince1970: 0)),
+            "enumValue": "value",
             "timestamp": Timestamp(seconds: 0, nanos: 0),
             "geoPoint": GeoPoint(latitude: 0, longitude: 0),
             "reference": DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"),
@@ -276,6 +315,7 @@ final class FirestoreDecoderTests: XCTestCase {
         XCTAssertEqual(data.array, ["0", "1"])
         XCTAssertEqual(data.map, ["key": "value"])
         XCTAssertEqual(data.date, Date(timeIntervalSince1970: 0))
+        XCTAssertEqual(data.enumValue, .value)
         XCTAssertEqual(data.timestamp, Timestamp(seconds: 0, nanos: 0))
         XCTAssertEqual(data.geoPoint, GeoPoint(latitude: 0, longitude: 0))
         XCTAssertEqual(data.reference, DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))

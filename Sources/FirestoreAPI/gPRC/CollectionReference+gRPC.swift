@@ -41,7 +41,7 @@ extension CollectionReference {
             guard let data = queryDocumentSnapshot.data() else {
                 return nil
             }
-            return try FirestoreDecoder().decode(type, from: data)
+            return try FirestoreDecoder().decode(type, from: data, in: queryDocumentSnapshot.documentReference)
         }
     }
 }

@@ -8,7 +8,7 @@
 import Foundation
 
 struct FirestoreKey: CodingKey {
-
+    
     var stringValue: String
 
     var intValue: Int?
@@ -24,9 +24,21 @@ struct FirestoreKey: CodingKey {
     }
 
     init(index: Int) {
-        stringValue = "Index \(index)"
+        stringValue = "[\(index)]"
         intValue = index
     }
 
-    static let `super` = FirestoreKey(stringValue: "super")!
+    var description: String {
+        return "\(stringValue)"
+    }
 }
+
+class CodingKeyManager {
+
+    var codingPath: [FirestoreKey] = []
+
+    var message: String { codingPath.lazy.map({ $0.stringValue }).joined(separator: ".") }
+
+    init() { }
+}
+
