@@ -626,7 +626,20 @@ struct _SingleValueDecodingContainer: SingleValueDecodingContainer {
     }
 
     func decode<T>(_ type: T.Type) throws -> T where T : Decodable {
-        let decoder = _FirestoreDecoder(type, from: data, passthroughTypes: decoder.passthroughTypes, manager: manager)
-        return try T(from: decoder)
+        if decoder.passthroughTypes.contains(where: { $0 == type }) {
+            let value = data
+            return value as! T
+        } else if type == Date.self, let value = data as? String {
+            return decoder.dateForamatter.date(from: value) as! T
+        } else if type == Date.self, let value = data as? Timestamp {
+            return Date(timeIntervalSince1970: TimeInterval(value.seconds)) as! T
+        } else if type == Decimal.self, let value = data as? Int {
+            return Decimal(value) as! T
+        } else if type == Decimal.self, let value = data as? Double {
+            return Decimal(value) as! T
+        } else {
+            let decoder = _FirestoreDecoder(type, from: data, passthroughTypes: decoder.passthroughTypes, manager: manager)
+            return try T(from: decoder)
+        }
     }
 }
