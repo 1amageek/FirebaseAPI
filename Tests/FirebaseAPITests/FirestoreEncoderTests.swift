@@ -71,6 +71,18 @@ final class FirestoreEncoderTests: XCTestCase {
         XCTAssertEqual(value, 0)
     }
 
+    func testEncoderDouble() async throws {
+        struct Object: Codable, Equatable {
+            var key: Double = 0.0
+        }
+        let data = try! FirestoreEncoder().encode(Object())
+        let key = data.keys.first!
+        let value = data["key"] as! Double
+
+        XCTAssertEqual(key, "key")
+        XCTAssertEqual(value, 0)
+    }
+
     func testEncoderBool() async throws {
         struct Object: Codable, Equatable {
             var key: Bool = false
