@@ -145,6 +145,9 @@ struct _FirestoreUnkeyedEncodingContainer: UnkeyedEncodingContainer {
         } else if let date = value as? Date {
             let dateString = encoder.dateForamatter.string(from: date)
             data.append(dateString)
+        } else if let decimal = value as? Decimal {
+            let value = Double(truncating: NSDecimalNumber(decimal: decimal))
+            data.append(value)
         } else {
             let subencoder = _FirestoreEncoder(codingPath: codingPath, passthroughTypes: encoder.passthroughTypes)
             subencoder.codingPath = encoder.codingPath
@@ -335,6 +338,9 @@ struct FirestoreKeyedEncodingContainer<K: CodingKey>: KeyedEncodingContainerProt
         } else if let date = value as? Date {
             let dateString = encoder.dateForamatter.string(from: date)
             data[key.stringValue] = dateString
+        } else if let decimal = value as? Decimal {
+            let value = Double(truncating: NSDecimalNumber(decimal: decimal))
+            data[key.stringValue] = value
         } else {
             codingPath.append(key)
             defer { codingPath.removeLast() }

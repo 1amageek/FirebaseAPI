@@ -236,6 +236,10 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
                 return decoder.dateForamatter.date(from: value) as! T
             } else if type == Date.self, let value = data[key.stringValue] as? Timestamp {
                 return Date(timeIntervalSince1970: TimeInterval(value.seconds)) as! T
+            } else if type == Decimal.self, let value = data[key.stringValue] as? Int {
+                return Decimal(value) as! T
+            } else if type == Decimal.self, let value = data[key.stringValue] as? Double {
+                return Decimal(value) as! T
             } else {
                 let decoder = _FirestoreDecoder(type, from: value, passthroughTypes: decoder.passthroughTypes, manager: manager)
                 return try T(from: decoder)
@@ -465,7 +469,11 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         } else if type == Date.self, let value = data[currentIndex] as? Timestamp {
             currentIndex += 1
             return Date(timeIntervalSince1970: TimeInterval(value.seconds)) as! T
-        }  else {
+        } else if type == Decimal.self, let value = data[currentIndex] as? Int {
+            return Decimal(value) as! T
+        } else if type == Decimal.self, let value = data[currentIndex] as? Double {
+            return Decimal(value) as! T
+        } else {
             let value = data[currentIndex]
             let decoder = _FirestoreDecoder(type, from: value, passthroughTypes: decoder.passthroughTypes, manager: manager)
             let decodedValue = try T(from: decoder)
