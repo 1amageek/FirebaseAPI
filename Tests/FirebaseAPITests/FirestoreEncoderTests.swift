@@ -59,6 +59,18 @@ final class FirestoreEncoderTests: XCTestCase {
         XCTAssertEqual(value, "string")
     }
 
+    func testEncoderURL() async throws {
+        struct Object: Codable, Equatable {
+            var key: URL = URL(string: "https://firebase.google.com/")!
+        }
+        let data = try! FirestoreEncoder().encode(Object())
+        let key = data.keys.first!
+        let value = data["key"] as! String
+
+        XCTAssertEqual(key, "key")
+        XCTAssertEqual(value, "https://firebase.google.com/")
+    }
+
     func testEncoderInt() async throws {
         struct Object: Codable, Equatable {
             var key: Int = 0
@@ -167,6 +179,18 @@ final class FirestoreEncoderTests: XCTestCase {
         XCTAssertEqual(value, ["0", "1"])
     }
 
+    func testEncoderArrayURL() async throws {
+        struct Object: Codable, Equatable {
+            var key: [URL] = [URL(string: "https://firebase.google.com/")!, URL(string: "https://console.cloud.google.com/")!]
+        }
+        let data = try! FirestoreEncoder().encode(Object())
+        let key = data.keys.first!
+        let value = data["key"] as! [String]
+
+        XCTAssertEqual(key, "key")
+        XCTAssertEqual(value, ["https://firebase.google.com/", "https://console.cloud.google.com/"])
+    }
+
     func testEncoderArrayInt() async throws {
         struct Object: Codable, Equatable {
             var key: [Int] = [0, 1]
@@ -239,6 +263,7 @@ final class FirestoreEncoderTests: XCTestCase {
         struct DeepNestObject: Codable, Equatable {
             var number: Int = 0
             var string: String = "string"
+            var url: URL = URL(string: "https://firebase.google.com/")!
             var bool: Bool = true
             var array: [String] = ["0", "1"]
             var map: [String: String] = ["key": "value"]
@@ -251,6 +276,7 @@ final class FirestoreEncoderTests: XCTestCase {
         struct NestObject: Codable, Equatable {
             var number: Int = 0
             var string: String = "string"
+            var url: URL = URL(string: "https://firebase.google.com/")!
             var bool: Bool = true
             var array: [String] = ["0", "1"]
             var map: [String: String] = ["key": "value"]
@@ -264,6 +290,7 @@ final class FirestoreEncoderTests: XCTestCase {
         struct Object: Codable, Equatable {
             var number: Int = 0
             var string: String = "string"
+            var url: URL = URL(string: "https://firebase.google.com/")!
             var bool: Bool = true
             var array: [String] = ["0", "1"]
             var map: [String: String] = ["key": "value"]
@@ -277,6 +304,7 @@ final class FirestoreEncoderTests: XCTestCase {
         let data = try! FirestoreEncoder().encode(Object())
         XCTAssertEqual(data["number"] as! Int, 0)
         XCTAssertEqual(data["string"] as! String, "string")
+        XCTAssertEqual(data["url"] as! String, "https://firebase.google.com/")
         XCTAssertEqual(data["bool"] as! Bool, true)
         XCTAssertEqual(data["array"] as! [String], ["0", "1"])
         XCTAssertEqual(data["map"] as! [String: String], ["key": "value"])
@@ -287,6 +315,7 @@ final class FirestoreEncoderTests: XCTestCase {
         let next = data["nested"] as! [String: Any]
         XCTAssertEqual(next["number"] as! Int, 0)
         XCTAssertEqual(next["string"] as! String, "string")
+        XCTAssertEqual(next["url"] as! String, "https://firebase.google.com/")
         XCTAssertEqual(next["bool"] as! Bool, true)
         XCTAssertEqual(next["array"] as! [String], ["0", "1"])
         XCTAssertEqual(next["map"] as! [String: String], ["key": "value"])
@@ -297,6 +326,7 @@ final class FirestoreEncoderTests: XCTestCase {
         let deep = next["nested"] as! [String: Any]
         XCTAssertEqual(deep["number"] as! Int, 0)
         XCTAssertEqual(deep["string"] as! String, "string")
+        XCTAssertEqual(deep["url"] as! String, "https://firebase.google.com/")
         XCTAssertEqual(deep["bool"] as! Bool, true)
         XCTAssertEqual(deep["array"] as! [String], ["0", "1"])
         XCTAssertEqual(deep["map"] as! [String: String], ["key": "value"])

@@ -83,6 +83,14 @@ final class FirestoreDecoderTests: XCTestCase {
         XCTAssertEqual(data.value, "string")
     }
 
+    func testDecoderURL() async throws {
+        struct Object: Codable, Equatable {
+            var value: URL = URL(string: "https://firebase.google.com/")!
+        }
+        let data = try! FirestoreDecoder().decode(Object.self, from: ["value": "https://firebase.google.com/"])
+        XCTAssertEqual(data.value, URL(string: "https://firebase.google.com/")!)
+    }
+
     func testDecoderInt() async throws {
         struct Object: Codable, Equatable {
             var value: Int = 0
@@ -160,6 +168,14 @@ final class FirestoreDecoderTests: XCTestCase {
         }
         let data = try! FirestoreDecoder().decode(Object.self, from: ["value": ["0", "1"]])
         XCTAssertEqual(data.value, ["0", "1"])
+    }
+
+    func testDecoderArrayURL() async throws {
+        struct Object: Codable, Equatable {
+            var value: [URL] = [URL(string: "https://firebase.google.com/")!, URL(string: "https://console.cloud.google.com/")!]
+        }
+        let data = try! FirestoreDecoder().decode(Object.self, from: ["value": ["https://firebase.google.com/", "https://console.cloud.google.com/"]])
+        XCTAssertEqual(data.value, [URL(string: "https://firebase.google.com/")!, URL(string: "https://console.cloud.google.com/")!])
     }
 
     func testDecoderArrayInt() async throws {
@@ -241,6 +257,7 @@ final class FirestoreDecoderTests: XCTestCase {
         struct DeepNestObject: Codable, Equatable {
             var number: Int = 0
             var string: String = "string"
+            var url: URL = URL(string: "https://firebase.google.com/")!
             var bool: Bool = true
             var array: [String] = ["0", "1"]
             var map: [String: String] = ["value": "value"]
@@ -253,6 +270,7 @@ final class FirestoreDecoderTests: XCTestCase {
         struct NestObject: Codable, Equatable {
             var number: Int = 0
             var string: String = "string"
+            var url: URL = URL(string: "https://firebase.google.com/")!
             var bool: Bool = true
             var array: [String] = ["0", "1"]
             var map: [String: String] = ["value": "value"]
@@ -266,6 +284,7 @@ final class FirestoreDecoderTests: XCTestCase {
         struct Object: Codable, Equatable {
             var number: Int = 0
             var string: String = "string"
+            var url: URL = URL(string: "https://firebase.google.com/")!
             var bool: Bool = true
             var array: [String] = ["0", "1"]
             var map: [String: String] = ["value": "value"]
@@ -288,6 +307,7 @@ final class FirestoreDecoderTests: XCTestCase {
         let deepNestedData: [String: Any] = [
             "number": 0,
             "string": "string",
+            "url": "https://firebase.google.com/",
             "bool": true,
             "array": ["0", "1"],
             "map": ["key": "value"],
@@ -300,6 +320,7 @@ final class FirestoreDecoderTests: XCTestCase {
         let nestedData: [String: Any] = [
             "number": 0,
             "string": "string",
+            "url": "https://firebase.google.com/",
             "bool": true,
             "array": ["0", "1"],
             "map": ["key": "value"],
@@ -313,6 +334,7 @@ final class FirestoreDecoderTests: XCTestCase {
         let object: [String: Any] = [
             "number": 0,
             "string": "string",
+            "url": "https://firebase.google.com/",
             "bool": true,
             "array": ["0", "1"],
             "map": ["key": "value"],
@@ -327,6 +349,7 @@ final class FirestoreDecoderTests: XCTestCase {
         let data = try! FirestoreDecoder().decode(Object.self, from: object)
         XCTAssertEqual(data.number, 0)
         XCTAssertEqual(data.string, "string")
+        XCTAssertEqual(data.url, URL(string: "https://firebase.google.com/")!)
         XCTAssertEqual(data.bool, true)
         XCTAssertEqual(data.array, ["0", "1"])
         XCTAssertEqual(data.map, ["key": "value"])
@@ -338,6 +361,7 @@ final class FirestoreDecoderTests: XCTestCase {
         let next = data.nested
         XCTAssertEqual(next.number, 0)
         XCTAssertEqual(next.string, "string")
+        XCTAssertEqual(next.url, URL(string: "https://firebase.google.com/")!)
         XCTAssertEqual(next.bool, true)
         XCTAssertEqual(next.array, ["0", "1"])
         XCTAssertEqual(next.map, ["key": "value"])
@@ -348,6 +372,7 @@ final class FirestoreDecoderTests: XCTestCase {
         let deep = next.nested
         XCTAssertEqual(deep.number, 0)
         XCTAssertEqual(deep.string, "string")
+        XCTAssertEqual(deep.url, URL(string: "https://firebase.google.com/")!)
         XCTAssertEqual(deep.bool, true)
         XCTAssertEqual(deep.array, ["0", "1"])
         XCTAssertEqual(deep.map, ["key": "value"])

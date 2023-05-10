@@ -148,6 +148,9 @@ struct _FirestoreUnkeyedEncodingContainer: UnkeyedEncodingContainer {
         } else if let decimal = value as? Decimal {
             let value = Double(truncating: NSDecimalNumber(decimal: decimal))
             data.append(value)
+        } else if let url = value as? URL {
+            let value = url.absoluteString
+            data.append(value)
         } else {
             let subencoder = _FirestoreEncoder(codingPath: codingPath, passthroughTypes: encoder.passthroughTypes)
             subencoder.codingPath = encoder.codingPath
@@ -340,6 +343,9 @@ struct FirestoreKeyedEncodingContainer<K: CodingKey>: KeyedEncodingContainerProt
             data[key.stringValue] = dateString
         } else if let decimal = value as? Decimal {
             let value = Double(truncating: NSDecimalNumber(decimal: decimal))
+            data[key.stringValue] = value
+        } else if let url = value as? URL {
+            let value = url.absoluteString
             data[key.stringValue] = value
         } else {
             codingPath.append(key)

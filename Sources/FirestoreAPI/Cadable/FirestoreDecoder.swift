@@ -240,6 +240,8 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
                 return Decimal(value) as! T
             } else if type == Decimal.self, let value = data[key.stringValue] as? Double {
                 return Decimal(value) as! T
+            } else if type == URL.self, let value = data[key.stringValue] as? String {
+                return URL(string: value) as! T
             } else {
                 let decoder = _FirestoreDecoder(type, from: value, passthroughTypes: decoder.passthroughTypes, manager: manager)
                 return try T(from: decoder)
@@ -473,6 +475,8 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
             return Decimal(value) as! T
         } else if type == Decimal.self, let value = data[currentIndex] as? Double {
             return Decimal(value) as! T
+        } else if type == URL.self, let value = data[currentIndex] as? String {
+            return URL(string: value) as! T
         } else {
             let value = data[currentIndex]
             let decoder = _FirestoreDecoder(type, from: value, passthroughTypes: decoder.passthroughTypes, manager: manager)
@@ -637,6 +641,8 @@ struct _SingleValueDecodingContainer: SingleValueDecodingContainer {
             return Decimal(value) as! T
         } else if type == Decimal.self, let value = data as? Double {
             return Decimal(value) as! T
+        } else if type == URL.self, let value = data as? String {
+            return URL(string: value) as! T
         } else {
             let decoder = _FirestoreDecoder(type, from: data, passthroughTypes: decoder.passthroughTypes, manager: manager)
             return try T(from: decoder)
