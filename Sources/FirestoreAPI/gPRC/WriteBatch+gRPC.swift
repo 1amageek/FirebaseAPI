@@ -13,7 +13,11 @@ import NIOHPACK
 
 extension WriteBatch {
 
-    public func commit(headers: HPACKHeaders) async throws {
+    public func commit() async throws {
+        guard let accessToken = try await firestore.getAccessToken() else {
+            fatalError("AcessToken is empty")
+        }
+        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
         let client = Google_Firestore_V1_FirestoreAsyncClient(channel: firestore.channel)
         let callOptions = CallOptions(customMetadata: headers)
         let commitRequest = Google_Firestore_V1_CommitRequest.with {
