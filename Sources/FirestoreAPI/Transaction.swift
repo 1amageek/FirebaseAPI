@@ -64,7 +64,7 @@ public class Transaction {
         return querySnapshot
     }
 
-    func getAll(documentReferences: DocumentReference...) async throws -> [DocumentSnapshot] {
+    public func getAll(documentReferences: DocumentReference...) async throws -> [DocumentSnapshot] {
         guard writeBatch.writes.isEmpty else {
             throw FirestoreError.readAfterWriteError
         }
@@ -78,19 +78,19 @@ public class Transaction {
         return try await firestore.batchGetDocuments(documentReferences: documentReferences, transactionID: transactionID, headers: headers)
     }
 
-    func create(documentReference: DocumentReference, data: [String: Any]) async throws {
+    public func create(documentReference: DocumentReference, data: [String: Any]) async throws {
         writeBatch.create(data: data, forDocument: documentReference)
     }
 
-    func set(documentReference: DocumentReference, data: [String: Any]) async throws {
+    public func set(documentReference: DocumentReference, data: [String: Any]) async throws {
         writeBatch.setData(data: data, forDocument: documentReference)
     }
 
-    func update(documentReference: DocumentReference, data: [String: Any]) async throws {
+    public func update(documentReference: DocumentReference, data: [String: Any]) async throws {
         writeBatch.updateData(fields: data, forDocument: documentReference)
     }
 
-    func delete(documentReference: DocumentReference) async throws {
+    public func delete(documentReference: DocumentReference) async throws {
         writeBatch.deleteDocument(document: documentReference)
     }
 
