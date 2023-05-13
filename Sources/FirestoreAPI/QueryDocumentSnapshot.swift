@@ -17,6 +17,11 @@ public struct QueryDocumentSnapshot: Identifiable, Sendable {
     /// The ID of the Firestore document.
     public var id: String { documentReference.documentID }
 
+    /// A boolean value indicating whether the container holds any data.
+    ///
+    /// If the data in the container is `nil`, the container is considered empty.
+    public var exists: Bool { document != nil }
+
     /// The path of the Firestore document.
     var path: String { documentReference.path }
 
