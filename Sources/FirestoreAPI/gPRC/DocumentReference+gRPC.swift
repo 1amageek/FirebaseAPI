@@ -108,7 +108,7 @@ extension DocumentReference {
     
     public func getDocument<T: Decodable>(type: T.Type, firestore: Firestore, headers: HPACKHeaders) async throws -> T? {
         let snapshot = try await getDocument(firestore: firestore, headers: headers)
-        if snapshot.isEmpty {
+        if !snapshot.exists {
             return nil
         }
         guard let data = snapshot.data() else {
