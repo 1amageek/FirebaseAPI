@@ -95,4 +95,23 @@ public class Firestore {
         let documentID = String(components.last!)
         return DocumentReference(database, parentPath: parentPath, documentID: documentID)
     }
+
+    public func batch() -> WriteBatch {
+        return WriteBatch(firestore: self)
+    }
+}
+
+extension Firestore {
+
+    /**
+     Retrieves an access token for the Firestore database.
+
+     Use this method to retrieve an access token for the Firestore database. If an access token has already been retrieved, this method returns it. Otherwise, it initializes an `AccessTokenProvider` instance with the `FirebaseApp` service account and retrieves a new access token using the `Scope` struct. The access token is then stored in the `accessToken` property of the `Firestore` instance and returned.
+
+     - Returns: An access token for the Firestore database.
+     - Throws: A `ServiceAccountError` if an error occurs while initializing the `AccessTokenProvider` instance or retrieving the access token.
+     */
+    func getAccessToken() async throws -> String? {
+        return try await accessTokenProvider?.getAccessToken(expirationDuration: 3600)
+    }
 }
