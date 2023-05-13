@@ -16,7 +16,7 @@ public struct TransactionOptions {
     var readOnly: Bool
     var readTime: Timestamp?
 
-    public init(maxAttempts: Int, readOnly: Bool, readTime: Timestamp? = nil) {
+    public init(maxAttempts: Int = 5, readOnly: Bool = false, readTime: Timestamp? = nil) {
         self.maxAttempts = maxAttempts
         self.readOnly = readOnly
         self.readTime = readTime

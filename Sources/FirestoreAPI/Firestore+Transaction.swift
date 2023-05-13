@@ -21,7 +21,7 @@ extension Firestore {
       */
     public func runTransaction<T>(
         _ transactionFunction: @escaping ((Transaction) async throws -> T),
-        options: TransactionOptions
+        options: TransactionOptions = TransactionOptions()
     ) async throws -> T {
 
         let transaction = Transaction(firestore: self, options: options)
