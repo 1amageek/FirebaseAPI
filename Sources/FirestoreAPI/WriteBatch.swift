@@ -81,7 +81,7 @@ public class WriteBatch {
             print("Invalid project ID")
             return self
         }
-        writes.append(.init(documentReference: document, data: [:], merge: false))
+        writes.append(.init(documentReference: document, data: nil, merge: false))
         return self
     }
 }
