@@ -44,9 +44,6 @@ extension WriteBatch {
                         }
                     } else {
                         $0.delete = write.documentReference.name
-                        $0.updateMask = Google_Firestore_V1_DocumentMask.with {
-                            $0.fieldPaths = []
-                        }
                     }
                 }
             }
