@@ -78,19 +78,19 @@ public class Transaction {
         return try await firestore.batchGetDocuments(documentReferences: documentReferences, transactionID: transactionID, headers: headers)
     }
 
-    public func create(documentReference: DocumentReference, data: [String: Any]) async throws {
+    public func create(documentReference: DocumentReference, data: [String: Any]) {
         writeBatch.create(data: data, forDocument: documentReference)
     }
 
-    public func set(documentReference: DocumentReference, data: [String: Any]) async throws {
+    public func set(documentReference: DocumentReference, data: [String: Any]) {
         writeBatch.setData(data: data, forDocument: documentReference)
     }
 
-    public func update(documentReference: DocumentReference, data: [String: Any]) async throws {
+    public func update(documentReference: DocumentReference, data: [String: Any]) {
         writeBatch.updateData(fields: data, forDocument: documentReference)
     }
 
-    public func delete(documentReference: DocumentReference) async throws {
+    public func delete(documentReference: DocumentReference) {
         writeBatch.deleteDocument(document: documentReference)
     }
 
