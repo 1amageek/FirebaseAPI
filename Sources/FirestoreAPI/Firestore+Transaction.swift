@@ -47,7 +47,6 @@ extension Firestore {
                     // If we've hit the maximum number of attempts, rethrow the error.
                     throw FirestoreError.transactionFailed(error: error)
                 }
-                return nil
             }
         }
         return nil
