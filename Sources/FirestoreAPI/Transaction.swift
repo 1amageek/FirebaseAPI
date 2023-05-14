@@ -37,7 +37,7 @@ public class Transaction {
 
     private var requestTag: String
 
-    private var transactionID: Data?
+    private var id: Data?
 
     var backoff: ExponentialBackoff
 
@@ -56,7 +56,7 @@ public class Transaction {
     }
 
     public func get(query: Query) async throws -> QuerySnapshot {
-        return try await firestore.runQuery(query: query.makeQuery(), transactionID: transactionID)
+        return try await firestore.runQuery(query: query.makeQuery(), transactionID: id)
     }
 
     public func getAll(documentReferences: DocumentReference...) async throws -> [DocumentSnapshot] {
@@ -66,7 +66,7 @@ public class Transaction {
         guard !documentReferences.isEmpty else {
             throw FirestoreError.minNumberOfArgumentsError
         }
-        return try await firestore.batchGetDocuments(documentReferences: documentReferences, transactionID: transactionID)
+        return try await firestore.batchGetDocuments(documentReferences: documentReferences, transactionID: id)
     }
 
     public func create(documentReference: DocumentReference, data: [String: Any]) {
@@ -87,23 +87,23 @@ public class Transaction {
 
     func begin(readOnly: Bool, readTime: Timestamp?) async throws {
         let beginTransactionResponse = try await firestore.beginTransaction(readOnly: readOnly, readTime: readTime)
-        transactionID = beginTransactionResponse.transaction
+        id = beginTransactionResponse.transaction
     }
 
     func commit() async throws {
-        guard let transactionID = transactionID else {
+        guard let id else {
             throw TransactionError.missingTransactionID
         }
-        let commitResponse = try await firestore.commitTransaction(transactionID: transactionID, writeBatch: writeBatch)
+        let commitResponse = try await firestore.commitTransaction(transactionID: id, writeBatch: writeBatch)
         if !commitResponse.hasCommitTime {
             throw TransactionError.commitFailed
         }
     }
 
     func rollback() async throws {
-        guard let transactionID = transactionID else {
+        guard let id else {
             throw TransactionError.missingTransactionID
         }
-        _ = try await firestore.rollbackTransaction(transactionID: transactionID)
+        _ = try await firestore.rollbackTransaction(transactionID: id)
     }
 }

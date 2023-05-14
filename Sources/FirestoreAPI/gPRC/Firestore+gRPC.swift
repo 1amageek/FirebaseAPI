@@ -90,9 +90,7 @@ extension Firestore {
                 $0.options.readWrite = Google_Firestore_V1_TransactionOptions.ReadWrite()
             }
         }
-
-        let response = try await client.beginTransaction(request, callOptions: callOptions)
-        return response
+        return try await client.beginTransaction(request, callOptions: callOptions)
     }
 
     public func commitTransaction(transactionID: Data, writeBatch: WriteBatch) async throws -> Google_Firestore_V1_CommitResponse {
@@ -110,7 +108,6 @@ extension Firestore {
             $0.database = self.database.database
             $0.transaction = transactionID
         }
-        let response = try await client.rollback(request, callOptions: callOptions)
-        return response
+        return try await client.rollback(request, callOptions: callOptions)
     }
 }
