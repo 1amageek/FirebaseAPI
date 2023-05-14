@@ -73,7 +73,7 @@ public class Firestore {
         }
         let parentPath = components.dropLast(1).joined(separator: "/")
         let collectionID = String(components.last!)
-        return CollectionReference(database, parentPath: nil, collectionID: collectionID)
+        return CollectionReference(database, parentPath: parentPath, collectionID: collectionID)
     }
     
     /**
