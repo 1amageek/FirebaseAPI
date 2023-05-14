@@ -101,3 +101,21 @@ public func > (field: String, value: Any) -> QueryPredicate {
 public func >= (field: String, value: Any) -> QueryPredicate {
     return .isGreaterThanOrEqualTo(field, value)
 }
+
+public func ~= <T: RangeExpression>(field: String, range: Range<T>) -> QueryPredicate {
+    return .and([
+        (field >= range.lowerBound),
+        (field < range.upperBound)
+    ])
+}
+
+public func ~= <T: RangeExpression>(field: String, range: ClosedRange<T>) -> QueryPredicate {
+    return .and([
+        (field >= range.lowerBound),
+        (field <= range.upperBound)
+    ])
+}
+
+public func ~= <T: RangeExpression>(field: String, range: PartialRangeFrom<T>) -> QueryPredicate {
+    return (field >= range.lowerBound)
+}
