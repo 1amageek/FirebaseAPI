@@ -22,7 +22,7 @@ extension Firestore {
         let callOptions = CallOptions(customMetadata: headers)
         let request = Google_Firestore_V1_BatchGetDocumentsRequest.with {
             $0.database = self.database.database
-            $0.documents = documentReferences.map { $0.path }
+            $0.documents = documentReferences.map { $0.name }
             if let transactionID {
                 $0.transaction = transactionID
             }
