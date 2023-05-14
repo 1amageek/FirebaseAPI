@@ -77,6 +77,10 @@ public class Transaction {
         writeBatch.setData(data: data, forDocument: documentReference)
     }
 
+    public func set(documentReference: DocumentReference, data: [String: Any], merge: Bool) {
+        writeBatch.setData(data: data, forDocument: documentReference, merge: merge)
+    }
+
     public func update(documentReference: DocumentReference, data: [String: Any]) {
         writeBatch.updateData(fields: data, forDocument: documentReference)
     }
@@ -106,5 +110,28 @@ public class Transaction {
             throw TransactionError.missingTransactionID
         }
         _ = try await firestore.rollbackTransaction(transactionID: id)
+    }
+}
+
+extension Transaction {
+
+    public func create<T: Encodable>(documentReference: DocumentReference, data: T) throws {
+        let documentData = try FirestoreEncoder().encode(data)
+        self.create(documentReference: documentReference, data: documentData)
+    }
+
+    public func set<T: Encodable>(documentReference: DocumentReference, data: T) throws {
+        let documentData = try FirestoreEncoder().encode(data)
+        self.set(documentReference: documentReference, data: documentData)
+    }
+
+    public func set<T: Encodable>(documentReference: DocumentReference, data: T, merge: Bool) throws {
+        let documentData = try FirestoreEncoder().encode(data)
+        self.set(documentReference: documentReference, data: documentData, merge: merge)
+    }
+
+    public func update<T: Encodable>(documentReference: DocumentReference, data: T) throws {
+        let documentData = try FirestoreEncoder().encode(data)
+        self.update(documentReference: documentReference, data: documentData)
     }
 }

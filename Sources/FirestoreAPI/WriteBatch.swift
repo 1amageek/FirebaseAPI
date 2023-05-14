@@ -85,3 +85,61 @@ public class WriteBatch {
         return self
     }
 }
+
+extension WriteBatch {
+
+    @discardableResult
+    func create<T: Encodable>(data: T, forDocument document: DocumentReference) throws -> WriteBatch {
+        guard document.database == firestore.database else {
+            print("Invalid project ID")
+            return self
+        }
+        let documentData = try FirestoreEncoder().encode(data)
+        writes.append(.init(documentReference: document, data: documentData, merge: false, exist: false))
+        return self
+    }
+
+    @discardableResult
+    public func setData<T: Encodable>(data: T, forDocument document: DocumentReference) throws -> WriteBatch {
+        guard document.database == firestore.database else {
+            print("Invalid project ID")
+            return self
+        }
+        let documentData = try FirestoreEncoder().encode(data)
+        writes.append(.init(documentReference: document, data: documentData, merge: false))
+        return self
+    }
+
+    @discardableResult
+    public func setData<T: Encodable>(data: T, forDocument document: DocumentReference, merge: Bool) throws -> WriteBatch {
+        guard document.database == firestore.database else {
+            print("Invalid project ID")
+            return self
+        }
+        let documentData = try FirestoreEncoder().encode(data)
+        writes.append(.init(documentReference: document, data: documentData, merge: merge))
+        return self
+    }
+
+    @discardableResult
+    public func setData<T: Encodable>(data: T, forDocument document: DocumentReference, mergeFields: [String]) throws -> WriteBatch {
+        guard document.database == firestore.database else {
+            print("Invalid project ID")
+            return self
+        }
+        let documentData = try FirestoreEncoder().encode(data)
+        writes.append(.init(documentReference: document, data: documentData, merge: true, mergeFields: mergeFields))
+        return self
+    }
+
+    @discardableResult
+    public func updateData<T: Encodable>(fields: T, forDocument document: DocumentReference) throws -> WriteBatch {
+        guard document.database == firestore.database else {
+            print("Invalid project ID")
+            return self
+        }
+        let documentData = try FirestoreEncoder().encode(fields)
+        writes.append(.init(documentReference: document, data: documentData, merge: true, exist: true))
+        return self
+    }
+}
