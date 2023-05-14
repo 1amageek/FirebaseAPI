@@ -56,12 +56,7 @@ public class Transaction {
     }
 
     public func get(query: Query) async throws -> QuerySnapshot {
-        guard let accessToken = try await firestore.getAccessToken() else {
-            fatalError("AccessToken is empty")
-        }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        let querySnapshot = try await query.getDocuments(firestore: firestore, headers: headers)
-        return querySnapshot
+        return try await firestore.runQuery(query: query.makeQuery(), transactionID: transactionID)
     }
 
     public func getAll(documentReferences: DocumentReference...) async throws -> [DocumentSnapshot] {
@@ -71,11 +66,7 @@ public class Transaction {
         guard !documentReferences.isEmpty else {
             throw FirestoreError.minNumberOfArgumentsError
         }
-        guard let accessToken = try await firestore.getAccessToken() else {
-            fatalError("AccessToken is empty")
-        }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        return try await firestore.batchGetDocuments(documentReferences: documentReferences, transactionID: transactionID, headers: headers)
+        return try await firestore.batchGetDocuments(documentReferences: documentReferences, transactionID: transactionID)
     }
 
     public func create(documentReference: DocumentReference, data: [String: Any]) {
@@ -95,11 +86,7 @@ public class Transaction {
     }
 
     func begin(readOnly: Bool, readTime: Timestamp?) async throws {
-        guard let accessToken = try await firestore.getAccessToken() else {
-            fatalError("AcessToken is empty")
-        }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        let beginTransactionResponse = try await firestore.beginTransaction(readOnly: readOnly, readTime: readTime, headers: headers)
+        let beginTransactionResponse = try await firestore.beginTransaction(readOnly: readOnly, readTime: readTime)
         transactionID = beginTransactionResponse.transaction
     }
 
@@ -107,11 +94,7 @@ public class Transaction {
         guard let transactionID = transactionID else {
             throw TransactionError.missingTransactionID
         }
-        guard let accessToken = try await firestore.getAccessToken() else {
-            fatalError("AcessToken is empty")
-        }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        let commitResponse = try await firestore.commitTransaction(transactionID: transactionID, writeBatch: writeBatch, headers: headers)
+        let commitResponse = try await firestore.commitTransaction(transactionID: transactionID, writeBatch: writeBatch)
         if !commitResponse.hasCommitTime {
             throw TransactionError.commitFailed
         }
@@ -121,10 +104,6 @@ public class Transaction {
         guard let transactionID = transactionID else {
             throw TransactionError.missingTransactionID
         }
-        guard let accessToken = try await firestore.getAccessToken() else {
-            fatalError("AcessToken is empty")
-        }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        _ = try await firestore.rollbackTransaction(transactionID: transactionID, headers: headers)
+        _ = try await firestore.rollbackTransaction(transactionID: transactionID)
     }
 }

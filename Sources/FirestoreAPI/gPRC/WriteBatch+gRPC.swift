@@ -14,15 +14,22 @@ import NIOHPACK
 extension WriteBatch {
 
     public func commit() async throws {
+        _ = try await _commit()
+    }
+
+    func _commit(transactionID: Data? = nil) async throws -> Google_Firestore_V1_CommitResponse {
         guard let accessToken = try await firestore.getAccessToken() else {
             fatalError("AcessToken is empty")
         }
         let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
         let client = Google_Firestore_V1_FirestoreAsyncClient(channel: firestore.channel)
         let callOptions = CallOptions(customMetadata: headers)
-        let commitRequest = Google_Firestore_V1_CommitRequest.with {
+        let request = Google_Firestore_V1_CommitRequest.with {
             $0.database = firestore.database.database
-            $0.writes = writes.map { write in
+            if let transactionID {
+                $0.transaction = transactionID
+            }
+            $0.writes = self.writes.map { write in
                 Google_Firestore_V1_Write.with {
                     if let data = write.data {
                         let documentData = DocumentData(data: data)
@@ -48,6 +55,7 @@ extension WriteBatch {
                 }
             }
         }
-        _ = try await client.commit(commitRequest, callOptions: callOptions)
+        let response = try await client.commit(request, callOptions: callOptions)
+        return response
     }
 }

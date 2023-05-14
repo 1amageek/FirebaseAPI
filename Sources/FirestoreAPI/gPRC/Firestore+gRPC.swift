@@ -13,7 +13,11 @@ import NIOHPACK
 
 extension Firestore {
 
-    public func batchGetDocuments(documentReferences: [DocumentReference], transactionID: Data?, headers: HPACKHeaders) async throws -> [DocumentSnapshot] {
+    public func batchGetDocuments(documentReferences: [DocumentReference], transactionID: Data?) async throws -> [DocumentSnapshot] {
+        guard let accessToken = try await self.getAccessToken() else {
+            fatalError("AcessToken is empty")
+        }
+        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
         let client = Google_Firestore_V1_FirestoreAsyncClient(channel: self.channel)
         let callOptions = CallOptions(customMetadata: headers)
         let request = Google_Firestore_V1_BatchGetDocumentsRequest.with {
@@ -40,17 +44,22 @@ extension Firestore {
         return retrievedDocuments
     }
 
-    public func runQuery(query: Google_Firestore_V1_StructuredQuery, transactionID: Data?, headers: HPACKHeaders) async throws -> QuerySnapshot {
+    public func runQuery(query: Google_Firestore_V1_StructuredQuery, transactionID: Data?) async throws -> QuerySnapshot {
+        guard let accessToken = try await self.getAccessToken() else {
+            fatalError("AcessToken is empty")
+        }
+        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
         let client = Google_Firestore_V1_FirestoreAsyncClient(channel: self.channel)
+        let callOptions = CallOptions(customMetadata: headers)
         let request = Google_Firestore_V1_RunQueryRequest.with {
             $0.parent = self.database.database
             $0.structuredQuery = query
             if let transactionID {
-                $0.transaction = Data(base64Encoded: transactionID)!
+                $0.transaction = transactionID
             }
         }
         var documents: [QueryDocumentSnapshot] = []
-        let call = client.runQuery(request)
+        let call = client.runQuery(request, callOptions: callOptions)
         for try await response in call {
             let documentReference = DocumentReference(name: response.document.name)
             let snapshot = QueryDocumentSnapshot(document: response.document, documentReference: documentReference)
@@ -59,8 +68,11 @@ extension Firestore {
         return QuerySnapshot(documents: documents)
     }
 
-
-    public func beginTransaction(readOnly: Bool, readTime: Timestamp?, headers: HPACKHeaders) async throws -> Google_Firestore_V1_BeginTransactionResponse {
+    public func beginTransaction(readOnly: Bool, readTime: Timestamp?) async throws -> Google_Firestore_V1_BeginTransactionResponse {
+        guard let accessToken = try await self.getAccessToken() else {
+            fatalError("AcessToken is empty")
+        }
+        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
         let client = Google_Firestore_V1_FirestoreAsyncClient(channel: self.channel)
         let callOptions = CallOptions(customMetadata: headers)
         let request = Google_Firestore_V1_BeginTransactionRequest.with {
@@ -83,47 +95,15 @@ extension Firestore {
         return response
     }
 
-    public func commitTransaction(transactionID: Data, writeBatch: WriteBatch, headers: HPACKHeaders) async throws -> Google_Firestore_V1_CommitResponse {
-        let client = Google_Firestore_V1_FirestoreAsyncClient(channel: self.channel)
-        let callOptions = CallOptions(customMetadata: headers)
-        let request = Google_Firestore_V1_CommitRequest.with {
-            $0.database = self.database.database
-            $0.transaction = transactionID
-            $0.writes = writeBatch.writes.map { write in
-                Google_Firestore_V1_Write.with {
-                    if let data = write.data {
-                        let documentData = DocumentData(data: data)
-                        $0.update.name = write.documentReference.name
-                        $0.update.fields = documentData.getFields()
-                        if let exists = write.exist {
-                            $0.currentDocument = .with {
-                                $0.exists = exists
-                            }
-                        }
-                        if write.merge {
-                            $0.updateMask = Google_Firestore_V1_DocumentMask.with {
-                                $0.fieldPaths = write.mergeFields ?? documentData.keys
-                            }
-                        }
-                        let transforms = documentData.getFieldTransforms(documentPath: write.documentReference.name)
-                        if !transforms.isEmpty {
-                            $0.updateTransforms = transforms
-                        }
-                    } else {
-                        $0.delete = write.documentReference.name
-                        $0.updateMask = Google_Firestore_V1_DocumentMask.with {
-                            $0.fieldPaths = []
-                        }
-                    }
-                }
-            }
-        }
-
-        let response = try await client.commit(request, callOptions: callOptions)
-        return response
+    public func commitTransaction(transactionID: Data, writeBatch: WriteBatch) async throws -> Google_Firestore_V1_CommitResponse {
+        try await writeBatch._commit(transactionID: transactionID)
     }
 
-    public func rollbackTransaction(transactionID: Data, headers: HPACKHeaders) async throws -> SwiftProtobuf.Google_Protobuf_Empty {
+    public func rollbackTransaction(transactionID: Data) async throws -> SwiftProtobuf.Google_Protobuf_Empty {
+        guard let accessToken = try await self.getAccessToken() else {
+            fatalError("AcessToken is empty")
+        }
+        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
         let client = Google_Firestore_V1_FirestoreAsyncClient(channel: self.channel)
         let callOptions = CallOptions(customMetadata: headers)
         let request = Google_Firestore_V1_RollbackRequest.with {
