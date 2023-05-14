@@ -71,6 +71,8 @@ public class Firestore {
         if components.count.isMultiple(of: 2) {
             fatalError("Invalid collection ID. \(collectionID).")
         }
+        let parentPath = components.dropLast(1).joined(separator: "/")
+        let collectionID = String(components.last!)
         return CollectionReference(database, parentPath: nil, collectionID: collectionID)
     }
     
