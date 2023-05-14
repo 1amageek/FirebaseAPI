@@ -61,3 +61,14 @@ public struct Timestamp: Codable, Equatable, Sendable {
         return Timestamp(seconds: Int64(date.timeIntervalSince1970), nanos: 0)
     }
 }
+
+extension Timestamp {
+
+    public init(year: Int, month: Int, day: Int, hour: Int? = nil, minute: Int? = nil, second: Int? = nil, nanosecond: Int? = nil) {
+        let calendar = Calendar(identifier: .iso8601)
+        let dateComponents = DateComponents(calendar: calendar, timeZone: .autoupdatingCurrent, year: year, month: month, day: day, hour: hour, minute: month, second: second)
+        let date = calendar.date(from: dateComponents)!
+        let nanosecond = nanosecond ?? 0
+        self.init(seconds: Int64(date.timeIntervalSince1970), nanos: Int32(nanosecond))
+    }
+}
