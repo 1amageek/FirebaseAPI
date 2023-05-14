@@ -77,3 +77,27 @@ public enum QueryPredicate {
         }
     }
 }
+
+public func == (field: String, value: Any) -> QueryPredicate {
+    return .isEqualTo(field, value)
+}
+
+public func != (field: String, value: Any) -> QueryPredicate {
+    return .isNotEqualTo(field, value)
+}
+
+public func < (field: String, value: Any) -> QueryPredicate {
+    return .isLessThan(field, value)
+}
+
+public func <= (field: String, value: Any) -> QueryPredicate {
+    return .isLessThanOrEqualTo(field, value)
+}
+
+public func > (field: String, value: Any) -> QueryPredicate {
+    return .isGreaterThan(field, value)
+}
+
+public func >= (field: String, value: Any) -> QueryPredicate {
+    return .isGreaterThanOrEqualTo(field, value)
+}
