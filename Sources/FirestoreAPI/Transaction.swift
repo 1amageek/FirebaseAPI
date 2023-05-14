@@ -115,22 +115,22 @@ public class Transaction {
 
 extension Transaction {
 
-    public func create<T: Encodable>(documentReference: DocumentReference, data: T) throws {
+    public func create<T: Encodable>(documentReference: DocumentReference, from data: T) throws {
         let documentData = try FirestoreEncoder().encode(data)
         self.create(documentReference: documentReference, data: documentData)
     }
 
-    public func set<T: Encodable>(documentReference: DocumentReference, data: T) throws {
+    public func set<T: Encodable>(documentReference: DocumentReference, from data: T) throws {
         let documentData = try FirestoreEncoder().encode(data)
         self.set(documentReference: documentReference, data: documentData)
     }
 
-    public func set<T: Encodable>(documentReference: DocumentReference, data: T, merge: Bool) throws {
+    public func set<T: Encodable>(documentReference: DocumentReference, from data: T, merge: Bool) throws {
         let documentData = try FirestoreEncoder().encode(data)
         self.set(documentReference: documentReference, data: documentData, merge: merge)
     }
 
-    public func update<T: Encodable>(documentReference: DocumentReference, data: T) throws {
+    public func update<T: Encodable>(documentReference: DocumentReference, from data: T) throws {
         let documentData = try FirestoreEncoder().encode(data)
         self.update(documentReference: documentReference, data: documentData)
     }

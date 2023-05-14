@@ -89,57 +89,57 @@ public class WriteBatch {
 extension WriteBatch {
 
     @discardableResult
-    func create<T: Encodable>(data: T, forDocument document: DocumentReference) throws -> WriteBatch {
+    func create<T: Encodable>(from data: T, forDocument document: DocumentReference) throws -> WriteBatch {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self
         }
         let documentData = try FirestoreEncoder().encode(data)
-        writes.append(.init(documentReference: document, data: documentData, merge: false, exist: false))
+        self.create(data: documentData, forDocument: document)
         return self
     }
 
     @discardableResult
-    public func setData<T: Encodable>(data: T, forDocument document: DocumentReference) throws -> WriteBatch {
+    public func setData<T: Encodable>(from data: T, forDocument document: DocumentReference) throws -> WriteBatch {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self
         }
         let documentData = try FirestoreEncoder().encode(data)
-        writes.append(.init(documentReference: document, data: documentData, merge: false))
+        self.setData(data: documentData, forDocument: document)
         return self
     }
 
     @discardableResult
-    public func setData<T: Encodable>(data: T, forDocument document: DocumentReference, merge: Bool) throws -> WriteBatch {
+    public func setData<T: Encodable>(from data: T, forDocument document: DocumentReference, merge: Bool) throws -> WriteBatch {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self
         }
         let documentData = try FirestoreEncoder().encode(data)
-        writes.append(.init(documentReference: document, data: documentData, merge: merge))
+        self.setData(data: documentData, forDocument: document, merge: merge)
         return self
     }
 
     @discardableResult
-    public func setData<T: Encodable>(data: T, forDocument document: DocumentReference, mergeFields: [String]) throws -> WriteBatch {
+    public func setData<T: Encodable>(from data: T, forDocument document: DocumentReference, mergeFields: [String]) throws -> WriteBatch {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self
         }
         let documentData = try FirestoreEncoder().encode(data)
-        writes.append(.init(documentReference: document, data: documentData, merge: true, mergeFields: mergeFields))
+        self.setData(data: documentData, forDocument: document, mergeFields: mergeFields)
         return self
     }
 
     @discardableResult
-    public func updateData<T: Encodable>(fields: T, forDocument document: DocumentReference) throws -> WriteBatch {
+    public func updateData<T: Encodable>(from fields: T, forDocument document: DocumentReference) throws -> WriteBatch {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self
         }
         let documentData = try FirestoreEncoder().encode(fields)
-        writes.append(.init(documentReference: document, data: documentData, merge: true, exist: true))
+        self.updateData(fields: documentData, forDocument: document)
         return self
     }
 }
