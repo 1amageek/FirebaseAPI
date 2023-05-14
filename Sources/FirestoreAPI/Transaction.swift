@@ -88,6 +88,7 @@ public class Transaction {
     func begin(readOnly: Bool, readTime: Timestamp?) async throws {
         let beginTransactionResponse = try await firestore.beginTransaction(readOnly: readOnly, readTime: readTime)
         id = beginTransactionResponse.transaction
+        writeBatch = firestore.batch()
     }
 
     func commit() async throws {

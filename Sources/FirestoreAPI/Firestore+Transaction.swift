@@ -20,19 +20,17 @@ extension Firestore {
       - Throws: A `FirestoreError` if the transaction fails.
       */
     public func runTransaction<T>(
-        _ transactionFunction: @escaping ((Transaction) async throws -> T),
+        _ transactionFunction: @escaping ((Transaction) async throws -> T?),
         options: TransactionOptions = TransactionOptions()
-    ) async throws -> T {
-
+    ) async throws -> T? {
         let transaction = Transaction(firestore: self, options: options)
-
-        while true {
+        while transaction.backoff.shouldRetry {
             do {
                 // Begin the transaction.
                 try await transaction.begin(readOnly: options.readOnly, readTime: options.readTime)
 
                 // Call the transaction function.
-                let result: T = try await transactionFunction(transaction)
+                let result: T? = try await transactionFunction(transaction)
 
                 // Commit the transaction.
                 try await transaction.commit()
@@ -49,7 +47,9 @@ extension Firestore {
                     // If we've hit the maximum number of attempts, rethrow the error.
                     throw FirestoreError.transactionFailed(error: error)
                 }
+                return nil
             }
         }
+        return nil
     }
 }
