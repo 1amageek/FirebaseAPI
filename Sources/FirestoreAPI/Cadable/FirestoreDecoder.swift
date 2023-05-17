@@ -247,6 +247,9 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
                 return try T(from: decoder)
             }
         } else {
+            guard !decoder.userInfo.isEmpty else {
+                throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Type \(type)"))
+            }
             let reference = decoder.userInfo[
                 FirestoreDecoder.documentRefUserInfoKey!
             ] as! DocumentReference
