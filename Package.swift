@@ -14,7 +14,7 @@ let package = Package(
             targets: ["FirestoreAPI"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.21.0"),
+        .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.25.2"),
         .package(url: "https://github.com/grpc/grpc-swift.git", branch: "main"),
     ],
     targets: [

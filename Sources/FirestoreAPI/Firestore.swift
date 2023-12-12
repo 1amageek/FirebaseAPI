@@ -20,6 +20,8 @@ public class Firestore {
     /// A provider that provides access tokens for Firestore
     public var accessTokenProvider: (any AccessTokenProvider)?
     
+    let eventLoopGroup: EventLoopGroup
+    
     /**
      Initializes a `Firestore` instance with a given `FirebaseApp` instance.
      
@@ -29,12 +31,16 @@ public class Firestore {
      */
     public init(projectId: String, databaseId: String = "(default)", timeout: TimeAmount = TimeAmount.seconds(5)) {
         self.database = Database(projectId: projectId, databaseId: databaseId)
-        let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        self.eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
         let channel = ClientConnection
-            .usingTLSBackedByNIOSSL(on: group)
+            .usingTLSBackedByNIOSSL(on: eventLoopGroup)
             .withConnectionTimeout(minimum: timeout)
             .connect(host: "firestore.googleapis.com", port: 443)
         self.channel = channel
+    }
+    
+    deinit {
+        try? self.eventLoopGroup.syncShutdownGracefully()
     }
     
     /**
