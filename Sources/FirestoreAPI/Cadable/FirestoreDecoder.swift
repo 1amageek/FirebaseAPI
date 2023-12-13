@@ -1,6 +1,6 @@
 //
 //  FirestoreDecoder.swift
-//  
+//
 //
 //  Created by Norikazu Muramoto on 2023/04/18.
 //
@@ -8,32 +8,32 @@
 import Foundation
 
 public struct FirestoreDecoder {
-
+    
     static let documentRefUserInfoKey = CodingUserInfoKey(rawValue: "DocumentRefUserInfoKey")
-
+    
     var passthroughTypes: [Any.Type]
-
+    
     public init(passthroughTypes: [Any.Type] = [Timestamp.self, GeoPoint.self, DocumentReference.self]) {
         self.passthroughTypes = passthroughTypes
     }
-
+    
     public func decode<T: Decodable>(_ type: T.Type, from data: Any, in reference: DocumentReference? = nil) throws -> T {
         return try T.init(from: _FirestoreDecoder(type, from: data, passthroughTypes: passthroughTypes, manager: CodingKeyManager(), in: reference))
     }
 }
 
 class _FirestoreDecoder: Decoder {
-
+    
     var codingPath: [CodingKey] { manager.codingPath }
-
+    
     var userInfo: [CodingUserInfoKey : Any] = [:]
-
+    
     var passthroughTypes: [Any.Type]
-
+    
     var data: Any
-
+    
     let manager: CodingKeyManager
-
+    
     lazy var dateForamatter: DateFormatter = {
         let dateFormatter = DateFormatter()
         dateFormatter.timeZone = .autoupdatingCurrent
@@ -41,7 +41,7 @@ class _FirestoreDecoder: Decoder {
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
         return dateFormatter
     }()
-
+    
     init(_ type: Any.Type, from data: Any, passthroughTypes: [Any.Type] = [], manager: CodingKeyManager, in reference: DocumentReference? = nil) {
         self.data = data
         self.passthroughTypes = passthroughTypes
@@ -50,52 +50,52 @@ class _FirestoreDecoder: Decoder {
             self.userInfo[FirestoreDecoder.documentRefUserInfoKey!] = reference
         }
     }
-
+    
     func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> where Key : CodingKey {
         guard let data = data as? [String: Any] else {
             throw DecodingError.typeMismatch([String: Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected keyed container"))
         }
         return KeyedDecodingContainer(_KeyedDecodingContainer(decoder: self, data: data, manager: manager))
     }
-
+    
     func unkeyedContainer() throws -> UnkeyedDecodingContainer {
         guard let data = data as? [Any] else {
             throw DecodingError.typeMismatch([String: Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected unkeyed container"))
         }
         return _UnkeyedDecodingContainer(decoder: self, data: data, manager: manager)
     }
-
+    
     func singleValueContainer() throws -> SingleValueDecodingContainer {
         return _SingleValueDecodingContainer(decoder: self, data: data, manager: manager)
     }
 }
 
 struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
-
+    
     var codingPath: [CodingKey] { manager.codingPath }
-
+    
     var decoder: _FirestoreDecoder
-
+    
     var allKeys: [Key] { data.keys.compactMap { Key(stringValue: $0) } }
-
+    
     var data: [String: Any]
-
+    
     var manager: CodingKeyManager
-
+    
     init(decoder: _FirestoreDecoder, data: [String : Any], manager: CodingKeyManager) {
         self.decoder = decoder
         self.data = data
         self.manager = manager
     }
-
+    
     func contains(_ key: Key) -> Bool {
         return data[key.stringValue] != nil
     }
-
+    
     func decodeNil(forKey key: Key) throws -> Bool {
         return data[key.stringValue] is NSNull
     }
-
+    
     func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -104,7 +104,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         }
         return value
     }
-
+    
     func decode(_ type: String.Type, forKey key: Key) throws -> String {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -113,7 +113,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         }
         return value
     }
-
+    
     func decode(_ type: Double.Type, forKey key: Key) throws -> Double {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -124,7 +124,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         }
         throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Double"))
     }
-
+    
     func decode(_ type: Float.Type, forKey key: Key) throws -> Float {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -133,7 +133,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         }
         return value
     }
-
+    
     func decode(_ type: Int.Type, forKey key: Key) throws -> Int {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -144,7 +144,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         }
         throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Int"))
     }
-
+    
     func decode(_ type: Int8.Type, forKey key: Key) throws -> Int8 {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -153,7 +153,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         }
         return value
     }
-
+    
     func decode(_ type: Int16.Type, forKey key: Key) throws -> Int16 {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -162,7 +162,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         }
         return value
     }
-
+    
     func decode(_ type: Int32.Type, forKey key: Key) throws -> Int32 {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -171,7 +171,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         }
         return value
     }
-
+    
     func decode(_ type: Int64.Type, forKey key: Key) throws -> Int64 {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -180,7 +180,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         }
         return value
     }
-
+    
     func decode(_ type: UInt.Type, forKey key: Key) throws -> UInt {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -189,7 +189,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         }
         return value
     }
-
+    
     func decode(_ type: UInt8.Type, forKey key: Key) throws -> UInt8 {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -198,7 +198,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         }
         return value
     }
-
+    
     func decode(_ type: UInt16.Type, forKey key: Key) throws -> UInt16 {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -207,7 +207,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         }
         return value
     }
-
+    
     func decode(_ type: UInt32.Type, forKey key: Key) throws -> UInt32 {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -216,7 +216,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         }
         return value
     }
-
+    
     func decode(_ type: UInt64.Type, forKey key: Key) throws -> UInt64 {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -225,7 +225,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         }
         return value
     }
-
+    
     func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T : Decodable {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -250,13 +250,31 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
             guard !decoder.userInfo.isEmpty else {
                 throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data[key.stringValue] ?? "null"): Expected a Type \(type)"))
             }
+            
             let reference = decoder.userInfo[
                 FirestoreDecoder.documentRefUserInfoKey!
             ] as! DocumentReference
-            return DocumentID(wrappedValue: reference.documentID) as! T
+            
+            if type == DocumentID<String>.self ||
+                type == DocumentID<Float>.self ||
+                type == DocumentID<Double>.self ||
+                type == DocumentID<Int>.self ||
+                type == DocumentID<Int8>.self ||
+                type == DocumentID<Int16>.self ||
+                type == DocumentID<Int32>.self ||
+                type == DocumentID<Int64>.self ||
+                type == DocumentID<UInt>.self ||
+                type == DocumentID<UInt>.self ||
+                type == DocumentID<UInt8>.self ||
+                type == DocumentID<UInt16>.self ||
+                type == DocumentID<UInt32>.self ||
+                type == DocumentID<UInt64>.self {
+                return DocumentID(wrappedValue: reference.documentID) as! T
+            }
+            return ReferencePath(wrappedValue: reference.path) as! T
         }
     }
-
+    
     func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -266,7 +284,7 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         let nestedDecoder = _FirestoreDecoder(type, from: value, passthroughTypes: decoder.passthroughTypes, manager: manager)
         return try nestedDecoder.container(keyedBy: type)
     }
-
+    
     func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
         manager.codingPath.append(FirestoreKey(stringValue: key.stringValue)!)
         defer { manager.codingPath.removeLast() }
@@ -276,38 +294,38 @@ struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
         let nestedDecoder = _FirestoreDecoder([Any].self, from: value, passthroughTypes: decoder.passthroughTypes, manager: manager)
         return try nestedDecoder.unkeyedContainer()
     }
-
+    
     func superDecoder() throws -> Decoder {
         decoder
     }
-
+    
     func superDecoder(forKey key: Key) throws -> Decoder {
         decoder
     }
 }
 
 struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
-
+    
     var codingPath: [CodingKey] { manager.codingPath }
-
+    
     var decoder: _FirestoreDecoder
-
+    
     var count: Int? { data.count }
-
+    
     var isAtEnd: Bool { currentIndex >= data.count }
-
+    
     var currentIndex: Int = 0
-
+    
     var data: [Any]
-
+    
     var manager: CodingKeyManager
-
+    
     init(decoder: _FirestoreDecoder, data: [Any], manager: CodingKeyManager) {
         self.decoder = decoder
         self.data = data
         self.manager = manager
     }
-
+    
     mutating func decodeNil() throws -> Bool {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -317,7 +335,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         currentIndex += 1
         return true
     }
-
+    
     mutating func decode(_ type: Bool.Type) throws -> Bool {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -327,7 +345,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         currentIndex += 1
         return value
     }
-
+    
     mutating func decode(_ type: String.Type) throws -> String {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -337,7 +355,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         currentIndex += 1
         return value
     }
-
+    
     mutating func decode(_ type: Double.Type) throws -> Double {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -347,7 +365,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         currentIndex += 1
         return value
     }
-
+    
     mutating func decode(_ type: Float.Type) throws -> Float {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -357,7 +375,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         currentIndex += 1
         return value
     }
-
+    
     mutating func decode(_ type: Int.Type) throws -> Int {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -367,7 +385,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         currentIndex += 1
         return value
     }
-
+    
     mutating func decode(_ type: Int8.Type) throws -> Int8 {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -377,7 +395,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         currentIndex += 1
         return value
     }
-
+    
     mutating func decode(_ type: Int16.Type) throws -> Int16 {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -387,7 +405,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         currentIndex += 1
         return value
     }
-
+    
     mutating func decode(_ type: Int32.Type) throws -> Int32 {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -397,7 +415,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         currentIndex += 1
         return value
     }
-
+    
     mutating func decode(_ type: Int64.Type) throws -> Int64 {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -407,7 +425,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         currentIndex += 1
         return value
     }
-
+    
     mutating func decode(_ type: UInt.Type) throws -> UInt {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -417,7 +435,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         currentIndex += 1
         return value
     }
-
+    
     mutating func decode(_ type: UInt8.Type) throws -> UInt8 {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -427,7 +445,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         currentIndex += 1
         return value
     }
-
+    
     mutating func decode(_ type: UInt16.Type) throws -> UInt16 {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -437,7 +455,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         currentIndex += 1
         return value
     }
-
+    
     mutating func decode(_ type: UInt32.Type) throws -> UInt32 {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -447,7 +465,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         currentIndex += 1
         return value
     }
-
+    
     mutating func decode(_ type: UInt64.Type) throws -> UInt64 {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -457,7 +475,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         currentIndex += 1
         return value
     }
-
+    
     mutating func decode<T>(_ type: T.Type) throws -> T where T : Decodable {
         manager.codingPath.append(FirestoreKey(index: currentIndex))
         defer { manager.codingPath.removeLast() }
@@ -491,7 +509,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
             return decodedValue
         }
     }
-
+    
     mutating func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {
         guard !isAtEnd, let value = data[currentIndex] as? [String: Any] else {
             throw DecodingError.typeMismatch([String: Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected unkeyed container"))
@@ -502,7 +520,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         let nestedDecoder = _FirestoreDecoder(type, from: value, passthroughTypes: decoder.passthroughTypes, manager: manager)
         return KeyedDecodingContainer(try nestedDecoder.container(keyedBy: type))
     }
-
+    
     mutating func nestedUnkeyedContainer() throws -> UnkeyedDecodingContainer {
         guard !isAtEnd, let value = data[currentIndex] as? [Any] else {
             throw DecodingError.typeMismatch([Any].self, DecodingError.Context(codingPath: codingPath, debugDescription: "Expected unkeyed container"))
@@ -513,128 +531,128 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         let nestedDecoder = _FirestoreDecoder([Any].self, from: value, passthroughTypes: decoder.passthroughTypes, manager: manager)
         return try nestedDecoder.unkeyedContainer()
     }
-
+    
     mutating func superDecoder() throws -> Decoder {
         decoder
     }
 }
 
 struct _SingleValueDecodingContainer: SingleValueDecodingContainer {
-
+    
     var codingPath: [CodingKey] { manager.codingPath }
-
+    
     var decoder: _FirestoreDecoder
-
+    
     var data: Any
-
+    
     var manager: CodingKeyManager
-
+    
     init(decoder: _FirestoreDecoder, data: Any, manager: CodingKeyManager) {
         self.decoder = decoder
         self.data = data
         self.manager = manager
     }
-
+    
     func decodeNil() -> Bool { data is NSNull }
-
+    
     func decode(_ type: Bool.Type) throws -> Bool {
         guard let value = data as? Bool else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Bool"))
         }
         return value
     }
-
+    
     func decode(_ type: String.Type) throws -> String {
         guard let value = data as? String else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a String"))
         }
         return value
     }
-
+    
     func decode(_ type: Double.Type) throws -> Double {
         guard let value = data as? Double else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Double"))
         }
         return value
     }
-
+    
     func decode(_ type: Float.Type) throws -> Float {
         guard let value = data as? Float else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Float"))
         }
         return value
     }
-
+    
     func decode(_ type: Int.Type) throws -> Int {
         guard let value = data as? Int else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Int"))
         }
         return value
     }
-
+    
     func decode(_ type: Int8.Type) throws -> Int8 {
         guard let value = data as? Int8 else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Int8"))
         }
         return value
     }
-
+    
     func decode(_ type: Int16.Type) throws -> Int16 {
         guard let value = data as? Int16 else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Int16"))
         }
         return value
     }
-
+    
     func decode(_ type: Int32.Type) throws -> Int32 {
         guard let value = data as? Int32 else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Int32"))
         }
         return value
     }
-
+    
     func decode(_ type: Int64.Type) throws -> Int64 {
         guard let value = data as? Int64 else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a Int64"))
         }
         return value
     }
-
+    
     func decode(_ type: UInt.Type) throws -> UInt {
         guard let value = data as? UInt else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a UInt"))
         }
         return value
     }
-
+    
     func decode(_ type: UInt8.Type) throws -> UInt8 {
         guard let value = data as? UInt8 else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a UInt8"))
         }
         return value
     }
-
+    
     func decode(_ type: UInt16.Type) throws -> UInt16 {
         guard let value = data as? UInt16 else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a UInt16"))
         }
         return value
     }
-
+    
     func decode(_ type: UInt32.Type) throws -> UInt32 {
         guard let value = data as? UInt32 else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a UInt32"))
         }
         return value
     }
-
+    
     func decode(_ type: UInt64.Type) throws -> UInt64 {
         guard let value = data as? UInt64 else {
             throw DecodingError.typeMismatch(type, DecodingError.Context(codingPath: codingPath, debugDescription: "\(manager.message) = \(data): Expected a UInt64"))
         }
         return value
     }
-
+    
     func decode<T>(_ type: T.Type) throws -> T where T : Decodable {
         if decoder.passthroughTypes.contains(where: { $0 == type }) {
             let value = data

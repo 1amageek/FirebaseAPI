@@ -58,6 +58,24 @@ final class FirestoreDecoderTests: XCTestCase {
         XCTAssertEqual(data.id, "objectID")
         XCTAssertEqual(data.nested.id, "nestedID")
     }
+    
+    func testDecoderReferencePath() async throws {
+        struct Nested: Identifiable, Codable, Equatable {
+            @DocumentID var id: String
+            @ReferencePath var path: String
+        }
+        struct Object: Codable, Equatable {
+            @ReferencePath var path: String
+            var nested: Nested = Nested(id: "id", path: "path")
+        }
+        let database = Database(projectId: "project")
+        let ref = DocumentReference(database, parentPath: "objects", documentID: "objectID")
+        let data = try! FirestoreDecoder().decode(Object.self, from: ["nested": ["id": "nestedID", "path": "path"]] as [String: Any], in: ref)
+
+        XCTAssertEqual(data.path, "objects/objectID")
+        XCTAssertEqual(data.nested.id, "nestedID")
+        XCTAssertEqual(data.nested.path, "path")
+    }
 
     func testDecoderNull() async throws {
         struct Object: Codable, Equatable {
