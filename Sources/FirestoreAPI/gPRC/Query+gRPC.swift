@@ -1,6 +1,6 @@
 //
 //  Query+gRPC.swift
-//  
+//
 //
 //  Created by Norikazu Muramoto on 2023/04/10.
 //
@@ -106,7 +106,7 @@ extension Query {
         var documents: [QueryDocumentSnapshot] = []
         for try await response in call {
             if response.hasDocument {
-                let documentID = String(name.split(separator: "/").last!)
+                let documentID = String(response.document.name.split(separator: "/").last!)
                 let documentReference = DocumentReference(database, parentPath: path, documentID: documentID)
                 let documentSnapshot = QueryDocumentSnapshot(document: response.document, documentReference: documentReference)
                 documents.append(documentSnapshot)
