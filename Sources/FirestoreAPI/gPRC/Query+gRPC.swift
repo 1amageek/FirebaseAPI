@@ -107,7 +107,7 @@ extension Query {
         for try await response in call {
             if response.hasDocument {
                 let documentID = String(response.document.name.split(separator: "/").last!)
-                let documentReference = DocumentReference(database, parentPath: path, documentID: documentID)
+                let documentReference = DocumentReference(name: response.document.name)
                 let documentSnapshot = QueryDocumentSnapshot(document: response.document, documentReference: documentReference)
                 documents.append(documentSnapshot)
             }
