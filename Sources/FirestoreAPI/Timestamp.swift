@@ -72,3 +72,14 @@ extension Timestamp {
         self.init(seconds: Int64(date.timeIntervalSince1970), nanos: Int32(nanosecond))
     }
 }
+
+extension Date {
+    /**
+     Initializes a `Date` instance based on a `Timestamp` object.
+
+     - Parameter timestamp: The `Timestamp` instance to initialize the `Date` object from.
+     */
+    init(timestamp: Timestamp) {
+        self.init(timeIntervalSince1970: TimeInterval(timestamp.seconds) + TimeInterval(timestamp.nanos) / 1_000_000)
+    }
+}
