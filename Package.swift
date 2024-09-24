@@ -15,7 +15,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.25.2"),
-        .package(url: "https://github.com/grpc/grpc-swift.git", branch: "main"),
+        .package(url: "https://github.com/grpc/grpc-swift.git", branch: "1.23.1"),
     ],
     targets: [
         .target(
