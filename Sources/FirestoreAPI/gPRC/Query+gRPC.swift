@@ -12,89 +12,89 @@ import SwiftProtobuf
 import NIOHPACK
 
 extension Query {
-
+    
     func makeQuery() -> Google_Firestore_V1_StructuredQuery {
-
+        
         return Google_Firestore_V1_StructuredQuery.with { query in
-
+            
             query.from = [Google_Firestore_V1_StructuredQuery.CollectionSelector.with {
                 $0.collectionID = collectionID
                 $0.allDescendants = allDescendants
             }]
-
+            
             for predicate in self.predicates {
-
+                
                 switch predicate {
-                    case .or(_):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .and(_):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .isEqualTo(_, _):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .isNotEqualTo(_, _):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .isIn(_, _):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .isNotIn(_, _):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .arrayContains(_, _):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .arrayContainsAny(_, _):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .isLessThan(_, _):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .isGreaterThan(_, _):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .isLessThanOrEqualTo(_, _):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .isGreaterThanOrEqualTo(_, _):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .orderBy(let field, let ascending):
-                        query.orderBy.append(Google_Firestore_V1_StructuredQuery.Order.with {
-                            $0.field = Google_Firestore_V1_StructuredQuery.FieldReference.with {
-                                $0.fieldPath = field
-                            }
-                            $0.direction = ascending ? .ascending : .descending
-                        })
-                    case .limitTo(let count):
-                        query.limit = Google_Protobuf_Int32Value.with {
-                            $0.value = Int32(count)
+                case .or(_):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .and(_):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .isEqualTo(_, _):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .isNotEqualTo(_, _):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .isIn(_, _):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .isNotIn(_, _):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .arrayContains(_, _):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .arrayContainsAny(_, _):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .isLessThan(_, _):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .isGreaterThan(_, _):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .isLessThanOrEqualTo(_, _):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .isGreaterThanOrEqualTo(_, _):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .orderBy(let field, let ascending):
+                    query.orderBy.append(Google_Firestore_V1_StructuredQuery.Order.with {
+                        $0.field = Google_Firestore_V1_StructuredQuery.FieldReference.with {
+                            $0.fieldPath = field
                         }
-                    case .limitToLast(let count):
-                        query.limit = Google_Protobuf_Int32Value.with {
-                            $0.value = Int32(count)
+                        $0.direction = ascending ? .ascending : .descending
+                    })
+                case .limitTo(let count):
+                    query.limit = Google_Protobuf_Int32Value.with {
+                        $0.value = Int32(count)
+                    }
+                case .limitToLast(let count):
+                    query.limit = Google_Protobuf_Int32Value.with {
+                        $0.value = Int32(count)
+                    }
+                    query.orderBy.append(Google_Firestore_V1_StructuredQuery.Order.with {
+                        $0.field = Google_Firestore_V1_StructuredQuery.FieldReference.with {
+                            $0.fieldPath = "__name__"
                         }
-                        query.orderBy.append(Google_Firestore_V1_StructuredQuery.Order.with {
-                            $0.field = Google_Firestore_V1_StructuredQuery.FieldReference.with {
-                                $0.fieldPath = "__name__"
-                            }
-                            $0.direction = .descending
-                        })
-                    case .isEqualToDocumentID(_):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .isNotEqualToDocumentID(_):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .isInDocumentID(_):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .isNotInDocumentID(_):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .arrayContainsDocumentID(_):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .arrayContainsAnyDocumentID(_):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .isLessThanDocumentID(_):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .isGreaterThanDocumentID(_):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .isLessThanOrEqualToDocumentID(_):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                    case .isGreaterThanOrEqualToDocumentID(_):
-                        query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                        $0.direction = .descending
+                    })
+                case .isEqualToDocumentID(_):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .isNotEqualToDocumentID(_):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .isInDocumentID(_):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .isNotInDocumentID(_):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .arrayContainsDocumentID(_):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .arrayContainsAnyDocumentID(_):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .isLessThanDocumentID(_):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .isGreaterThanDocumentID(_):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .isLessThanOrEqualToDocumentID(_):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
+                case .isGreaterThanOrEqualToDocumentID(_):
+                    query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
                 }
             }
         }
     }
-
+    
     public func getDocuments(firestore: Firestore, headers: HPACKHeaders) async throws -> QuerySnapshot {
         let client = Google_Firestore_V1_FirestoreAsyncClient(channel: firestore.channel)
         let callOptions = CallOptions(customMetadata: headers)
@@ -117,7 +117,7 @@ extension Query {
 }
 
 extension Query {
-
+    
     public func getDocuments<T: Decodable>(type: T.Type, firestore: Firestore, headers: HPACKHeaders) async throws -> [T] {
         let snapshot = try await getDocuments(firestore: firestore, headers: headers)
         return try snapshot.documents.compactMap { queryDocumentSnapshot in

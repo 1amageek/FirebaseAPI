@@ -7,7 +7,7 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -142,8 +142,13 @@ public struct Google_Api_ResourceDescriptor {
 
   /// The plural name used in the resource name and permission names, such as
   /// 'projects' for the resource name of 'projects/{project}' and the permission
-  /// name of 'cloudresourcemanager.googleapis.com/projects.get'. It is the same
-  /// concept of the `plural` field in k8s CRD spec
+  /// name of 'cloudresourcemanager.googleapis.com/projects.get'. One exception
+  /// to this is for Nested Collections that have stuttering names, as defined
+  /// in [AIP-122](https://google.aip.dev/122#nested-collections), where the
+  /// collection ID in the resource name pattern does not necessarily directly
+  /// match the `plural` value.
+  ///
+  /// It is the same concept of the `plural` field in k8s CRD spec
   /// https://kubernetes.io/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/
   ///
   /// Note: The plural form is required even for singleton resources. See
@@ -251,7 +256,7 @@ public struct Google_Api_ResourceDescriptor {
 
 extension Google_Api_ResourceDescriptor.History: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static var allCases: [Google_Api_ResourceDescriptor.History] = [
+  public static let allCases: [Google_Api_ResourceDescriptor.History] = [
     .unspecified,
     .originallySinglePattern,
     .futureMultiPattern,
@@ -260,7 +265,7 @@ extension Google_Api_ResourceDescriptor.History: CaseIterable {
 
 extension Google_Api_ResourceDescriptor.Style: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static var allCases: [Google_Api_ResourceDescriptor.Style] = [
+  public static let allCases: [Google_Api_ResourceDescriptor.Style] = [
     .unspecified,
     .declarativeFriendly,
   ]

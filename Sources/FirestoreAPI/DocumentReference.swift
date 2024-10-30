@@ -6,40 +6,21 @@
 //
 
 import Foundation
+import NIOHPACK
 
-/**
- A struct that represents a reference to a Firestore document.
-
- The `DocumentReference` struct provides methods for updating, deleting, and retrieving data for a specific Firestore document. It requires a `Firestore` instance to be initialized, along with the ID of the document and its parent path.
- */
 public struct DocumentReference: Sendable {
-
-    /// The `Database` instance associated with the document reference.
+    
     var database: Database
-    
-    /// The parent path of the document reference.
     private var parentPath: String
-    
-    /// The ID of the document reference.
     public var documentID: String
-    
-    /// The path of the document reference.
     public var path: String { "\(parentPath)/\(documentID)".normalized }
     
-    /**
-     Initializes a new `DocumentReference` instance with the specified `Database` instance, parent path, and document ID.
-     
-     - Parameters:
-     - database: The `Database` instance associated with the document reference.
-     - parentPath: The parent path of the document reference.
-     - documentID: The ID of the document reference.
-     */
     init(_ database: Database, parentPath: String, documentID: String) {
         self.database = database
         self.parentPath = parentPath
         self.documentID = documentID
     }
-
+    
     init(name: String) {
         let components = name
             .split(separator: "/")
@@ -52,8 +33,7 @@ public struct DocumentReference: Sendable {
         let documentID = String(pathCompoennts.last!)
         self.init(database, parentPath: parentPath, documentID: documentID)
     }
-
-    /// The parent collection reference of the document reference.
+    
     public var parent: CollectionReference {
         let components = parentPath
             .split(separator: "/")
@@ -62,14 +42,7 @@ public struct DocumentReference: Sendable {
         let collectionID = String(components.last!)
         return CollectionReference(database, parentPath: parentPath, collectionID: collectionID)
     }
-
-    /**
-     Returns a `CollectionReference` instance representing the specified Firestore collection.
-
-     - Parameter collectionID: The ID of the collection to reference.
-     - Returns: A `CollectionReference` instance representing the specified Firestore collection.
-     - Throws: A `FatalError` if the collection ID is empty or invalid.
-     */
+    
     public func collection(_ collectionID: String) -> CollectionReference {
         if collectionID.isEmpty {
             fatalError("Collection ID cannot be empty.")
@@ -82,32 +55,86 @@ public struct DocumentReference: Sendable {
         }
         return CollectionReference(database, parentPath: path, collectionID: collectionID)
     }
+    
+    public func getDocument(firestore: Firestore) async throws -> DocumentSnapshot {
+        guard let accessToken = try await firestore.getAccessToken() else {
+            fatalError("AccessToken is empty")
+        }
+        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
+        return try await getDocument(firestore: firestore, headers: headers)
+    }
+    
+    public func setData(_ documentData: [String: Any], merge: Bool = false, firestore: Firestore) async throws {
+        guard let accessToken = try await firestore.getAccessToken() else {
+            fatalError("AccessToken is empty")
+        }
+        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
+        try await setData(documentData, merge: merge, firestore: firestore, headers: headers)
+    }
+    
+    public func updateData(_ fields: [String: Any], firestore: Firestore) async throws {
+        guard let accessToken = try await firestore.getAccessToken() else {
+            fatalError("AccessToken is empty")
+        }
+        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
+        try await updateData(fields, firestore: firestore, headers: headers)
+    }
+    
+    public func delete(firestore: Firestore) async throws {
+        guard let accessToken = try await firestore.getAccessToken() else {
+            fatalError("AccessToken is empty")
+        }
+        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
+        try await delete(firestore: firestore, headers: headers)
+    }
+    
+    public func getDocument<T: Decodable>(type: T.Type, firestore: Firestore) async throws -> T? {
+        guard let accessToken = try await firestore.getAccessToken() else {
+            fatalError("AccessToken is empty")
+        }
+        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
+        return try await getDocument(type: type, firestore: firestore, headers: headers)
+    }
+    
+    public func setData<T: Encodable>(_ data: T, merge: Bool = false, firestore: Firestore) async throws {
+        guard let accessToken = try await firestore.getAccessToken() else {
+            fatalError("AccessToken is empty")
+        }
+        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
+        try await setData(data, merge: merge, firestore: firestore, headers: headers)
+    }
+    
+    public func updateData<T: Encodable>(_ fields: T, firestore: Firestore) async throws {
+        guard let accessToken = try await firestore.getAccessToken() else {
+            fatalError("AccessToken is empty")
+        }
+        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
+        try await updateData(fields, firestore: firestore, headers: headers)
+    }
 }
 
 extension DocumentReference: Hashable {
-
     public static func == (lhs: DocumentReference, rhs: DocumentReference) -> Bool {
         lhs.name == rhs.name
     }
-
+    
     public func hash(into hasher: inout Hasher) {
         hasher.combine(name)
     }
 }
 
 extension DocumentReference: Codable {
-
     enum CodingKeys: CodingKey {
         case database
         case path
     }
-
+    
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(database.database, forKey: .database)
         try container.encode(path, forKey: .path)
     }
-
+    
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let database = try container.decode(Database.self, forKey: .database)

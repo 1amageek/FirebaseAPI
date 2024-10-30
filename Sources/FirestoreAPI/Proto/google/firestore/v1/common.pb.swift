@@ -7,7 +7,7 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -175,6 +175,9 @@ public struct Google_Firestore_V1_TransactionOptions {
   }
 
   /// Options for a transaction that can be used to read and write documents.
+  ///
+  /// Firestore does not allow 3rd party auth requests to create read-write.
+  /// transactions.
   public struct ReadWrite {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -199,7 +202,10 @@ public struct Google_Firestore_V1_TransactionOptions {
     public var consistencySelector: Google_Firestore_V1_TransactionOptions.ReadOnly.OneOf_ConsistencySelector? = nil
 
     /// Reads documents at the given time.
-    /// This may not be older than 60 seconds.
+    ///
+    /// This must be a microsecond precision timestamp within the past one
+    /// hour, or if Point-in-Time Recovery is enabled, can additionally be a
+    /// whole minute timestamp within the past 7 days.
     public var readTime: SwiftProtobuf.Google_Protobuf_Timestamp {
       get {
         if case .readTime(let v)? = consistencySelector {return v}
@@ -214,7 +220,10 @@ public struct Google_Firestore_V1_TransactionOptions {
     /// consistency.
     public enum OneOf_ConsistencySelector: Equatable {
       /// Reads documents at the given time.
-      /// This may not be older than 60 seconds.
+      ///
+      /// This must be a microsecond precision timestamp within the past one
+      /// hour, or if Point-in-Time Recovery is enabled, can additionally be a
+      /// whole minute timestamp within the past 7 days.
       case readTime(SwiftProtobuf.Google_Protobuf_Timestamp)
 
     #if !swift(>=4.1)

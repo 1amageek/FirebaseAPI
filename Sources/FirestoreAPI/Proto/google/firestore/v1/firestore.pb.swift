@@ -7,7 +7,7 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -72,7 +72,10 @@ public struct Google_Firestore_V1_GetDocumentRequest {
   }
 
   /// Reads the version of the document at the given time.
-  /// This may not be older than 270 seconds.
+  ///
+  /// This must be a microsecond precision timestamp within the past one hour,
+  /// or if Point-in-Time Recovery is enabled, can additionally be a whole
+  /// minute timestamp within the past 7 days.
   public var readTime: SwiftProtobuf.Google_Protobuf_Timestamp {
     get {
       if case .readTime(let v)? = consistencySelector {return v}
@@ -89,7 +92,10 @@ public struct Google_Firestore_V1_GetDocumentRequest {
     /// Reads the document in a transaction.
     case transaction(Data)
     /// Reads the version of the document at the given time.
-    /// This may not be older than 270 seconds.
+    ///
+    /// This must be a microsecond precision timestamp within the past one hour,
+    /// or if Point-in-Time Recovery is enabled, can additionally be a whole
+    /// minute timestamp within the past 7 days.
     case readTime(SwiftProtobuf.Google_Protobuf_Timestamp)
 
   #if !swift(>=4.1)
@@ -190,7 +196,9 @@ public struct Google_Firestore_V1_ListDocumentsRequest {
 
   /// Perform the read at the provided time.
   ///
-  /// This may not be older than 270 seconds.
+  /// This must be a microsecond precision timestamp within the past one hour,
+  /// or if Point-in-Time Recovery is enabled, can additionally be a whole
+  /// minute timestamp within the past 7 days.
   public var readTime: SwiftProtobuf.Google_Protobuf_Timestamp {
     get {
       if case .readTime(let v)? = consistencySelector {return v}
@@ -219,7 +227,9 @@ public struct Google_Firestore_V1_ListDocumentsRequest {
     case transaction(Data)
     /// Perform the read at the provided time.
     ///
-    /// This may not be older than 270 seconds.
+    /// This must be a microsecond precision timestamp within the past one hour,
+    /// or if Point-in-Time Recovery is enabled, can additionally be a whole
+    /// minute timestamp within the past 7 days.
     case readTime(SwiftProtobuf.Google_Protobuf_Timestamp)
 
   #if !swift(>=4.1)
@@ -472,7 +482,10 @@ public struct Google_Firestore_V1_BatchGetDocumentsRequest {
   }
 
   /// Reads documents as they were at the given time.
-  /// This may not be older than 270 seconds.
+  ///
+  /// This must be a microsecond precision timestamp within the past one hour,
+  /// or if Point-in-Time Recovery is enabled, can additionally be a whole
+  /// minute timestamp within the past 7 days.
   public var readTime: SwiftProtobuf.Google_Protobuf_Timestamp {
     get {
       if case .readTime(let v)? = consistencySelector {return v}
@@ -494,7 +507,10 @@ public struct Google_Firestore_V1_BatchGetDocumentsRequest {
     /// stream.
     case newTransaction(Google_Firestore_V1_TransactionOptions)
     /// Reads documents as they were at the given time.
-    /// This may not be older than 270 seconds.
+    ///
+    /// This must be a microsecond precision timestamp within the past one hour,
+    /// or if Point-in-Time Recovery is enabled, can additionally be a whole
+    /// minute timestamp within the past 7 days.
     case readTime(SwiftProtobuf.Google_Protobuf_Timestamp)
 
   #if !swift(>=4.1)
@@ -780,7 +796,10 @@ public struct Google_Firestore_V1_RunQueryRequest {
   }
 
   /// Reads documents as they were at the given time.
-  /// This may not be older than 270 seconds.
+  ///
+  /// This must be a microsecond precision timestamp within the past one hour,
+  /// or if Point-in-Time Recovery is enabled, can additionally be a whole
+  /// minute timestamp within the past 7 days.
   public var readTime: SwiftProtobuf.Google_Protobuf_Timestamp {
     get {
       if case .readTime(let v)? = consistencySelector {return v}
@@ -788,6 +807,17 @@ public struct Google_Firestore_V1_RunQueryRequest {
     }
     set {consistencySelector = .readTime(newValue)}
   }
+
+  /// Optional. Explain options for the query. If set, additional query
+  /// statistics will be returned. If not, only query results will be returned.
+  public var explainOptions: Google_Firestore_V1_ExplainOptions {
+    get {return _explainOptions ?? Google_Firestore_V1_ExplainOptions()}
+    set {_explainOptions = newValue}
+  }
+  /// Returns true if `explainOptions` has been explicitly set.
+  public var hasExplainOptions: Bool {return self._explainOptions != nil}
+  /// Clears the value of `explainOptions`. Subsequent reads from it will return its default value.
+  public mutating func clearExplainOptions() {self._explainOptions = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -824,7 +854,10 @@ public struct Google_Firestore_V1_RunQueryRequest {
     /// stream.
     case newTransaction(Google_Firestore_V1_TransactionOptions)
     /// Reads documents as they were at the given time.
-    /// This may not be older than 270 seconds.
+    ///
+    /// This must be a microsecond precision timestamp within the past one hour,
+    /// or if Point-in-Time Recovery is enabled, can additionally be a whole
+    /// minute timestamp within the past 7 days.
     case readTime(SwiftProtobuf.Google_Protobuf_Timestamp)
 
   #if !swift(>=4.1)
@@ -852,6 +885,8 @@ public struct Google_Firestore_V1_RunQueryRequest {
   }
 
   public init() {}
+
+  fileprivate var _explainOptions: Google_Firestore_V1_ExplainOptions? = nil
 }
 
 /// The response for
@@ -866,17 +901,20 @@ public struct Google_Firestore_V1_RunQueryResponse {
   /// [RunQueryRequest.new_transaction][google.firestore.v1.RunQueryRequest.new_transaction]
   /// was set in the request. If set, no other fields will be set in this
   /// response.
-  public var transaction: Data = Data()
+  public var transaction: Data {
+    get {return _storage._transaction}
+    set {_uniqueStorage()._transaction = newValue}
+  }
 
   /// A query result, not set when reporting partial progress.
   public var document: Google_Firestore_V1_Document {
-    get {return _document ?? Google_Firestore_V1_Document()}
-    set {_document = newValue}
+    get {return _storage._document ?? Google_Firestore_V1_Document()}
+    set {_uniqueStorage()._document = newValue}
   }
   /// Returns true if `document` has been explicitly set.
-  public var hasDocument: Bool {return self._document != nil}
+  public var hasDocument: Bool {return _storage._document != nil}
   /// Clears the value of `document`. Subsequent reads from it will return its default value.
-  public mutating func clearDocument() {self._document = nil}
+  public mutating func clearDocument() {_uniqueStorage()._document = nil}
 
   /// The time at which the document was read. This may be monotonically
   /// increasing; in this case, the previous documents in the result stream are
@@ -886,32 +924,50 @@ public struct Google_Firestore_V1_RunQueryResponse {
   /// `document` will be sent, and this represents the time at which the query
   /// was run.
   public var readTime: SwiftProtobuf.Google_Protobuf_Timestamp {
-    get {return _readTime ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
-    set {_readTime = newValue}
+    get {return _storage._readTime ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
+    set {_uniqueStorage()._readTime = newValue}
   }
   /// Returns true if `readTime` has been explicitly set.
-  public var hasReadTime: Bool {return self._readTime != nil}
+  public var hasReadTime: Bool {return _storage._readTime != nil}
   /// Clears the value of `readTime`. Subsequent reads from it will return its default value.
-  public mutating func clearReadTime() {self._readTime = nil}
+  public mutating func clearReadTime() {_uniqueStorage()._readTime = nil}
 
   /// The number of results that have been skipped due to an offset between
   /// the last response and the current response.
-  public var skippedResults: Int32 = 0
+  public var skippedResults: Int32 {
+    get {return _storage._skippedResults}
+    set {_uniqueStorage()._skippedResults = newValue}
+  }
 
   /// The continuation mode for the query. If present, it indicates the current
   /// query response stream has finished. This can be set with or without a
   /// `document` present, but when set, no more results are returned.
-  public var continuationSelector: Google_Firestore_V1_RunQueryResponse.OneOf_ContinuationSelector? = nil
+  public var continuationSelector: OneOf_ContinuationSelector? {
+    get {return _storage._continuationSelector}
+    set {_uniqueStorage()._continuationSelector = newValue}
+  }
 
   /// If present, Firestore has completely finished the request and no more
   /// documents will be returned.
   public var done: Bool {
     get {
-      if case .done(let v)? = continuationSelector {return v}
+      if case .done(let v)? = _storage._continuationSelector {return v}
       return false
     }
-    set {continuationSelector = .done(newValue)}
+    set {_uniqueStorage()._continuationSelector = .done(newValue)}
   }
+
+  /// Query explain metrics. This is only present when the
+  /// [RunQueryRequest.explain_options][google.firestore.v1.RunQueryRequest.explain_options]
+  /// is provided, and it is sent only once with the last response in the stream.
+  public var explainMetrics: Google_Firestore_V1_ExplainMetrics {
+    get {return _storage._explainMetrics ?? Google_Firestore_V1_ExplainMetrics()}
+    set {_uniqueStorage()._explainMetrics = newValue}
+  }
+  /// Returns true if `explainMetrics` has been explicitly set.
+  public var hasExplainMetrics: Bool {return _storage._explainMetrics != nil}
+  /// Clears the value of `explainMetrics`. Subsequent reads from it will return its default value.
+  public mutating func clearExplainMetrics() {_uniqueStorage()._explainMetrics = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -940,8 +996,7 @@ public struct Google_Firestore_V1_RunQueryResponse {
 
   public init() {}
 
-  fileprivate var _document: Google_Firestore_V1_Document? = nil
-  fileprivate var _readTime: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 /// The request for
@@ -957,41 +1012,32 @@ public struct Google_Firestore_V1_RunAggregationQueryRequest {
   /// For example:
   /// `projects/my-project/databases/my-database/documents` or
   /// `projects/my-project/databases/my-database/documents/chatrooms/my-chatroom`
-  public var parent: String {
-    get {return _storage._parent}
-    set {_uniqueStorage()._parent = newValue}
-  }
+  public var parent: String = String()
 
   /// The query to run.
-  public var queryType: OneOf_QueryType? {
-    get {return _storage._queryType}
-    set {_uniqueStorage()._queryType = newValue}
-  }
+  public var queryType: Google_Firestore_V1_RunAggregationQueryRequest.OneOf_QueryType? = nil
 
   /// An aggregation query.
   public var structuredAggregationQuery: Google_Firestore_V1_StructuredAggregationQuery {
     get {
-      if case .structuredAggregationQuery(let v)? = _storage._queryType {return v}
+      if case .structuredAggregationQuery(let v)? = queryType {return v}
       return Google_Firestore_V1_StructuredAggregationQuery()
     }
-    set {_uniqueStorage()._queryType = .structuredAggregationQuery(newValue)}
+    set {queryType = .structuredAggregationQuery(newValue)}
   }
 
   /// The consistency mode for the query, defaults to strong consistency.
-  public var consistencySelector: OneOf_ConsistencySelector? {
-    get {return _storage._consistencySelector}
-    set {_uniqueStorage()._consistencySelector = newValue}
-  }
+  public var consistencySelector: Google_Firestore_V1_RunAggregationQueryRequest.OneOf_ConsistencySelector? = nil
 
   /// Run the aggregation within an already active transaction.
   ///
   /// The value here is the opaque transaction ID to execute the query in.
   public var transaction: Data {
     get {
-      if case .transaction(let v)? = _storage._consistencySelector {return v}
+      if case .transaction(let v)? = consistencySelector {return v}
       return Data()
     }
-    set {_uniqueStorage()._consistencySelector = .transaction(newValue)}
+    set {consistencySelector = .transaction(newValue)}
   }
 
   /// Starts a new transaction as part of the query, defaulting to read-only.
@@ -1000,24 +1046,35 @@ public struct Google_Firestore_V1_RunAggregationQueryRequest {
   /// stream.
   public var newTransaction: Google_Firestore_V1_TransactionOptions {
     get {
-      if case .newTransaction(let v)? = _storage._consistencySelector {return v}
+      if case .newTransaction(let v)? = consistencySelector {return v}
       return Google_Firestore_V1_TransactionOptions()
     }
-    set {_uniqueStorage()._consistencySelector = .newTransaction(newValue)}
+    set {consistencySelector = .newTransaction(newValue)}
   }
 
   /// Executes the query at the given timestamp.
   ///
-  /// Requires:
-  ///
-  /// * Cannot be more than 270 seconds in the past.
+  /// This must be a microsecond precision timestamp within the past one hour,
+  /// or if Point-in-Time Recovery is enabled, can additionally be a whole
+  /// minute timestamp within the past 7 days.
   public var readTime: SwiftProtobuf.Google_Protobuf_Timestamp {
     get {
-      if case .readTime(let v)? = _storage._consistencySelector {return v}
+      if case .readTime(let v)? = consistencySelector {return v}
       return SwiftProtobuf.Google_Protobuf_Timestamp()
     }
-    set {_uniqueStorage()._consistencySelector = .readTime(newValue)}
+    set {consistencySelector = .readTime(newValue)}
   }
+
+  /// Optional. Explain options for the query. If set, additional query
+  /// statistics will be returned. If not, only query results will be returned.
+  public var explainOptions: Google_Firestore_V1_ExplainOptions {
+    get {return _explainOptions ?? Google_Firestore_V1_ExplainOptions()}
+    set {_explainOptions = newValue}
+  }
+  /// Returns true if `explainOptions` has been explicitly set.
+  public var hasExplainOptions: Bool {return self._explainOptions != nil}
+  /// Clears the value of `explainOptions`. Subsequent reads from it will return its default value.
+  public mutating func clearExplainOptions() {self._explainOptions = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1054,9 +1111,9 @@ public struct Google_Firestore_V1_RunAggregationQueryRequest {
     case newTransaction(Google_Firestore_V1_TransactionOptions)
     /// Executes the query at the given timestamp.
     ///
-    /// Requires:
-    ///
-    /// * Cannot be more than 270 seconds in the past.
+    /// This must be a microsecond precision timestamp within the past one hour,
+    /// or if Point-in-Time Recovery is enabled, can additionally be a whole
+    /// minute timestamp within the past 7 days.
     case readTime(SwiftProtobuf.Google_Protobuf_Timestamp)
 
   #if !swift(>=4.1)
@@ -1085,7 +1142,7 @@ public struct Google_Firestore_V1_RunAggregationQueryRequest {
 
   public init() {}
 
-  fileprivate var _storage = _StorageClass.defaultInstance
+  fileprivate var _explainOptions: Google_Firestore_V1_ExplainOptions? = nil
 }
 
 /// The response for
@@ -1130,12 +1187,25 @@ public struct Google_Firestore_V1_RunAggregationQueryResponse {
   /// Clears the value of `readTime`. Subsequent reads from it will return its default value.
   public mutating func clearReadTime() {self._readTime = nil}
 
+  /// Query explain metrics. This is only present when the
+  /// [RunAggregationQueryRequest.explain_options][google.firestore.v1.RunAggregationQueryRequest.explain_options]
+  /// is provided, and it is sent only once with the last response in the stream.
+  public var explainMetrics: Google_Firestore_V1_ExplainMetrics {
+    get {return _explainMetrics ?? Google_Firestore_V1_ExplainMetrics()}
+    set {_explainMetrics = newValue}
+  }
+  /// Returns true if `explainMetrics` has been explicitly set.
+  public var hasExplainMetrics: Bool {return self._explainMetrics != nil}
+  /// Clears the value of `explainMetrics`. Subsequent reads from it will return its default value.
+  public mutating func clearExplainMetrics() {self._explainMetrics = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _result: Google_Firestore_V1_AggregationResult? = nil
   fileprivate var _readTime: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
+  fileprivate var _explainMetrics: Google_Firestore_V1_ExplainMetrics? = nil
 }
 
 /// The request for
@@ -1149,16 +1219,10 @@ public struct Google_Firestore_V1_PartitionQueryRequest {
   /// `projects/{project_id}/databases/{database_id}/documents`.
   /// Document resource names are not supported; only database resource names
   /// can be specified.
-  public var parent: String {
-    get {return _storage._parent}
-    set {_uniqueStorage()._parent = newValue}
-  }
+  public var parent: String = String()
 
   /// The query to partition.
-  public var queryType: OneOf_QueryType? {
-    get {return _storage._queryType}
-    set {_uniqueStorage()._queryType = newValue}
-  }
+  public var queryType: Google_Firestore_V1_PartitionQueryRequest.OneOf_QueryType? = nil
 
   /// A structured query.
   /// Query must specify collection with all descendants and be ordered by name
@@ -1166,10 +1230,10 @@ public struct Google_Firestore_V1_PartitionQueryRequest {
   /// cursors are not supported.
   public var structuredQuery: Google_Firestore_V1_StructuredQuery {
     get {
-      if case .structuredQuery(let v)? = _storage._queryType {return v}
+      if case .structuredQuery(let v)? = queryType {return v}
       return Google_Firestore_V1_StructuredQuery()
     }
-    set {_uniqueStorage()._queryType = .structuredQuery(newValue)}
+    set {queryType = .structuredQuery(newValue)}
   }
 
   /// The desired maximum number of partition points.
@@ -1180,10 +1244,7 @@ public struct Google_Firestore_V1_PartitionQueryRequest {
   /// For example, this may be set to one fewer than the number of parallel
   /// queries to be run, or in running a data pipeline job, one fewer than the
   /// number of workers or compute instances available.
-  public var partitionCount: Int64 {
-    get {return _storage._partitionCount}
-    set {_uniqueStorage()._partitionCount = newValue}
-  }
+  public var partitionCount: Int64 = 0
 
   /// The `next_page_token` value returned from a previous call to
   /// PartitionQuery that may be used to get an additional set of results.
@@ -1198,10 +1259,7 @@ public struct Google_Firestore_V1_PartitionQueryRequest {
   /// To obtain a complete result set ordered with respect to the results of the
   /// query supplied to PartitionQuery, the results sets should be merged:
   /// cursor A, cursor B, cursor M, cursor Q, cursor U, cursor W
-  public var pageToken: String {
-    get {return _storage._pageToken}
-    set {_uniqueStorage()._pageToken = newValue}
-  }
+  public var pageToken: String = String()
 
   /// The maximum number of partitions to return in this call, subject to
   /// `partition_count`.
@@ -1210,26 +1268,23 @@ public struct Google_Firestore_V1_PartitionQueryRequest {
   /// to PartitionQuery will return up to 8 partitions and a `next_page_token`
   /// if more results exist. A second call to PartitionQuery will return up to
   /// 2 partitions, to complete the total of 10 specified in `partition_count`.
-  public var pageSize: Int32 {
-    get {return _storage._pageSize}
-    set {_uniqueStorage()._pageSize = newValue}
-  }
+  public var pageSize: Int32 = 0
 
   /// The consistency mode for this request.
   /// If not set, defaults to strong consistency.
-  public var consistencySelector: OneOf_ConsistencySelector? {
-    get {return _storage._consistencySelector}
-    set {_uniqueStorage()._consistencySelector = newValue}
-  }
+  public var consistencySelector: Google_Firestore_V1_PartitionQueryRequest.OneOf_ConsistencySelector? = nil
 
   /// Reads documents as they were at the given time.
-  /// This may not be older than 270 seconds.
+  ///
+  /// This must be a microsecond precision timestamp within the past one hour,
+  /// or if Point-in-Time Recovery is enabled, can additionally be a whole
+  /// minute timestamp within the past 7 days.
   public var readTime: SwiftProtobuf.Google_Protobuf_Timestamp {
     get {
-      if case .readTime(let v)? = _storage._consistencySelector {return v}
+      if case .readTime(let v)? = consistencySelector {return v}
       return SwiftProtobuf.Google_Protobuf_Timestamp()
     }
-    set {_uniqueStorage()._consistencySelector = .readTime(newValue)}
+    set {consistencySelector = .readTime(newValue)}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -1261,7 +1316,10 @@ public struct Google_Firestore_V1_PartitionQueryRequest {
   /// If not set, defaults to strong consistency.
   public enum OneOf_ConsistencySelector: Equatable {
     /// Reads documents as they were at the given time.
-    /// This may not be older than 270 seconds.
+    ///
+    /// This must be a microsecond precision timestamp within the past one hour,
+    /// or if Point-in-Time Recovery is enabled, can additionally be a whole
+    /// minute timestamp within the past 7 days.
     case readTime(SwiftProtobuf.Google_Protobuf_Timestamp)
 
   #if !swift(>=4.1)
@@ -1280,8 +1338,6 @@ public struct Google_Firestore_V1_PartitionQueryRequest {
   }
 
   public init() {}
-
-  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 /// The response for
@@ -1307,7 +1363,7 @@ public struct Google_Firestore_V1_PartitionQueryResponse {
   ///  * query, start_at B
   ///
   /// An empty result may indicate that the query has too few results to be
-  /// partitioned.
+  /// partitioned, or that the query is not yet supported for partitioning.
   public var partitions: [Google_Firestore_V1_Cursor] = []
 
   /// A page token that may be used to request an additional set of results, up
@@ -1604,37 +1660,32 @@ public struct Google_Firestore_V1_Target {
   // methods supported on all messages.
 
   /// The type of target to listen to.
-  public var targetType: OneOf_TargetType? {
-    get {return _storage._targetType}
-    set {_uniqueStorage()._targetType = newValue}
-  }
+  public var targetType: Google_Firestore_V1_Target.OneOf_TargetType? = nil
 
   /// A target specified by a query.
   public var query: Google_Firestore_V1_Target.QueryTarget {
     get {
-      if case .query(let v)? = _storage._targetType {return v}
+      if case .query(let v)? = targetType {return v}
       return Google_Firestore_V1_Target.QueryTarget()
     }
-    set {_uniqueStorage()._targetType = .query(newValue)}
+    set {targetType = .query(newValue)}
   }
 
   /// A target specified by a set of document names.
   public var documents: Google_Firestore_V1_Target.DocumentsTarget {
     get {
-      if case .documents(let v)? = _storage._targetType {return v}
+      if case .documents(let v)? = targetType {return v}
       return Google_Firestore_V1_Target.DocumentsTarget()
     }
-    set {_uniqueStorage()._targetType = .documents(newValue)}
+    set {targetType = .documents(newValue)}
   }
 
   /// When to start listening.
   ///
-  /// If not specified, all matching Documents are returned before any
-  /// subsequent changes.
-  public var resumeType: OneOf_ResumeType? {
-    get {return _storage._resumeType}
-    set {_uniqueStorage()._resumeType = newValue}
-  }
+  /// If specified, only the matching Documents that have been updated AFTER the
+  /// `resume_token` or `read_time` will be returned. Otherwise, all matching
+  /// Documents are returned before any subsequent changes.
+  public var resumeType: Google_Firestore_V1_Target.OneOf_ResumeType? = nil
 
   /// A resume token from a prior
   /// [TargetChange][google.firestore.v1.TargetChange] for an identical target.
@@ -1642,10 +1693,10 @@ public struct Google_Firestore_V1_Target {
   /// Using a resume token with a different target is unsupported and may fail.
   public var resumeToken: Data {
     get {
-      if case .resumeToken(let v)? = _storage._resumeType {return v}
+      if case .resumeToken(let v)? = resumeType {return v}
       return Data()
     }
-    set {_uniqueStorage()._resumeType = .resumeToken(newValue)}
+    set {resumeType = .resumeToken(newValue)}
   }
 
   /// Start listening after a specific `read_time`.
@@ -1653,24 +1704,48 @@ public struct Google_Firestore_V1_Target {
   /// The client must know the state of matching documents at this time.
   public var readTime: SwiftProtobuf.Google_Protobuf_Timestamp {
     get {
-      if case .readTime(let v)? = _storage._resumeType {return v}
+      if case .readTime(let v)? = resumeType {return v}
       return SwiftProtobuf.Google_Protobuf_Timestamp()
     }
-    set {_uniqueStorage()._resumeType = .readTime(newValue)}
+    set {resumeType = .readTime(newValue)}
   }
 
   /// The target ID that identifies the target on the stream. Must be a positive
   /// number and non-zero.
-  public var targetID: Int32 {
-    get {return _storage._targetID}
-    set {_uniqueStorage()._targetID = newValue}
-  }
+  ///
+  /// If `target_id` is 0 (or unspecified), the server will assign an ID for this
+  /// target and return that in a `TargetChange::ADD` event. Once a target with
+  /// `target_id=0` is added, all subsequent targets must also have
+  /// `target_id=0`. If an `AddTarget` request with `target_id != 0` is
+  /// sent to the server after a target with `target_id=0` is added, the server
+  /// will immediately send a response with a `TargetChange::Remove` event.
+  ///
+  /// Note that if the client sends multiple `AddTarget` requests
+  /// without an ID, the order of IDs returned in `TargetChage.target_ids` are
+  /// undefined. Therefore, clients should provide a target ID instead of relying
+  /// on the server to assign one.
+  ///
+  /// If `target_id` is non-zero, there must not be an existing active target on
+  /// this stream with the same ID.
+  public var targetID: Int32 = 0
 
   /// If the target should be removed once it is current and consistent.
-  public var once: Bool {
-    get {return _storage._once}
-    set {_uniqueStorage()._once = newValue}
+  public var once: Bool = false
+
+  /// The number of documents that last matched the query at the resume token or
+  /// read time.
+  ///
+  /// This value is only relevant when a `resume_type` is provided. This value
+  /// being present and greater than zero signals that the client wants
+  /// `ExistenceFilter.unchanged_names` to be included in the response.
+  public var expectedCount: SwiftProtobuf.Google_Protobuf_Int32Value {
+    get {return _expectedCount ?? SwiftProtobuf.Google_Protobuf_Int32Value()}
+    set {_expectedCount = newValue}
   }
+  /// Returns true if `expectedCount` has been explicitly set.
+  public var hasExpectedCount: Bool {return self._expectedCount != nil}
+  /// Clears the value of `expectedCount`. Subsequent reads from it will return its default value.
+  public mutating func clearExpectedCount() {self._expectedCount = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1703,8 +1778,9 @@ public struct Google_Firestore_V1_Target {
 
   /// When to start listening.
   ///
-  /// If not specified, all matching Documents are returned before any
-  /// subsequent changes.
+  /// If specified, only the matching Documents that have been updated AFTER the
+  /// `resume_token` or `read_time` will be returned. Otherwise, all matching
+  /// Documents are returned before any subsequent changes.
   public enum OneOf_ResumeType: Equatable {
     /// A resume token from a prior
     /// [TargetChange][google.firestore.v1.TargetChange] for an identical target.
@@ -1806,7 +1882,7 @@ public struct Google_Firestore_V1_Target {
 
   public init() {}
 
-  fileprivate var _storage = _StorageClass.defaultInstance
+  fileprivate var _expectedCount: SwiftProtobuf.Google_Protobuf_Int32Value? = nil
 }
 
 /// Targets being watched have changed.
@@ -1931,7 +2007,7 @@ public struct Google_Firestore_V1_TargetChange {
 
 extension Google_Firestore_V1_TargetChange.TargetChangeType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static var allCases: [Google_Firestore_V1_TargetChange.TargetChangeType] = [
+  public static let allCases: [Google_Firestore_V1_TargetChange.TargetChangeType] = [
     .noChange,
     .add,
     .remove,
@@ -1967,7 +2043,10 @@ public struct Google_Firestore_V1_ListCollectionIdsRequest {
   public var consistencySelector: Google_Firestore_V1_ListCollectionIdsRequest.OneOf_ConsistencySelector? = nil
 
   /// Reads documents as they were at the given time.
-  /// This may not be older than 270 seconds.
+  ///
+  /// This must be a microsecond precision timestamp within the past one hour,
+  /// or if Point-in-Time Recovery is enabled, can additionally be a whole
+  /// minute timestamp within the past 7 days.
   public var readTime: SwiftProtobuf.Google_Protobuf_Timestamp {
     get {
       if case .readTime(let v)? = consistencySelector {return v}
@@ -1982,7 +2061,10 @@ public struct Google_Firestore_V1_ListCollectionIdsRequest {
   /// If not set, defaults to strong consistency.
   public enum OneOf_ConsistencySelector: Equatable {
     /// Reads documents as they were at the given time.
-    /// This may not be older than 270 seconds.
+    ///
+    /// This must be a microsecond precision timestamp within the past one hour,
+    /// or if Point-in-Time Recovery is enabled, can additionally be a whole
+    /// minute timestamp within the past 7 days.
     case readTime(SwiftProtobuf.Google_Protobuf_Timestamp)
 
   #if !swift(>=4.1)
@@ -2889,6 +2971,7 @@ extension Google_Firestore_V1_RunQueryRequest: SwiftProtobuf.Message, SwiftProto
     5: .same(proto: "transaction"),
     6: .standard(proto: "new_transaction"),
     7: .standard(proto: "read_time"),
+    10: .standard(proto: "explain_options"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2945,6 +3028,7 @@ extension Google_Firestore_V1_RunQueryRequest: SwiftProtobuf.Message, SwiftProto
           self.consistencySelector = .readTime(v)
         }
       }()
+      case 10: try { try decoder.decodeSingularMessageField(value: &self._explainOptions) }()
       default: break
       }
     }
@@ -2976,6 +3060,9 @@ extension Google_Firestore_V1_RunQueryRequest: SwiftProtobuf.Message, SwiftProto
     }()
     case nil: break
     }
+    try { if let v = self._explainOptions {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2983,6 +3070,7 @@ extension Google_Firestore_V1_RunQueryRequest: SwiftProtobuf.Message, SwiftProto
     if lhs.parent != rhs.parent {return false}
     if lhs.queryType != rhs.queryType {return false}
     if lhs.consistencySelector != rhs.consistencySelector {return false}
+    if lhs._explainOptions != rhs._explainOptions {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2996,88 +3084,28 @@ extension Google_Firestore_V1_RunQueryResponse: SwiftProtobuf.Message, SwiftProt
     3: .standard(proto: "read_time"),
     4: .standard(proto: "skipped_results"),
     6: .same(proto: "done"),
-  ]
-
-  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._document) }()
-      case 2: try { try decoder.decodeSingularBytesField(value: &self.transaction) }()
-      case 3: try { try decoder.decodeSingularMessageField(value: &self._readTime) }()
-      case 4: try { try decoder.decodeSingularInt32Field(value: &self.skippedResults) }()
-      case 6: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.continuationSelector != nil {try decoder.handleConflictingOneOf()}
-          self.continuationSelector = .done(v)
-        }
-      }()
-      default: break
-      }
-    }
-  }
-
-  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._document {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    } }()
-    if !self.transaction.isEmpty {
-      try visitor.visitSingularBytesField(value: self.transaction, fieldNumber: 2)
-    }
-    try { if let v = self._readTime {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    } }()
-    if self.skippedResults != 0 {
-      try visitor.visitSingularInt32Field(value: self.skippedResults, fieldNumber: 4)
-    }
-    try { if case .done(let v)? = self.continuationSelector {
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 6)
-    } }()
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  public static func ==(lhs: Google_Firestore_V1_RunQueryResponse, rhs: Google_Firestore_V1_RunQueryResponse) -> Bool {
-    if lhs.transaction != rhs.transaction {return false}
-    if lhs._document != rhs._document {return false}
-    if lhs._readTime != rhs._readTime {return false}
-    if lhs.skippedResults != rhs.skippedResults {return false}
-    if lhs.continuationSelector != rhs.continuationSelector {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
-}
-
-extension Google_Firestore_V1_RunAggregationQueryRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".RunAggregationQueryRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "parent"),
-    2: .standard(proto: "structured_aggregation_query"),
-    4: .same(proto: "transaction"),
-    5: .standard(proto: "new_transaction"),
-    6: .standard(proto: "read_time"),
+    11: .standard(proto: "explain_metrics"),
   ]
 
   fileprivate class _StorageClass {
-    var _parent: String = String()
-    var _queryType: Google_Firestore_V1_RunAggregationQueryRequest.OneOf_QueryType?
-    var _consistencySelector: Google_Firestore_V1_RunAggregationQueryRequest.OneOf_ConsistencySelector?
+    var _transaction: Data = Data()
+    var _document: Google_Firestore_V1_Document? = nil
+    var _readTime: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
+    var _skippedResults: Int32 = 0
+    var _continuationSelector: Google_Firestore_V1_RunQueryResponse.OneOf_ContinuationSelector?
+    var _explainMetrics: Google_Firestore_V1_ExplainMetrics? = nil
 
     static let defaultInstance = _StorageClass()
 
     private init() {}
 
     init(copying source: _StorageClass) {
-      _parent = source._parent
-      _queryType = source._queryType
-      _consistencySelector = source._consistencySelector
+      _transaction = source._transaction
+      _document = source._document
+      _readTime = source._readTime
+      _skippedResults = source._skippedResults
+      _continuationSelector = source._continuationSelector
+      _explainMetrics = source._explainMetrics
     }
   }
 
@@ -3096,54 +3124,19 @@ extension Google_Firestore_V1_RunAggregationQueryRequest: SwiftProtobuf.Message,
         // allocates stack space for every case branch when no optimizations are
         // enabled. https://github.com/apple/swift-protobuf/issues/1034
         switch fieldNumber {
-        case 1: try { try decoder.decodeSingularStringField(value: &_storage._parent) }()
-        case 2: try {
-          var v: Google_Firestore_V1_StructuredAggregationQuery?
-          var hadOneofValue = false
-          if let current = _storage._queryType {
-            hadOneofValue = true
-            if case .structuredAggregationQuery(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._queryType = .structuredAggregationQuery(v)
-          }
-        }()
-        case 4: try {
-          var v: Data?
-          try decoder.decodeSingularBytesField(value: &v)
-          if let v = v {
-            if _storage._consistencySelector != nil {try decoder.handleConflictingOneOf()}
-            _storage._consistencySelector = .transaction(v)
-          }
-        }()
-        case 5: try {
-          var v: Google_Firestore_V1_TransactionOptions?
-          var hadOneofValue = false
-          if let current = _storage._consistencySelector {
-            hadOneofValue = true
-            if case .newTransaction(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._consistencySelector = .newTransaction(v)
-          }
-        }()
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._document) }()
+        case 2: try { try decoder.decodeSingularBytesField(value: &_storage._transaction) }()
+        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._readTime) }()
+        case 4: try { try decoder.decodeSingularInt32Field(value: &_storage._skippedResults) }()
         case 6: try {
-          var v: SwiftProtobuf.Google_Protobuf_Timestamp?
-          var hadOneofValue = false
-          if let current = _storage._consistencySelector {
-            hadOneofValue = true
-            if case .readTime(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
           if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._consistencySelector = .readTime(v)
+            if _storage._continuationSelector != nil {try decoder.handleConflictingOneOf()}
+            _storage._continuationSelector = .done(v)
           }
         }()
+        case 11: try { try decoder.decodeSingularMessageField(value: &_storage._explainMetrics) }()
         default: break
         }
       }
@@ -3156,43 +3149,156 @@ extension Google_Firestore_V1_RunAggregationQueryRequest: SwiftProtobuf.Message,
       // allocates stack space for every if/case branch local when no optimizations
       // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
       // https://github.com/apple/swift-protobuf/issues/1182
-      if !_storage._parent.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._parent, fieldNumber: 1)
-      }
-      try { if case .structuredAggregationQuery(let v)? = _storage._queryType {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      try { if let v = _storage._document {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
       } }()
-      switch _storage._consistencySelector {
-      case .transaction?: try {
-        guard case .transaction(let v)? = _storage._consistencySelector else { preconditionFailure() }
-        try visitor.visitSingularBytesField(value: v, fieldNumber: 4)
-      }()
-      case .newTransaction?: try {
-        guard case .newTransaction(let v)? = _storage._consistencySelector else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
-      }()
-      case .readTime?: try {
-        guard case .readTime(let v)? = _storage._consistencySelector else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-      }()
-      case nil: break
+      if !_storage._transaction.isEmpty {
+        try visitor.visitSingularBytesField(value: _storage._transaction, fieldNumber: 2)
       }
+      try { if let v = _storage._readTime {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      } }()
+      if _storage._skippedResults != 0 {
+        try visitor.visitSingularInt32Field(value: _storage._skippedResults, fieldNumber: 4)
+      }
+      try { if case .done(let v)? = _storage._continuationSelector {
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 6)
+      } }()
+      try { if let v = _storage._explainMetrics {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Google_Firestore_V1_RunAggregationQueryRequest, rhs: Google_Firestore_V1_RunAggregationQueryRequest) -> Bool {
+  public static func ==(lhs: Google_Firestore_V1_RunQueryResponse, rhs: Google_Firestore_V1_RunQueryResponse) -> Bool {
     if lhs._storage !== rhs._storage {
       let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
         let _storage = _args.0
         let rhs_storage = _args.1
-        if _storage._parent != rhs_storage._parent {return false}
-        if _storage._queryType != rhs_storage._queryType {return false}
-        if _storage._consistencySelector != rhs_storage._consistencySelector {return false}
+        if _storage._transaction != rhs_storage._transaction {return false}
+        if _storage._document != rhs_storage._document {return false}
+        if _storage._readTime != rhs_storage._readTime {return false}
+        if _storage._skippedResults != rhs_storage._skippedResults {return false}
+        if _storage._continuationSelector != rhs_storage._continuationSelector {return false}
+        if _storage._explainMetrics != rhs_storage._explainMetrics {return false}
         return true
       }
       if !storagesAreEqual {return false}
     }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Google_Firestore_V1_RunAggregationQueryRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".RunAggregationQueryRequest"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "parent"),
+    2: .standard(proto: "structured_aggregation_query"),
+    4: .same(proto: "transaction"),
+    5: .standard(proto: "new_transaction"),
+    6: .standard(proto: "read_time"),
+    8: .standard(proto: "explain_options"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.parent) }()
+      case 2: try {
+        var v: Google_Firestore_V1_StructuredAggregationQuery?
+        var hadOneofValue = false
+        if let current = self.queryType {
+          hadOneofValue = true
+          if case .structuredAggregationQuery(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.queryType = .structuredAggregationQuery(v)
+        }
+      }()
+      case 4: try {
+        var v: Data?
+        try decoder.decodeSingularBytesField(value: &v)
+        if let v = v {
+          if self.consistencySelector != nil {try decoder.handleConflictingOneOf()}
+          self.consistencySelector = .transaction(v)
+        }
+      }()
+      case 5: try {
+        var v: Google_Firestore_V1_TransactionOptions?
+        var hadOneofValue = false
+        if let current = self.consistencySelector {
+          hadOneofValue = true
+          if case .newTransaction(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.consistencySelector = .newTransaction(v)
+        }
+      }()
+      case 6: try {
+        var v: SwiftProtobuf.Google_Protobuf_Timestamp?
+        var hadOneofValue = false
+        if let current = self.consistencySelector {
+          hadOneofValue = true
+          if case .readTime(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.consistencySelector = .readTime(v)
+        }
+      }()
+      case 8: try { try decoder.decodeSingularMessageField(value: &self._explainOptions) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.parent.isEmpty {
+      try visitor.visitSingularStringField(value: self.parent, fieldNumber: 1)
+    }
+    try { if case .structuredAggregationQuery(let v)? = self.queryType {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    switch self.consistencySelector {
+    case .transaction?: try {
+      guard case .transaction(let v)? = self.consistencySelector else { preconditionFailure() }
+      try visitor.visitSingularBytesField(value: v, fieldNumber: 4)
+    }()
+    case .newTransaction?: try {
+      guard case .newTransaction(let v)? = self.consistencySelector else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+    }()
+    case .readTime?: try {
+      guard case .readTime(let v)? = self.consistencySelector else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    }()
+    case nil: break
+    }
+    try { if let v = self._explainOptions {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Google_Firestore_V1_RunAggregationQueryRequest, rhs: Google_Firestore_V1_RunAggregationQueryRequest) -> Bool {
+    if lhs.parent != rhs.parent {return false}
+    if lhs.queryType != rhs.queryType {return false}
+    if lhs.consistencySelector != rhs.consistencySelector {return false}
+    if lhs._explainOptions != rhs._explainOptions {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -3204,6 +3310,7 @@ extension Google_Firestore_V1_RunAggregationQueryResponse: SwiftProtobuf.Message
     1: .same(proto: "result"),
     2: .same(proto: "transaction"),
     3: .standard(proto: "read_time"),
+    10: .standard(proto: "explain_metrics"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -3215,6 +3322,7 @@ extension Google_Firestore_V1_RunAggregationQueryResponse: SwiftProtobuf.Message
       case 1: try { try decoder.decodeSingularMessageField(value: &self._result) }()
       case 2: try { try decoder.decodeSingularBytesField(value: &self.transaction) }()
       case 3: try { try decoder.decodeSingularMessageField(value: &self._readTime) }()
+      case 10: try { try decoder.decodeSingularMessageField(value: &self._explainMetrics) }()
       default: break
       }
     }
@@ -3234,6 +3342,9 @@ extension Google_Firestore_V1_RunAggregationQueryResponse: SwiftProtobuf.Message
     try { if let v = self._readTime {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
     } }()
+    try { if let v = self._explainMetrics {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -3241,6 +3352,7 @@ extension Google_Firestore_V1_RunAggregationQueryResponse: SwiftProtobuf.Message
     if lhs._result != rhs._result {return false}
     if lhs.transaction != rhs.transaction {return false}
     if lhs._readTime != rhs._readTime {return false}
+    if lhs._explainMetrics != rhs._explainMetrics {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -3257,122 +3369,80 @@ extension Google_Firestore_V1_PartitionQueryRequest: SwiftProtobuf.Message, Swif
     6: .standard(proto: "read_time"),
   ]
 
-  fileprivate class _StorageClass {
-    var _parent: String = String()
-    var _queryType: Google_Firestore_V1_PartitionQueryRequest.OneOf_QueryType?
-    var _partitionCount: Int64 = 0
-    var _pageToken: String = String()
-    var _pageSize: Int32 = 0
-    var _consistencySelector: Google_Firestore_V1_PartitionQueryRequest.OneOf_ConsistencySelector?
-
-    static let defaultInstance = _StorageClass()
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _parent = source._parent
-      _queryType = source._queryType
-      _partitionCount = source._partitionCount
-      _pageToken = source._pageToken
-      _pageSize = source._pageSize
-      _consistencySelector = source._consistencySelector
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
-
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 1: try { try decoder.decodeSingularStringField(value: &_storage._parent) }()
-        case 2: try {
-          var v: Google_Firestore_V1_StructuredQuery?
-          var hadOneofValue = false
-          if let current = _storage._queryType {
-            hadOneofValue = true
-            if case .structuredQuery(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._queryType = .structuredQuery(v)
-          }
-        }()
-        case 3: try { try decoder.decodeSingularInt64Field(value: &_storage._partitionCount) }()
-        case 4: try { try decoder.decodeSingularStringField(value: &_storage._pageToken) }()
-        case 5: try { try decoder.decodeSingularInt32Field(value: &_storage._pageSize) }()
-        case 6: try {
-          var v: SwiftProtobuf.Google_Protobuf_Timestamp?
-          var hadOneofValue = false
-          if let current = _storage._consistencySelector {
-            hadOneofValue = true
-            if case .readTime(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._consistencySelector = .readTime(v)
-          }
-        }()
-        default: break
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.parent) }()
+      case 2: try {
+        var v: Google_Firestore_V1_StructuredQuery?
+        var hadOneofValue = false
+        if let current = self.queryType {
+          hadOneofValue = true
+          if case .structuredQuery(let m) = current {v = m}
         }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.queryType = .structuredQuery(v)
+        }
+      }()
+      case 3: try { try decoder.decodeSingularInt64Field(value: &self.partitionCount) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.pageToken) }()
+      case 5: try { try decoder.decodeSingularInt32Field(value: &self.pageSize) }()
+      case 6: try {
+        var v: SwiftProtobuf.Google_Protobuf_Timestamp?
+        var hadOneofValue = false
+        if let current = self.consistencySelector {
+          hadOneofValue = true
+          if case .readTime(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.consistencySelector = .readTime(v)
+        }
+      }()
+      default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      if !_storage._parent.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._parent, fieldNumber: 1)
-      }
-      try { if case .structuredQuery(let v)? = _storage._queryType {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-      } }()
-      if _storage._partitionCount != 0 {
-        try visitor.visitSingularInt64Field(value: _storage._partitionCount, fieldNumber: 3)
-      }
-      if !_storage._pageToken.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._pageToken, fieldNumber: 4)
-      }
-      if _storage._pageSize != 0 {
-        try visitor.visitSingularInt32Field(value: _storage._pageSize, fieldNumber: 5)
-      }
-      try { if case .readTime(let v)? = _storage._consistencySelector {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-      } }()
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.parent.isEmpty {
+      try visitor.visitSingularStringField(value: self.parent, fieldNumber: 1)
     }
+    try { if case .structuredQuery(let v)? = self.queryType {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    if self.partitionCount != 0 {
+      try visitor.visitSingularInt64Field(value: self.partitionCount, fieldNumber: 3)
+    }
+    if !self.pageToken.isEmpty {
+      try visitor.visitSingularStringField(value: self.pageToken, fieldNumber: 4)
+    }
+    if self.pageSize != 0 {
+      try visitor.visitSingularInt32Field(value: self.pageSize, fieldNumber: 5)
+    }
+    try { if case .readTime(let v)? = self.consistencySelector {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Google_Firestore_V1_PartitionQueryRequest, rhs: Google_Firestore_V1_PartitionQueryRequest) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._parent != rhs_storage._parent {return false}
-        if _storage._queryType != rhs_storage._queryType {return false}
-        if _storage._partitionCount != rhs_storage._partitionCount {return false}
-        if _storage._pageToken != rhs_storage._pageToken {return false}
-        if _storage._pageSize != rhs_storage._pageSize {return false}
-        if _storage._consistencySelector != rhs_storage._consistencySelector {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+    if lhs.parent != rhs.parent {return false}
+    if lhs.queryType != rhs.queryType {return false}
+    if lhs.partitionCount != rhs.partitionCount {return false}
+    if lhs.pageToken != rhs.pageToken {return false}
+    if lhs.pageSize != rhs.pageSize {return false}
+    if lhs.consistencySelector != rhs.consistencySelector {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -3736,142 +3806,110 @@ extension Google_Firestore_V1_Target: SwiftProtobuf.Message, SwiftProtobuf._Mess
     11: .standard(proto: "read_time"),
     5: .standard(proto: "target_id"),
     6: .same(proto: "once"),
+    12: .standard(proto: "expected_count"),
   ]
 
-  fileprivate class _StorageClass {
-    var _targetType: Google_Firestore_V1_Target.OneOf_TargetType?
-    var _resumeType: Google_Firestore_V1_Target.OneOf_ResumeType?
-    var _targetID: Int32 = 0
-    var _once: Bool = false
-
-    static let defaultInstance = _StorageClass()
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _targetType = source._targetType
-      _resumeType = source._resumeType
-      _targetID = source._targetID
-      _once = source._once
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
-
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 2: try {
-          var v: Google_Firestore_V1_Target.QueryTarget?
-          var hadOneofValue = false
-          if let current = _storage._targetType {
-            hadOneofValue = true
-            if case .query(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._targetType = .query(v)
-          }
-        }()
-        case 3: try {
-          var v: Google_Firestore_V1_Target.DocumentsTarget?
-          var hadOneofValue = false
-          if let current = _storage._targetType {
-            hadOneofValue = true
-            if case .documents(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._targetType = .documents(v)
-          }
-        }()
-        case 4: try {
-          var v: Data?
-          try decoder.decodeSingularBytesField(value: &v)
-          if let v = v {
-            if _storage._resumeType != nil {try decoder.handleConflictingOneOf()}
-            _storage._resumeType = .resumeToken(v)
-          }
-        }()
-        case 5: try { try decoder.decodeSingularInt32Field(value: &_storage._targetID) }()
-        case 6: try { try decoder.decodeSingularBoolField(value: &_storage._once) }()
-        case 11: try {
-          var v: SwiftProtobuf.Google_Protobuf_Timestamp?
-          var hadOneofValue = false
-          if let current = _storage._resumeType {
-            hadOneofValue = true
-            if case .readTime(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._resumeType = .readTime(v)
-          }
-        }()
-        default: break
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 2: try {
+        var v: Google_Firestore_V1_Target.QueryTarget?
+        var hadOneofValue = false
+        if let current = self.targetType {
+          hadOneofValue = true
+          if case .query(let m) = current {v = m}
         }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.targetType = .query(v)
+        }
+      }()
+      case 3: try {
+        var v: Google_Firestore_V1_Target.DocumentsTarget?
+        var hadOneofValue = false
+        if let current = self.targetType {
+          hadOneofValue = true
+          if case .documents(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.targetType = .documents(v)
+        }
+      }()
+      case 4: try {
+        var v: Data?
+        try decoder.decodeSingularBytesField(value: &v)
+        if let v = v {
+          if self.resumeType != nil {try decoder.handleConflictingOneOf()}
+          self.resumeType = .resumeToken(v)
+        }
+      }()
+      case 5: try { try decoder.decodeSingularInt32Field(value: &self.targetID) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.once) }()
+      case 11: try {
+        var v: SwiftProtobuf.Google_Protobuf_Timestamp?
+        var hadOneofValue = false
+        if let current = self.resumeType {
+          hadOneofValue = true
+          if case .readTime(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.resumeType = .readTime(v)
+        }
+      }()
+      case 12: try { try decoder.decodeSingularMessageField(value: &self._expectedCount) }()
+      default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      switch _storage._targetType {
-      case .query?: try {
-        guard case .query(let v)? = _storage._targetType else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-      }()
-      case .documents?: try {
-        guard case .documents(let v)? = _storage._targetType else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-      }()
-      case nil: break
-      }
-      try { if case .resumeToken(let v)? = _storage._resumeType {
-        try visitor.visitSingularBytesField(value: v, fieldNumber: 4)
-      } }()
-      if _storage._targetID != 0 {
-        try visitor.visitSingularInt32Field(value: _storage._targetID, fieldNumber: 5)
-      }
-      if _storage._once != false {
-        try visitor.visitSingularBoolField(value: _storage._once, fieldNumber: 6)
-      }
-      try { if case .readTime(let v)? = _storage._resumeType {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
-      } }()
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    switch self.targetType {
+    case .query?: try {
+      guard case .query(let v)? = self.targetType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }()
+    case .documents?: try {
+      guard case .documents(let v)? = self.targetType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    }()
+    case nil: break
     }
+    try { if case .resumeToken(let v)? = self.resumeType {
+      try visitor.visitSingularBytesField(value: v, fieldNumber: 4)
+    } }()
+    if self.targetID != 0 {
+      try visitor.visitSingularInt32Field(value: self.targetID, fieldNumber: 5)
+    }
+    if self.once != false {
+      try visitor.visitSingularBoolField(value: self.once, fieldNumber: 6)
+    }
+    try { if case .readTime(let v)? = self.resumeType {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+    } }()
+    try { if let v = self._expectedCount {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Google_Firestore_V1_Target, rhs: Google_Firestore_V1_Target) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._targetType != rhs_storage._targetType {return false}
-        if _storage._resumeType != rhs_storage._resumeType {return false}
-        if _storage._targetID != rhs_storage._targetID {return false}
-        if _storage._once != rhs_storage._once {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+    if lhs.targetType != rhs.targetType {return false}
+    if lhs.resumeType != rhs.resumeType {return false}
+    if lhs.targetID != rhs.targetID {return false}
+    if lhs.once != rhs.once {return false}
+    if lhs._expectedCount != rhs._expectedCount {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

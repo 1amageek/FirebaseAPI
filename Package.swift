@@ -16,11 +16,13 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.25.2"),
         .package(url: "https://github.com/grpc/grpc-swift.git", branch: "main"),
+        .package(url: "https://github.com/apple/swift-log.git", branch: "main")
     ],
     targets: [
         .target(
             name: "FirestoreAPI",
             dependencies: [
+                .product(name: "Logging", package: "swift-log"),
                 .product(name: "GRPC", package: "grpc-swift"),
                 .product(name: "protoc-gen-swift", package: "swift-protobuf")
             ]),

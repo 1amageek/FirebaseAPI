@@ -14,4 +14,8 @@ public enum FirestoreError: Error {
     case transactionFailed(error: Error)
     case readAfterWriteError
     case minNumberOfArgumentsError
+    case noResult
+    case invalidAccessToken(String)
+    case timeout(String)
+    case invalidConfiguration(String)
 }

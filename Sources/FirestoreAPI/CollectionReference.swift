@@ -6,30 +6,15 @@
 //
 
 import Foundation
+import NIOHPACK
+import GRPC
 
-
-/**
- A reference to a collection in a Firestore database.
-
- Use a `CollectionReference` instance to perform CRUD operations on documents within a collection. You can add documents, read documents, update documents, and delete documents within a collection.
-
- You must specify a `Firestore` instance, the ID of the collection, and an optional parent path to create a `CollectionReference` instance.
-
- A `CollectionReference` instance also provides a `parent` property that returns the parent collection reference, if any. You can use the parent reference to navigate up the collection hierarchy.
-
- */
 public struct CollectionReference: Sendable {
-
-    /// The `Database` instance associated with the document reference.
+    
     var database: Database
-
-    /// The parent path of the collection reference, if any.
     var parentPath: String?
-
-    /// The ID of the collection reference.
     public var collectionID: String
-
-    /// The path of the collection reference.
+    
     public var path: String {
         if let parentPath {
             return "\(parentPath)/\(collectionID)".normalized
@@ -37,22 +22,13 @@ public struct CollectionReference: Sendable {
             return "\(collectionID)".normalized
         }
     }
-
-    /**
-     Initializes a new `CollectionReference` instance with the specified Firestore instance, parent path (if any), and collection ID.
-
-     - Parameters:
-        - database: The `Database` instance associated with the document reference.
-        - parentPath: The parent path of the collection reference, if any.
-        - collectionID: The ID of the collection reference.
-     */
+    
     init(_ database: Database, parentPath: String?, collectionID: String) {
         self.database = database
         self.parentPath = parentPath
         self.collectionID = collectionID
     }
-
-    /// The parent collection reference of the collection reference, if any.
+    
     public var parent: CollectionReference? {
         guard let parentPath else { return nil }
         let components = parentPath
@@ -62,14 +38,7 @@ public struct CollectionReference: Sendable {
         let collectionID = String(components.last!)
         return CollectionReference(database, parentPath: path, collectionID: collectionID)
     }
-
-    /**
-     Returns a `DocumentReference` instance representing the specified Firestore document.
-
-     - Parameter id: The ID of the document to reference. If not provided, a new document ID will be generated.
-     - Returns: A `DocumentReference` instance representing the specified Firestore document.
-     - Throws: A `FatalError` if the document ID is empty or the path is invalid.
-     */
+    
     public func document(_ id: String = IDGenerator.generate()) -> DocumentReference {
         if id.isEmpty {
             fatalError("Document ID cannot be empty.")
@@ -81,5 +50,94 @@ public struct CollectionReference: Sendable {
             fatalError("Invalid document path: \(id).")
         }
         return DocumentReference(database, parentPath: path, documentID: id)
+    }
+    
+    public func addDocument(data: [String: Any], firestore: Firestore) async throws -> DocumentReference {
+        let documentRef = self.document()
+        try await documentRef.setData(data, firestore: firestore)
+        return documentRef
+    }
+    
+    public func addDocument<T: Encodable>(from data: T, firestore: Firestore) async throws -> DocumentReference {
+        let documentRef = self.document()
+        try await documentRef.setData(data, firestore: firestore)
+        return documentRef
+    }
+    
+    public func getDocuments(firestore: Firestore) async throws -> QuerySnapshot {
+        guard let accessToken = try await firestore.getAccessToken() else {
+            fatalError("AccessToken is empty")
+        }
+        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
+        return try await getDocuments(firestore: firestore, headers: headers)
+    }
+    
+    public func getDocuments<T: Decodable>(type: T.Type, firestore: Firestore) async throws -> [T] {
+        guard let accessToken = try await firestore.getAccessToken() else {
+            fatalError("AccessToken is empty")
+        }
+        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
+        return try await getDocuments(type: type, firestore: firestore, headers: headers)
+    }
+    
+    public func count(firestore: Firestore) async throws -> Int {
+        guard let accessToken = try await firestore.getAccessToken() else {
+            fatalError("AccessToken is empty")
+        }
+        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
+        let client = Google_Firestore_V1_FirestoreAsyncClient(channel: firestore.channel)
+        let callOptions = CallOptions(customMetadata: headers, timeLimit: .timeout(firestore.settings.timeout))
+        
+        let request = Google_Firestore_V1_RunAggregationQueryRequest.with {
+            $0.parent = name
+            $0.structuredAggregationQuery = Google_Firestore_V1_StructuredAggregationQuery.with {
+                $0.aggregations = [
+                    Google_Firestore_V1_StructuredAggregationQuery.Aggregation.with {
+                        $0.count = Google_Firestore_V1_StructuredAggregationQuery.Aggregation.Count
+                            .with {_ in }
+                        $0.alias = "count"
+                    }
+                ]
+                $0.structuredQuery = Google_Firestore_V1_StructuredQuery.with {
+                    $0.from = [Google_Firestore_V1_StructuredQuery.CollectionSelector.with {
+                        $0.collectionID = collectionID
+                    }]
+                }
+            }
+        }
+        
+        var count = 0
+        let call = client.runAggregationQuery(request, callOptions: callOptions)
+        for try await response in call {
+            if let value = response.result.aggregateFields["count"]?.integerValue {
+                count = Int(value)
+                break
+            }
+        }
+        return count
+    }
+}
+
+extension CollectionReference: Codable {
+    
+    enum CodingKeys: CodingKey {
+        case database
+        case parentPath
+        case collectionID
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(database, forKey: .database)
+        try container.encode(parentPath, forKey: .parentPath)
+        try container.encode(collectionID, forKey: .collectionID)
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let database = try container.decode(Database.self, forKey: .database)
+        let parentPath = try container.decodeIfPresent(String.self, forKey: .parentPath)
+        let collectionID = try container.decode(String.self, forKey: .collectionID)
+        self.init(database, parentPath: parentPath, collectionID: collectionID)
     }
 }

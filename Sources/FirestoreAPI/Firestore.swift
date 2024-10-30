@@ -2,54 +2,49 @@ import Foundation
 import GRPC
 import NIO
 import SwiftProtobuf
-import NIOHPACK
+import Logging
+import NIOSSL
 
-/**
- A class that represents a Firestore database instance.
- 
- The `Firestore` class provides methods for accessing collections and documents within a Firestore database.
- */
-public class Firestore {
+public final class Firestore {
     
-    /// The Firestore database instance.
-    var database: Database
+    internal var database: Database
+    internal var channel: ClientConnection
+    internal var settings: FirestoreSettings
+    internal var logger: FirestoreLogger
     
-    /// The gRPC channel for communication with the Firestore API.
-    var channel: ClientConnection
-
-    /// A provider that provides access tokens for Firestore
     public var accessTokenProvider: (any AccessTokenProvider)?
     
-    let eventLoopGroup: EventLoopGroup
+    private let eventLoopGroup: EventLoopGroup
     
-    /**
-     Initializes a `Firestore` instance with a given `FirebaseApp` instance.
-     
-     - Parameter app: The `FirebaseApp` instance to use for authenticating with the Firestore database.
-     
-     Use this initializer to initialize a `Firestore` instance with a specific `FirebaseApp` instance. This is useful if your app uses multiple Firebase projects and you need to access different Firestore databases with different service accounts.
-     */
-    public init(projectId: String, databaseId: String = "(default)", timeout: TimeAmount = TimeAmount.seconds(5)) {
+    public init(
+        projectId: String,
+        databaseId: String = "(default)",
+        settings: FirestoreSettings = FirestoreSettings()
+    ) {
         self.database = Database(projectId: projectId, databaseId: databaseId)
+        self.settings = settings
         self.eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
-        let channel = ClientConnection
-            .usingTLSBackedByNIOSSL(on: eventLoopGroup)
-            .withConnectionTimeout(minimum: timeout)
-            .connect(host: "firestore.googleapis.com", port: 443)
-        self.channel = channel
+        
+        if settings.usesSSL {
+            self.channel = ClientConnection.usingTLSBackedByNIOSSL(on: eventLoopGroup)
+                .withConnectionTimeout(minimum: settings.timeout)
+                .connect(host: settings.host, port: settings.port)
+        } else {
+            self.channel = ClientConnection.insecure(group: eventLoopGroup)
+                .withConnectionTimeout(minimum: settings.timeout)
+                .connect(host: settings.host, port: settings.port)
+        }
+        
+        self.logger = FirestoreLogger(
+            label: "com.firestore.\(projectId)",
+            logLevel: settings.logLevel
+        )
     }
     
     deinit {
         try? self.eventLoopGroup.syncShutdownGracefully()
     }
     
-    /**
-     Returns a CollectionGroup instance associated with the specified group ID.
-     
-     - Parameter groupID: A string value representing the group ID.
-     - Returns: A `CollectionGroup` instance associated with the specified group ID.
-     - Throws: A `FatalError` if the group ID is empty or contains a forward slash (/) character.
-     */
     public func collectionGroup(_ groupID: String) -> CollectionGroup {
         if groupID.isEmpty {
             fatalError("Group ID cannot be empty.")
@@ -60,13 +55,6 @@ public class Firestore {
         return CollectionGroup(database, groupID: groupID)
     }
     
-    /**
-     Returns a reference to a Firestore collection.
-     
-     - Parameter collectionID: The ID of the collection to reference.
-     - Returns: A `CollectionReference` instance representing the specified Firestore collection.
-     - Throws: A `FatalError` if the collection ID is empty or invalid.
-     */
     public func collection(_ collectionID: String) -> CollectionReference {
         if collectionID.isEmpty {
             fatalError("Collection ID cannot be empty.")
@@ -82,13 +70,6 @@ public class Firestore {
         return CollectionReference(database, parentPath: parentPath, collectionID: collectionID)
     }
     
-    /**
-     Returns a reference to a Firestore document.
-     
-     - Parameter documentID: The ID of the document to reference.
-     - Returns: A `DocumentReference` instance representing the specified Firestore document.
-     - Throws: A `FatalError` if the document ID is empty or the path is invalid.
-     */
     public func document(_ documentID: String) -> DocumentReference {
         if documentID.isEmpty {
             fatalError("Document path cannot be empty.")
@@ -103,23 +84,22 @@ public class Firestore {
         let documentID = String(components.last!)
         return DocumentReference(database, parentPath: parentPath, documentID: documentID)
     }
-
+    
     public func batch() -> WriteBatch {
         return WriteBatch(firestore: self)
     }
-}
-
-extension Firestore {
-
-    /**
-     Retrieves an access token for the Firestore database.
-
-     Use this method to retrieve an access token for the Firestore database. If an access token has already been retrieved, this method returns it. Otherwise, it initializes an `AccessTokenProvider` instance with the `FirebaseApp` service account and retrieves a new access token using the `Scope` struct. The access token is then stored in the `accessToken` property of the `Firestore` instance and returned.
-
-     - Returns: An access token for the Firestore database.
-     - Throws: A `ServiceAccountError` if an error occurs while initializing the `AccessTokenProvider` instance or retrieving the access token.
-     */
-    func getAccessToken() async throws -> String? {
+    
+    public func setLogLevel(_ level: FirestoreLogLevel) {
+        self.settings.logLevel = level
+        self.logger.setLogLevel(level)
+    }
+    
+    internal func getAccessToken() async throws -> String? {
         return try await accessTokenProvider?.getAccessToken(expirationDuration: 3600)
+    }
+    
+    internal func terminate() {
+        try? self.channel.close().wait()
+        try? self.eventLoopGroup.syncShutdownGracefully()
     }
 }

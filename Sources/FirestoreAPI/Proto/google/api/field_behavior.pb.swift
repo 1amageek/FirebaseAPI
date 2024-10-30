@@ -7,7 +7,7 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -83,6 +83,20 @@ public enum Google_Api_FieldBehavior: SwiftProtobuf.Enum {
   /// a non-empty value will be returned. The user will not be aware of what
   /// non-empty value to expect.
   case nonEmptyDefault // = 7
+
+  /// Denotes that the field in a resource (a message annotated with
+  /// google.api.resource) is used in the resource name to uniquely identify the
+  /// resource. For AIP-compliant APIs, this should only be applied to the
+  /// `name` field on the resource.
+  ///
+  /// This behavior should not be applied to references to other resources within
+  /// the message.
+  ///
+  /// The identifier field of resources often have different field behavior
+  /// depending on the request it is embedded in (e.g. for Create methods name
+  /// is optional and unused, while for Update methods it is required). Instead
+  /// of method-specific annotations, only `IDENTIFIER` is required.
+  case identifier // = 8
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -99,6 +113,7 @@ public enum Google_Api_FieldBehavior: SwiftProtobuf.Enum {
     case 5: self = .immutable
     case 6: self = .unorderedList
     case 7: self = .nonEmptyDefault
+    case 8: self = .identifier
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -113,6 +128,7 @@ public enum Google_Api_FieldBehavior: SwiftProtobuf.Enum {
     case .immutable: return 5
     case .unorderedList: return 6
     case .nonEmptyDefault: return 7
+    case .identifier: return 8
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -123,7 +139,7 @@ public enum Google_Api_FieldBehavior: SwiftProtobuf.Enum {
 
 extension Google_Api_FieldBehavior: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static var allCases: [Google_Api_FieldBehavior] = [
+  public static let allCases: [Google_Api_FieldBehavior] = [
     .unspecified,
     .optional,
     .required,
@@ -132,6 +148,7 @@ extension Google_Api_FieldBehavior: CaseIterable {
     .immutable,
     .unorderedList,
     .nonEmptyDefault,
+    .identifier,
   ]
 }
 
@@ -207,7 +224,7 @@ public let Google_Api_FieldBehavior_Extensions: SwiftProtobuf.SimpleExtensionMap
 ///   google.protobuf.Timestamp expire_time = 1
 ///     [(google.api.field_behavior) = OUTPUT_ONLY,
 ///      (google.api.field_behavior) = IMMUTABLE];
-public let Google_Api_Extensions_field_behavior = SwiftProtobuf.MessageExtension<SwiftProtobuf.PackedEnumExtensionField<Google_Api_FieldBehavior>, SwiftProtobuf.Google_Protobuf_FieldOptions>(
+public let Google_Api_Extensions_field_behavior = SwiftProtobuf.MessageExtension<SwiftProtobuf.RepeatedEnumExtensionField<Google_Api_FieldBehavior>, SwiftProtobuf.Google_Protobuf_FieldOptions>(
   _protobuf_fieldNumber: 1052,
   fieldName: "google.api.field_behavior"
 )
@@ -224,5 +241,6 @@ extension Google_Api_FieldBehavior: SwiftProtobuf._ProtoNameProviding {
     5: .same(proto: "IMMUTABLE"),
     6: .same(proto: "UNORDERED_LIST"),
     7: .same(proto: "NON_EMPTY_DEFAULT"),
+    8: .same(proto: "IDENTIFIER"),
   ]
 }
