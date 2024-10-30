@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import NIOHPACK
 import GRPC
+import NIOHPACK
 
 public struct CollectionReference: Sendable {
     
