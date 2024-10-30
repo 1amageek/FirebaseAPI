@@ -29,7 +29,6 @@ extension CollectionReference {
             $0.collectionID = collectionID
             $0.orderBy = "document_id"
             $0.showMissing = false
-            $0.mask = Google_Firestore_V1_DocumentMask()
         }
         
         var documents: [QueryDocumentSnapshot] = []

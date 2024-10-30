@@ -22,7 +22,6 @@ extension DocumentReference {
         let callOptions = CallOptions(customMetadata: headers, timeLimit: .timeout(firestore.settings.timeout))
         let request = Google_Firestore_V1_GetDocumentRequest.with {
             $0.name = name
-            $0.mask = Google_Firestore_V1_DocumentMask()
         }
         let call = client.getDocument(request, callOptions: callOptions)
         do {
