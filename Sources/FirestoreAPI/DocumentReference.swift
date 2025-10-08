@@ -1,12 +1,12 @@
 //
 //  DocumentReference.swift
-//  
+//
 //
 //  Created by Norikazu Muramoto on 2023/04/07.
 //
 
 import Foundation
-import NIOHPACK
+import GRPCCore
 
 public struct DocumentReference: Sendable {
     
@@ -56,60 +56,67 @@ public struct DocumentReference: Sendable {
         return CollectionReference(database, parentPath: path, collectionID: collectionID)
     }
     
-    public func getDocument(firestore: Firestore) async throws -> DocumentSnapshot {
+    public func getDocument<Transport: ClientTransport>(firestore: Firestore<Transport>) async throws -> DocumentSnapshot {
         guard let accessToken = try await firestore.getAccessToken() else {
             fatalError("AccessToken is empty")
         }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        return try await getDocument(firestore: firestore, headers: headers)
+        var metadata: Metadata = [:]
+        metadata.addString("Bearer \(accessToken)", forKey: "authorization")
+        return try await getDocument(firestore: firestore, metadata: metadata)
     }
-    
-    public func setData(_ documentData: [String: Any], merge: Bool = false, firestore: Firestore) async throws {
+
+    public func setData<Transport: ClientTransport>(_ documentData: [String: Any], merge: Bool = false, firestore: Firestore<Transport>) async throws {
         guard let accessToken = try await firestore.getAccessToken() else {
             fatalError("AccessToken is empty")
         }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        try await setData(documentData, merge: merge, firestore: firestore, headers: headers)
+        var metadata: Metadata = [:]
+        metadata.addString("Bearer \(accessToken)", forKey: "authorization")
+        try await setData(documentData, merge: merge, firestore: firestore, metadata: metadata)
     }
-    
-    public func updateData(_ fields: [String: Any], firestore: Firestore) async throws {
+
+    public func updateData<Transport: ClientTransport>(_ fields: [String: Any], firestore: Firestore<Transport>) async throws {
         guard let accessToken = try await firestore.getAccessToken() else {
             fatalError("AccessToken is empty")
         }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        try await updateData(fields, firestore: firestore, headers: headers)
+        var metadata: Metadata = [:]
+        metadata.addString("Bearer \(accessToken)", forKey: "authorization")
+        try await updateData(fields, firestore: firestore, metadata: metadata)
     }
-    
-    public func delete(firestore: Firestore) async throws {
+
+    public func delete<Transport: ClientTransport>(firestore: Firestore<Transport>) async throws {
         guard let accessToken = try await firestore.getAccessToken() else {
             fatalError("AccessToken is empty")
         }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        try await delete(firestore: firestore, headers: headers)
+        var metadata: Metadata = [:]
+        metadata.addString("Bearer \(accessToken)", forKey: "authorization")
+        try await delete(firestore: firestore, metadata: metadata)
     }
-    
-    public func getDocument<T: Decodable>(type: T.Type, firestore: Firestore) async throws -> T? {
+
+    public func getDocument<T: Decodable, Transport: ClientTransport>(type: T.Type, firestore: Firestore<Transport>) async throws -> T? {
         guard let accessToken = try await firestore.getAccessToken() else {
             fatalError("AccessToken is empty")
         }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        return try await getDocument(type: type, firestore: firestore, headers: headers)
+        var metadata: Metadata = [:]
+        metadata.addString("Bearer \(accessToken)", forKey: "authorization")
+        return try await getDocument(type: type, firestore: firestore, metadata: metadata)
     }
-    
-    public func setData<T: Encodable>(_ data: T, merge: Bool = false, firestore: Firestore) async throws {
+
+    public func setData<T: Encodable, Transport: ClientTransport>(_ data: T, merge: Bool = false, firestore: Firestore<Transport>) async throws {
         guard let accessToken = try await firestore.getAccessToken() else {
             fatalError("AccessToken is empty")
         }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        try await setData(data, merge: merge, firestore: firestore, headers: headers)
+        var metadata: Metadata = [:]
+        metadata.addString("Bearer \(accessToken)", forKey: "authorization")
+        try await setData(data, merge: merge, firestore: firestore, metadata: metadata)
     }
-    
-    public func updateData<T: Encodable>(_ fields: T, firestore: Firestore) async throws {
+
+    public func updateData<T: Encodable, Transport: ClientTransport>(_ fields: T, firestore: Firestore<Transport>) async throws {
         guard let accessToken = try await firestore.getAccessToken() else {
             fatalError("AccessToken is empty")
         }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        try await updateData(fields, firestore: firestore, headers: headers)
+        var metadata: Metadata = [:]
+        metadata.addString("Bearer \(accessToken)", forKey: "authorization")
+        try await updateData(fields, firestore: firestore, metadata: metadata)
     }
 }
 

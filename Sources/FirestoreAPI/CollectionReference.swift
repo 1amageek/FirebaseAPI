@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import GRPC
-import NIOHPACK
+import GRPCCore
+import GRPCProtobuf
 
 public struct CollectionReference: Sendable {
     
@@ -52,66 +52,80 @@ public struct CollectionReference: Sendable {
         return DocumentReference(database, parentPath: path, documentID: id)
     }
     
-    public func addDocument(data: [String: Any], firestore: Firestore) async throws -> DocumentReference {
+    public func addDocument<Transport: ClientTransport>(data: [String: Any], firestore: Firestore<Transport>) async throws -> DocumentReference {
         let documentRef = self.document()
         try await documentRef.setData(data, firestore: firestore)
         return documentRef
     }
-    
-    public func addDocument<T: Encodable>(from data: T, firestore: Firestore) async throws -> DocumentReference {
+
+    public func addDocument<T: Encodable, Transport: ClientTransport>(from data: T, firestore: Firestore<Transport>) async throws -> DocumentReference {
         let documentRef = self.document()
         try await documentRef.setData(data, firestore: firestore)
         return documentRef
     }
-    
-    public func getDocuments(firestore: Firestore) async throws -> QuerySnapshot {
+
+    public func getDocuments<Transport: ClientTransport>(firestore: Firestore<Transport>) async throws -> QuerySnapshot {
         guard let accessToken = try await firestore.getAccessToken() else {
             fatalError("AccessToken is empty")
         }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        return try await getDocuments(firestore: firestore, headers: headers)
+        var metadata: Metadata = [:]
+        metadata.addString("Bearer \(accessToken)", forKey: "authorization")
+        return try await getDocuments(firestore: firestore, metadata: metadata)
     }
-    
-    public func getDocuments<T: Decodable>(type: T.Type, firestore: Firestore) async throws -> [T] {
+
+    public func getDocuments<T: Decodable, Transport: ClientTransport>(type: T.Type, firestore: Firestore<Transport>) async throws -> [T] {
         guard let accessToken = try await firestore.getAccessToken() else {
             fatalError("AccessToken is empty")
         }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        return try await getDocuments(type: type, firestore: firestore, headers: headers)
+        var metadata: Metadata = [:]
+        metadata.addString("Bearer \(accessToken)", forKey: "authorization")
+        return try await getDocuments(type: type, firestore: firestore, metadata: metadata)
     }
-    
-    public func count(firestore: Firestore) async throws -> Int {
+
+    public func count<Transport: ClientTransport>(firestore: Firestore<Transport>) async throws -> Int {
         guard let accessToken = try await firestore.getAccessToken() else {
             fatalError("AccessToken is empty")
         }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        let client = Google_Firestore_V1_FirestoreAsyncClient(channel: firestore.channel)
-        let callOptions = CallOptions(customMetadata: headers, timeLimit: .timeout(firestore.settings.timeout))
-        
-        let request = Google_Firestore_V1_RunAggregationQueryRequest.with {
-            $0.parent = name
-            $0.structuredAggregationQuery = Google_Firestore_V1_StructuredAggregationQuery.with {
-                $0.aggregations = [
-                    Google_Firestore_V1_StructuredAggregationQuery.Aggregation.with {
-                        $0.count = Google_Firestore_V1_StructuredAggregationQuery.Aggregation.Count
-                            .with {_ in }
-                        $0.alias = "count"
-                    }
-                ]
-                $0.structuredQuery = Google_Firestore_V1_StructuredQuery.with {
-                    $0.from = [Google_Firestore_V1_StructuredQuery.CollectionSelector.with {
-                        $0.collectionID = collectionID
-                    }]
+
+        var metadata: Metadata = [:]
+        metadata.addString("Bearer \(accessToken)", forKey: "authorization")
+
+        var requestMessage = Google_Firestore_V1_RunAggregationQueryRequest()
+        requestMessage.parent = name
+        requestMessage.structuredAggregationQuery = Google_Firestore_V1_StructuredAggregationQuery.with {
+            $0.aggregations = [
+                Google_Firestore_V1_StructuredAggregationQuery.Aggregation.with {
+                    $0.count = Google_Firestore_V1_StructuredAggregationQuery.Aggregation.Count
+                        .with {_ in }
+                    $0.alias = "count"
                 }
+            ]
+            $0.structuredQuery = Google_Firestore_V1_StructuredQuery.with {
+                $0.from = [Google_Firestore_V1_StructuredQuery.CollectionSelector.with {
+                    $0.collectionID = collectionID
+                }]
             }
         }
-        
-        var count = 0
-        let call = client.runAggregationQuery(request, callOptions: callOptions)
-        for try await response in call {
-            if let value = response.result.aggregateFields["count"]?.integerValue {
-                count = Int(value)
-                break
+
+        let request = ClientRequest<Google_Firestore_V1_RunAggregationQueryRequest>(
+            message: requestMessage,
+            metadata: metadata
+        )
+
+        let grpcClient = GRPCClient(transport: firestore.transport)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+
+        nonisolated(unsafe) var count = 0
+        try await client.runAggregationQuery(
+            request: request,
+            serializer: ProtobufSerializer<Google_Firestore_V1_RunAggregationQueryRequest>(),
+            deserializer: ProtobufDeserializer<Google_Firestore_V1_RunAggregationQueryResponse>()
+        ) { response in
+            for try await message in response.messages {
+                if let value = message.result.aggregateFields["count"]?.integerValue {
+                    count = Int(value)
+                    break
+                }
             }
         }
         return count

@@ -6,10 +6,10 @@
 //
 
 import Foundation
-import GRPC
+import GRPCCore
 
 public enum FirestoreError: Error {
-    case serverError(GRPCStatus)
+    case rpcError(RPCError)
     case maxAttemptsReached
     case transactionFailed(error: Error)
     case readAfterWriteError

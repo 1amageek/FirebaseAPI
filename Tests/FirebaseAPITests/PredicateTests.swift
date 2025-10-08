@@ -1,58 +1,97 @@
 //
 //  PredicateTests.swift
-//  
+//
 //
 //  Created by Norikazu Muramoto on 2023/05/14.
 //
 
-import XCTest
+import Testing
 @testable import FirestoreAPI
 
-final class PredicateTests: XCTestCase {
+@Suite("Query Predicate Tests")
+struct PredicateTests {
 
+    @Test("Predicate isEqualTo operator")
+    func testIsEqualTo() {
+        let predicate = "test" == 0
 
-    func testPredicates() throws {
-
-        if case .isEqualTo(let field, let value) = ("test" == 0), let value = value as? Int {
-            XCTAssertEqual(field, "test")
-            XCTAssertEqual(value, 0)
-        } else {
-            fatalError()
+        guard case .isEqualTo(let field, let value) = predicate,
+              let intValue = value as? Int else {
+            Issue.record("Expected isEqualTo predicate")
+            return
         }
 
-        if case .isNotEqualTo(let field, let value) = ("test" != 0), let value = value as? Int {
-            XCTAssertEqual(field, "test")
-            XCTAssertEqual(value, 0)
-        } else {
-            fatalError()
+        #expect(field == "test")
+        #expect(intValue == 0)
+    }
+
+    @Test("Predicate isNotEqualTo operator")
+    func testIsNotEqualTo() {
+        let predicate = "test" != 0
+
+        guard case .isNotEqualTo(let field, let value) = predicate,
+              let intValue = value as? Int else {
+            Issue.record("Expected isNotEqualTo predicate")
+            return
         }
 
-        if case .isLessThan(let field, let value) = ("test" < 0), let value = value as? Int {
-            XCTAssertEqual(field, "test")
-            XCTAssertEqual(value, 0)
-        } else {
-            fatalError()
+        #expect(field == "test")
+        #expect(intValue == 0)
+    }
+
+    @Test("Predicate isLessThan operator")
+    func testIsLessThan() {
+        let predicate = "test" < 0
+
+        guard case .isLessThan(let field, let value) = predicate,
+              let intValue = value as? Int else {
+            Issue.record("Expected isLessThan predicate")
+            return
         }
 
-        if case .isLessThanOrEqualTo(let field, let value) = ("test" <= 0), let value = value as? Int {
-            XCTAssertEqual(field, "test")
-            XCTAssertEqual(value, 0)
-        } else {
-            fatalError()
+        #expect(field == "test")
+        #expect(intValue == 0)
+    }
+
+    @Test("Predicate isLessThanOrEqualTo operator")
+    func testIsLessThanOrEqualTo() {
+        let predicate = "test" <= 0
+
+        guard case .isLessThanOrEqualTo(let field, let value) = predicate,
+              let intValue = value as? Int else {
+            Issue.record("Expected isLessThanOrEqualTo predicate")
+            return
         }
 
-        if case .isGreaterThan(let field, let value) = ("test" > 0), let value = value as? Int {
-            XCTAssertEqual(field, "test")
-            XCTAssertEqual(value, 0)
-        } else {
-            fatalError()
+        #expect(field == "test")
+        #expect(intValue == 0)
+    }
+
+    @Test("Predicate isGreaterThan operator")
+    func testIsGreaterThan() {
+        let predicate = "test" > 0
+
+        guard case .isGreaterThan(let field, let value) = predicate,
+              let intValue = value as? Int else {
+            Issue.record("Expected isGreaterThan predicate")
+            return
         }
 
-        if case .isGreaterThanOrEqualTo(let field, let value) = ("test" >= 0), let value = value as? Int {
-            XCTAssertEqual(field, "test")
-            XCTAssertEqual(value, 0)
-        } else {
-            fatalError()
+        #expect(field == "test")
+        #expect(intValue == 0)
+    }
+
+    @Test("Predicate isGreaterThanOrEqualTo operator")
+    func testIsGreaterThanOrEqualTo() {
+        let predicate = "test" >= 0
+
+        guard case .isGreaterThanOrEqualTo(let field, let value) = predicate,
+              let intValue = value as? Int else {
+            Issue.record("Expected isGreaterThanOrEqualTo predicate")
+            return
         }
+
+        #expect(field == "test")
+        #expect(intValue == 0)
     }
 }

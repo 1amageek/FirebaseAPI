@@ -6,24 +6,23 @@
 //
 
 import Foundation
-import GRPC
-import NIO
+import GRPCCore
+import GRPCProtobuf
 import SwiftProtobuf
-import NIOHPACK
 
 extension Query {
-    
+
     func makeQuery() -> Google_Firestore_V1_StructuredQuery {
-        
+
         return Google_Firestore_V1_StructuredQuery.with { query in
-            
+
             query.from = [Google_Firestore_V1_StructuredQuery.CollectionSelector.with {
                 $0.collectionID = collectionID
                 $0.allDescendants = allDescendants
             }]
-            
+
             for predicate in self.predicates {
-                
+
                 switch predicate {
                 case .or(_):
                     query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
@@ -94,31 +93,44 @@ extension Query {
             }
         }
     }
-    
-    public func getDocuments(firestore: Firestore, headers: HPACKHeaders) async throws -> QuerySnapshot {
-        let client = Google_Firestore_V1_FirestoreAsyncClient(channel: firestore.channel)
-        let callOptions = CallOptions(customMetadata: headers)
-        let request = Google_Firestore_V1_RunQueryRequest.with {
-            $0.parent = name
-            $0.structuredQuery = makeQuery()
-        }
-        let call = client.runQuery(request, callOptions: callOptions)
-        var documents: [QueryDocumentSnapshot] = []
-        for try await response in call {
-            if response.hasDocument {
-                let documentReference = DocumentReference(name: response.document.name)
-                let documentSnapshot = QueryDocumentSnapshot(document: response.document, documentReference: documentReference)
-                documents.append(documentSnapshot)
+
+    public func getDocuments<Transport: ClientTransport>(firestore: Firestore<Transport>, metadata: Metadata) async throws -> QuerySnapshot {
+        let grpcClient = GRPCClient(transport: firestore.transport)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+
+        var requestMessage = Google_Firestore_V1_RunQueryRequest()
+        requestMessage.parent = name
+        requestMessage.structuredQuery = makeQuery()
+
+        let request = ClientRequest<Google_Firestore_V1_RunQueryRequest>(
+            message: requestMessage,
+            metadata: metadata
+        )
+
+        nonisolated(unsafe) var documents: [QueryDocumentSnapshot] = []
+
+        try await client.runQuery(
+            request: request,
+            serializer: ProtobufSerializer<Google_Firestore_V1_RunQueryRequest>(),
+            deserializer: ProtobufDeserializer<Google_Firestore_V1_RunQueryResponse>()
+        ) { response in
+            for try await message in response.messages {
+                if message.hasDocument {
+                    let documentReference = DocumentReference(name: message.document.name)
+                    let documentSnapshot = QueryDocumentSnapshot(document: message.document, documentReference: documentReference)
+                    documents.append(documentSnapshot)
+                }
             }
         }
+
         return QuerySnapshot(documents: documents)
     }
 }
 
 extension Query {
-    
-    public func getDocuments<T: Decodable>(type: T.Type, firestore: Firestore, headers: HPACKHeaders) async throws -> [T] {
-        let snapshot = try await getDocuments(firestore: firestore, headers: headers)
+
+    public func getDocuments<T: Decodable, Transport: ClientTransport>(type: T.Type, firestore: Firestore<Transport>, metadata: Metadata) async throws -> [T] {
+        let snapshot = try await getDocuments(firestore: firestore, metadata: metadata)
         return try snapshot.documents.compactMap { queryDocumentSnapshot in
             guard let data = queryDocumentSnapshot.data() else {
                 return nil

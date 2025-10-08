@@ -8,7 +8,7 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -415,15 +415,7 @@ fileprivate let _protobuf_package = "google.api"
 
 extension Google_Api_ResourceDescriptor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ResourceDescriptor"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "type"),
-    2: .same(proto: "pattern"),
-    3: .standard(proto: "name_field"),
-    4: .same(proto: "history"),
-    5: .same(proto: "plural"),
-    6: .same(proto: "singular"),
-    10: .same(proto: "style"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}type\0\u{1}pattern\0\u{3}name_field\0\u{1}history\0\u{1}plural\0\u{1}singular\0\u{2}\u{4}style\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -482,26 +474,16 @@ extension Google_Api_ResourceDescriptor: SwiftProtobuf.Message, SwiftProtobuf._M
 }
 
 extension Google_Api_ResourceDescriptor.History: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "HISTORY_UNSPECIFIED"),
-    1: .same(proto: "ORIGINALLY_SINGLE_PATTERN"),
-    2: .same(proto: "FUTURE_MULTI_PATTERN"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0HISTORY_UNSPECIFIED\0\u{1}ORIGINALLY_SINGLE_PATTERN\0\u{1}FUTURE_MULTI_PATTERN\0")
 }
 
 extension Google_Api_ResourceDescriptor.Style: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "STYLE_UNSPECIFIED"),
-    1: .same(proto: "DECLARATIVE_FRIENDLY"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0STYLE_UNSPECIFIED\0\u{1}DECLARATIVE_FRIENDLY\0")
 }
 
 extension Google_Api_ResourceReference: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ResourceReference"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "type"),
-    2: .standard(proto: "child_type"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}type\0\u{3}child_type\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

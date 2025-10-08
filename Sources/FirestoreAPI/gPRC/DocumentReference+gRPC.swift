@@ -1,124 +1,166 @@
 //
 //  DocumentReference+gRPC.swift
-//  
+//
 //
 //  Created by Norikazu Muramoto on 2023/04/10.
 //
 
 import Foundation
-import GRPC
-import NIO
+import GRPCCore
+import GRPCProtobuf
 import SwiftProtobuf
-import NIOHPACK
 
 extension DocumentReference {
-    
+
     var name: String {
         return "\(database.path)/\(path)".normalized
     }
-    
-    func getDocument(firestore: Firestore, headers: HPACKHeaders) async throws -> DocumentSnapshot {
-        let client = Google_Firestore_V1_FirestoreNIOClient(channel: firestore.channel)
-        let callOptions = CallOptions(customMetadata: headers, timeLimit: .timeout(firestore.settings.timeout))
-        let request = Google_Firestore_V1_GetDocumentRequest.with {
-            $0.name = name
-        }
-        let call = client.getDocument(request, callOptions: callOptions)
+
+    func getDocument<Transport: ClientTransport>(firestore: Firestore<Transport>, metadata: Metadata) async throws -> DocumentSnapshot {
+        let grpcClient = GRPCClient(transport: firestore.transport)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+
+        var requestMessage = Google_Firestore_V1_GetDocumentRequest()
+        requestMessage.name = name
+
+        let request = ClientRequest<Google_Firestore_V1_GetDocumentRequest>(
+            message: requestMessage,
+            metadata: metadata
+        )
+
         do {
-            let document = try await call.response.get()
-            return DocumentSnapshot(document: document, documentReference: self)
-        } catch {
-            if let status = error as? GRPCStatus {
-                switch status.code {
-                case .notFound:
-                    return DocumentSnapshot(documentReference: self)
-                default:
-                    throw FirestoreError.serverError(status)
-                }
+            let document = try await client.getDocument(
+                request: request,
+                serializer: ProtobufSerializer<Google_Firestore_V1_GetDocumentRequest>(),
+                deserializer: ProtobufDeserializer<Google_Firestore_V1_Document>()
+            ) { response in
+                try response.message
             }
+            return DocumentSnapshot(document: document, documentReference: self)
+        } catch let error as RPCError {
+            if error.code == .notFound {
+                return DocumentSnapshot(documentReference: self)
+            }
+            throw FirestoreError.rpcError(error)
+        } catch {
             throw error
         }
     }
-    
-    func setData(_ documentData: [String: Any], merge: Bool = false, firestore: Firestore, headers: HPACKHeaders) async throws {
+
+    func setData<Transport: ClientTransport>(_ documentData: [String: Any], merge: Bool = false, firestore: Firestore<Transport>, metadata: Metadata) async throws {
+        let grpcClient = GRPCClient(transport: firestore.transport)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
         let documentData = DocumentData(data: documentData)
-        let client = Google_Firestore_V1_FirestoreAsyncClient(channel: firestore.channel)
-        let callOptions = CallOptions(customMetadata: headers, timeLimit: .timeout(firestore.settings.timeout))
-        let commitRequest = Google_Firestore_V1_CommitRequest.with {
-            $0.database = firestore.database.database
-            $0.writes = [
-                Google_Firestore_V1_Write.with {
-                    $0.update.name = name
-                    $0.update.fields = documentData.getFields()
-                    if merge {
-                        $0.updateMask = Google_Firestore_V1_DocumentMask.with {
-                            $0.fieldPaths = documentData.keys
-                        }
-                    }
-                    let transforms = documentData.getFieldTransforms(documentPath: name)
-                    if !transforms.isEmpty {
-                        $0.updateTransforms = transforms
-                    }
-                }
-            ]
-        }
-        _ = try await client.commit(commitRequest, callOptions: callOptions)
-    }
-    
-    func updateData(_ fields: [String: Any], firestore: Firestore, headers: HPACKHeaders) async throws {
-        let documentData = DocumentData(data: fields)
-        let client = Google_Firestore_V1_FirestoreAsyncClient(channel: firestore.channel)
-        let callOptions = CallOptions(customMetadata: headers, timeLimit: .timeout(firestore.settings.timeout))
-        let commitRequest = Google_Firestore_V1_CommitRequest.with {
-            $0.database = firestore.database.database
-            $0.writes = [
-                Google_Firestore_V1_Write.with {
-                    $0.update.name = name
-                    $0.update.fields = documentData.getFields()
+
+        var requestMessage = Google_Firestore_V1_CommitRequest()
+        requestMessage.database = firestore.database.database
+        requestMessage.writes = [
+            Google_Firestore_V1_Write.with {
+                $0.update.name = name
+                $0.update.fields = documentData.getFields()
+                if merge {
                     $0.updateMask = Google_Firestore_V1_DocumentMask.with {
                         $0.fieldPaths = documentData.keys
                     }
-                    $0.currentDocument = Google_Firestore_V1_Precondition.with {
-                        $0.exists = true
-                    }
-                    let transforms = documentData.getFieldTransforms(documentPath: name)
-                    if !transforms.isEmpty {
-                        $0.updateTransforms = transforms
-                    }
                 }
-            ]
+                let transforms = documentData.getFieldTransforms(documentPath: name)
+                if !transforms.isEmpty {
+                    $0.updateTransforms = transforms
+                }
+            }
+        ]
+
+        let request = ClientRequest<Google_Firestore_V1_CommitRequest>(
+            message: requestMessage,
+            metadata: metadata
+        )
+
+        _ = try await client.commit(
+            request: request,
+            serializer: ProtobufSerializer<Google_Firestore_V1_CommitRequest>(),
+            deserializer: ProtobufDeserializer<Google_Firestore_V1_CommitResponse>()
+        ) { response in
+            try response.message
         }
-        _ = try await client.commit(commitRequest, callOptions: callOptions)
     }
-    
-    func delete(firestore: Firestore, headers: HPACKHeaders) async throws {
-        let client = Google_Firestore_V1_FirestoreNIOClient(channel: firestore.channel)
-        let callOptions = CallOptions(customMetadata: headers, timeLimit: .timeout(firestore.settings.timeout))
-        let request = Google_Firestore_V1_DeleteDocumentRequest.with {
-            $0.name = name
+
+    func updateData<Transport: ClientTransport>(_ fields: [String: Any], firestore: Firestore<Transport>, metadata: Metadata) async throws {
+        let grpcClient = GRPCClient(transport: firestore.transport)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+        let documentData = DocumentData(data: fields)
+
+        var requestMessage = Google_Firestore_V1_CommitRequest()
+        requestMessage.database = firestore.database.database
+        requestMessage.writes = [
+            Google_Firestore_V1_Write.with {
+                $0.update.name = name
+                $0.update.fields = documentData.getFields()
+                $0.updateMask = Google_Firestore_V1_DocumentMask.with {
+                    $0.fieldPaths = documentData.keys
+                }
+                $0.currentDocument = Google_Firestore_V1_Precondition.with {
+                    $0.exists = true
+                }
+                let transforms = documentData.getFieldTransforms(documentPath: name)
+                if !transforms.isEmpty {
+                    $0.updateTransforms = transforms
+                }
+            }
+        ]
+
+        let request = ClientRequest<Google_Firestore_V1_CommitRequest>(
+            message: requestMessage,
+            metadata: metadata
+        )
+
+        _ = try await client.commit(
+            request: request,
+            serializer: ProtobufSerializer<Google_Firestore_V1_CommitRequest>(),
+            deserializer: ProtobufDeserializer<Google_Firestore_V1_CommitResponse>()
+        ) { response in
+            try response.message
         }
-        let call = client.deleteDocument(request, callOptions: callOptions)
-        _ = try await call.response.get()
+    }
+
+    func delete<Transport: ClientTransport>(firestore: Firestore<Transport>, metadata: Metadata) async throws {
+        let grpcClient = GRPCClient(transport: firestore.transport)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+
+        var requestMessage = Google_Firestore_V1_DeleteDocumentRequest()
+        requestMessage.name = name
+
+        let request = ClientRequest<Google_Firestore_V1_DeleteDocumentRequest>(
+            message: requestMessage,
+            metadata: metadata
+        )
+
+        _ = try await client.deleteDocument(
+            request: request,
+            serializer: ProtobufSerializer<Google_Firestore_V1_DeleteDocumentRequest>(),
+            deserializer: ProtobufDeserializer<SwiftProtobuf.Google_Protobuf_Empty>()
+        ) { response in
+            try response.message
+        }
     }
 }
 
 extension DocumentReference {
-    
-    func setData<T: Encodable>(_ data: T, merge: Bool = false, firestore: Firestore, headers: HPACKHeaders) async throws {
+
+    func setData<T: Encodable, Transport: ClientTransport>(_ data: T, merge: Bool = false, firestore: Firestore<Transport>, metadata: Metadata) async throws {
         let documentData = try FirestoreEncoder().encode(data)
-        try await self.setData(documentData, merge: merge, firestore: firestore, headers: headers)
+        try await self.setData(documentData, merge: merge, firestore: firestore, metadata: metadata)
     }
-    
-    func updateData<T: Encodable>(_ data: T, firestore: Firestore, headers: HPACKHeaders) async throws {
+
+    func updateData<T: Encodable, Transport: ClientTransport>(_ data: T, firestore: Firestore<Transport>, metadata: Metadata) async throws {
         let updateData = try FirestoreEncoder().encode(data)
-        try await self.updateData(updateData, firestore: firestore, headers: headers)
+        try await self.updateData(updateData, firestore: firestore, metadata: metadata)
     }
 }
 
 extension DocumentReference {
-    
-    func getDocument<T: Decodable>(type: T.Type, firestore: Firestore, headers: HPACKHeaders) async throws -> T? {
-        let snapshot = try await getDocument(firestore: firestore, headers: headers)
+
+    func getDocument<T: Decodable, Transport: ClientTransport>(type: T.Type, firestore: Firestore<Transport>, metadata: Metadata) async throws -> T? {
+        let snapshot = try await getDocument(firestore: firestore, metadata: metadata)
         if !snapshot.exists {
             return nil
         }

@@ -20,7 +20,7 @@ extension Firestore {
       - Throws: A `FirestoreError` if the transaction fails.
       */
     public func runTransaction<T>(
-        _ transactionFunction: @escaping ((Transaction) async throws -> T?),
+        _ transactionFunction: @escaping ((Transaction<Transport>) async throws -> T?),
         options: TransactionOptions = TransactionOptions()
     ) async throws -> T? {
         let transaction = Transaction(firestore: self, options: options)

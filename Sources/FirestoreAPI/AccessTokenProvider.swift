@@ -7,11 +7,11 @@
 
 import Foundation
 
-public protocol AccessScope {
+public protocol AccessScope: Sendable {
     var value: String { get }
 }
 
-public protocol AccessTokenProvider {
+public protocol AccessTokenProvider: Sendable {
 
     var scope: any AccessScope { get }
 

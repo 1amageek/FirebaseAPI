@@ -1,9 +1,18 @@
-import XCTest
+//
+//  FirestoreEncoderTests.swift
+//
+//
+//  Created by Norikazu Muramoto on 2023/05/04.
+//
+
+import Foundation
+import Testing
 @testable import FirestoreAPI
 
-final class FirestoreEncoderTests: XCTestCase {
+@Suite("Firestore Encoder Tests")
+struct FirestoreEncoderTests {
 
-    let dateForamatter: DateFormatter = {
+    let dateFormatter: DateFormatter = {
         let dateFormatter = DateFormatter()
         dateFormatter.timeZone = .autoupdatingCurrent
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
@@ -11,7 +20,8 @@ final class FirestoreEncoderTests: XCTestCase {
         return dateFormatter
     }()
 
-    func testEncoderDocumentID() async throws {
+    @Test("Encode DocumentID property wrapper")
+    func testEncoderDocumentID() throws {
         struct Nested: Identifiable, Codable, Equatable {
             @DocumentID var id: String
         }
@@ -19,247 +29,265 @@ final class FirestoreEncoderTests: XCTestCase {
             @DocumentID var id: String
             var nested: Nested = Nested(id: "id")
         }
-        let data = try! FirestoreEncoder().encode(Object(id: "id"))
-        XCTAssertEqual(data["nested"] as! [String: String], ["id": "id"])
+        let data = try FirestoreEncoder().encode(Object(id: "id"))
+        #expect(data["nested"] as! [String: String] == ["id": "id"])
     }
 
-    func testEncoderNull() async throws {
+    @Test("Encode nil optional value")
+    func testEncoderNull() throws {
         struct Object: Codable, Equatable {
             var key: String?
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first
         let value = data["key"] as? String
 
-        XCTAssertNil(key)
-        XCTAssertNil(value)
+        #expect(key == nil)
+        #expect(value == nil)
     }
 
-    func testEncoderExplicitNull() async throws {
+    @Test("Encode ExplicitNull property wrapper")
+    func testEncoderExplicitNull() throws {
         struct Object: Codable, Equatable {
             @ExplicitNull var key: String?
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as? String
 
-        XCTAssertEqual(key, "key")
-        XCTAssertNil(value)
+        #expect(key == "key")
+        #expect(value == nil)
     }
 
-    func testEncoderString() async throws {
+    @Test("Encode String value")
+    func testEncoderString() throws {
         struct Object: Codable, Equatable {
             var key: String = "string"
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! String
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, "string")
+        #expect(key == "key")
+        #expect(value == "string")
     }
 
-    func testEncoderURL() async throws {
+    @Test("Encode URL value")
+    func testEncoderURL() throws {
         struct Object: Codable, Equatable {
             var key: URL = URL(string: "https://firebase.google.com/")!
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! String
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, "https://firebase.google.com/")
+        #expect(key == "key")
+        #expect(value == "https://firebase.google.com/")
     }
 
-    func testEncoderInt() async throws {
+    @Test("Encode Int value")
+    func testEncoderInt() throws {
         struct Object: Codable, Equatable {
             var key: Int = 0
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! Int
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, 0)
+        #expect(key == "key")
+        #expect(value == 0)
     }
 
-    func testEncoderDouble() async throws {
+    @Test("Encode Double value")
+    func testEncoderDouble() throws {
         struct Object: Codable, Equatable {
             var key: Double = 0.0
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! Double
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, 0)
+        #expect(key == "key")
+        #expect(value == 0)
     }
 
-    func testEncoderDecimal() async throws {
+    @Test("Encode Decimal value")
+    func testEncoderDecimal() throws {
         struct Object: Codable, Equatable {
             var key: Decimal = 0.0
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! Double
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, 0)
+        #expect(key == "key")
+        #expect(value == 0)
     }
 
-    func testEncoderBool() async throws {
+    @Test("Encode Bool value")
+    func testEncoderBool() throws {
         struct Object: Codable, Equatable {
             var key: Bool = false
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! Bool
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, false)
+        #expect(key == "key")
+        #expect(value == false)
     }
 
-    func testEncoderDate() async throws {
+    @Test("Encode Date value")
+    func testEncoderDate() throws {
         struct Object: Codable, Equatable {
             var key: Date = Date(timeIntervalSince1970: 0)
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! String
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, dateForamatter.string(from: Date(timeIntervalSince1970: 0)))
+        #expect(key == "key")
+        #expect(value == dateFormatter.string(from: Date(timeIntervalSince1970: 0)))
     }
 
-    func testEncoderTimestamp() async throws {
+    @Test("Encode Timestamp value")
+    func testEncoderTimestamp() throws {
         struct Object: Codable, Equatable {
             var key: Timestamp = Timestamp(seconds: 0, nanos: 0)
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! Timestamp
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, Timestamp(seconds: 0, nanos: 0))
+        #expect(key == "key")
+        #expect(value == Timestamp(seconds: 0, nanos: 0))
     }
 
-    func testEncoderGeoPoint() async throws {
+    @Test("Encode GeoPoint value")
+    func testEncoderGeoPoint() throws {
         struct Object: Codable, Equatable {
             var key: GeoPoint = GeoPoint(latitude: 0, longitude: 0)
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! GeoPoint
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, GeoPoint(latitude: 0, longitude: 0))
+        #expect(key == "key")
+        #expect(value == GeoPoint(latitude: 0, longitude: 0))
     }
 
-    func testEncoderDocumentReference() async throws {
+    @Test("Encode DocumentReference value")
+    func testEncoderDocumentReference() throws {
         struct Object: Codable, Equatable {
             var key: DocumentReference = DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id")
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! DocumentReference
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))
+        #expect(key == "key")
+        #expect(value == DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))
     }
 
-    func testEncoderArrayString() async throws {
+    @Test("Encode String array")
+    func testEncoderArrayString() throws {
         struct Object: Codable, Equatable {
             var key: [String] = ["0", "1"]
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! [String]
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, ["0", "1"])
+        #expect(key == "key")
+        #expect(value == ["0", "1"])
     }
 
-    func testEncoderArrayURL() async throws {
+    @Test("Encode URL array")
+    func testEncoderArrayURL() throws {
         struct Object: Codable, Equatable {
             var key: [URL] = [URL(string: "https://firebase.google.com/")!, URL(string: "https://console.cloud.google.com/")!]
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! [String]
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, ["https://firebase.google.com/", "https://console.cloud.google.com/"])
+        #expect(key == "key")
+        #expect(value == ["https://firebase.google.com/", "https://console.cloud.google.com/"])
     }
 
-    func testEncoderArrayInt() async throws {
+    @Test("Encode Int array")
+    func testEncoderArrayInt() throws {
         struct Object: Codable, Equatable {
             var key: [Int] = [0, 1]
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! [Int]
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, [0, 1])
+        #expect(key == "key")
+        #expect(value == [0, 1])
     }
 
-    func testEncoderArrayDate() async throws {
+    @Test("Encode Date array")
+    func testEncoderArrayDate() throws {
         struct Object: Codable, Equatable {
             var key: [Date] = [Date(timeIntervalSince1970: 0), Date(timeIntervalSince1970: 1)]
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! [String]
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, [dateForamatter.string(from: Date(timeIntervalSince1970: 0)), dateForamatter.string(from: Date(timeIntervalSince1970: 1))])
+        #expect(key == "key")
+        #expect(value == [dateFormatter.string(from: Date(timeIntervalSince1970: 0)), dateFormatter.string(from: Date(timeIntervalSince1970: 1))])
     }
 
-    func testEncoderArrayTimestamp() async throws {
+    @Test("Encode Timestamp array")
+    func testEncoderArrayTimestamp() throws {
         struct Object: Codable, Equatable {
             var key: [Timestamp] = [Timestamp(seconds: 0, nanos: 0), Timestamp(seconds: 0, nanos: 1)]
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! [Timestamp]
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, [Timestamp(seconds: 0, nanos: 0), Timestamp(seconds: 0, nanos: 1)])
+        #expect(key == "key")
+        #expect(value == [Timestamp(seconds: 0, nanos: 0), Timestamp(seconds: 0, nanos: 1)])
     }
 
-    func testEncoderArrayGeoPoint() async throws {
+    @Test("Encode GeoPoint array")
+    func testEncoderArrayGeoPoint() throws {
         struct Object: Codable, Equatable {
             var key: [GeoPoint] = [GeoPoint(latitude: 0, longitude: 0), GeoPoint(latitude: 0, longitude: 1)]
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! [GeoPoint]
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, [GeoPoint(latitude: 0, longitude: 0), GeoPoint(latitude: 0, longitude: 1)])
+        #expect(key == "key")
+        #expect(value == [GeoPoint(latitude: 0, longitude: 0), GeoPoint(latitude: 0, longitude: 1)])
     }
 
-    func testEncoderArrayDocumentReference() async throws {
+    @Test("Encode DocumentReference array")
+    func testEncoderArrayDocumentReference() throws {
         struct Object: Codable, Equatable {
             var key: [DocumentReference] = [
                 DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "0"),
                 DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "1")
             ]
         }
-        let data = try! FirestoreEncoder().encode(Object())
+        let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
         let value = data["key"] as! [DocumentReference]
 
-        XCTAssertEqual(key, "key")
-        XCTAssertEqual(value, [
+        #expect(key == "key")
+        #expect(value == [
             DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "0"),
             DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "1")
         ])
     }
 
-
-    func testEncoderNest() async throws {
-
+    @Test("Encode nested objects")
+    func testEncoderNest() throws {
         struct DeepNestObject: Codable, Equatable {
             var number: Int = 0
             var string: String = "string"
@@ -301,39 +329,40 @@ final class FirestoreEncoderTests: XCTestCase {
             var reference: DocumentReference = DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id")
         }
 
-        let data = try! FirestoreEncoder().encode(Object())
-        XCTAssertEqual(data["number"] as! Int, 0)
-        XCTAssertEqual(data["string"] as! String, "string")
-        XCTAssertEqual(data["url"] as! String, "https://firebase.google.com/")
-        XCTAssertEqual(data["bool"] as! Bool, true)
-        XCTAssertEqual(data["array"] as! [String], ["0", "1"])
-        XCTAssertEqual(data["map"] as! [String: String], ["key": "value"])
-        XCTAssertEqual(data["date"] as! String, dateForamatter.string(from: Date(timeIntervalSince1970: 0)))
-        XCTAssertEqual(data["timestamp"] as! Timestamp, Timestamp(seconds: 0, nanos: 0))
-        XCTAssertEqual(data["geoPoint"] as! GeoPoint, GeoPoint(latitude: 0, longitude: 0))
-        XCTAssertEqual(data["reference"] as! DocumentReference, DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))
-        let next = data["nested"] as! [String: Any]
-        XCTAssertEqual(next["number"] as! Int, 0)
-        XCTAssertEqual(next["string"] as! String, "string")
-        XCTAssertEqual(next["url"] as! String, "https://firebase.google.com/")
-        XCTAssertEqual(next["bool"] as! Bool, true)
-        XCTAssertEqual(next["array"] as! [String], ["0", "1"])
-        XCTAssertEqual(next["map"] as! [String: String], ["key": "value"])
-        XCTAssertEqual(next["date"] as! String, dateForamatter.string(from: Date(timeIntervalSince1970: 0)))
-        XCTAssertEqual(next["timestamp"] as! Timestamp, Timestamp(seconds: 0, nanos: 0))
-        XCTAssertEqual(next["geoPoint"] as! GeoPoint, GeoPoint(latitude: 0, longitude: 0))
-        XCTAssertEqual(next["reference"] as! DocumentReference, DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))
-        let deep = next["nested"] as! [String: Any]
-        XCTAssertEqual(deep["number"] as! Int, 0)
-        XCTAssertEqual(deep["string"] as! String, "string")
-        XCTAssertEqual(deep["url"] as! String, "https://firebase.google.com/")
-        XCTAssertEqual(deep["bool"] as! Bool, true)
-        XCTAssertEqual(deep["array"] as! [String], ["0", "1"])
-        XCTAssertEqual(deep["map"] as! [String: String], ["key": "value"])
-        XCTAssertEqual(data["date"] as! String, dateForamatter.string(from: Date(timeIntervalSince1970: 0)))
-        XCTAssertEqual(deep["timestamp"] as! Timestamp, Timestamp(seconds: 0, nanos: 0))
-        XCTAssertEqual(deep["geoPoint"] as! GeoPoint, GeoPoint(latitude: 0, longitude: 0))
-        XCTAssertEqual(deep["reference"] as! DocumentReference, DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))
-    }
+        let data = try FirestoreEncoder().encode(Object())
+        #expect(data["number"] as! Int == 0)
+        #expect(data["string"] as! String == "string")
+        #expect(data["url"] as! String == "https://firebase.google.com/")
+        #expect(data["bool"] as! Bool == true)
+        #expect(data["array"] as! [String] == ["0", "1"])
+        #expect(data["map"] as! [String: String] == ["key": "value"])
+        #expect(data["date"] as! String == dateFormatter.string(from: Date(timeIntervalSince1970: 0)))
+        #expect(data["timestamp"] as! Timestamp == Timestamp(seconds: 0, nanos: 0))
+        #expect(data["geoPoint"] as! GeoPoint == GeoPoint(latitude: 0, longitude: 0))
+        #expect(data["reference"] as! DocumentReference == DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))
 
+        let next = data["nested"] as! [String: Any]
+        #expect(next["number"] as! Int == 0)
+        #expect(next["string"] as! String == "string")
+        #expect(next["url"] as! String == "https://firebase.google.com/")
+        #expect(next["bool"] as! Bool == true)
+        #expect(next["array"] as! [String] == ["0", "1"])
+        #expect(next["map"] as! [String: String] == ["key": "value"])
+        #expect(next["date"] as! String == dateFormatter.string(from: Date(timeIntervalSince1970: 0)))
+        #expect(next["timestamp"] as! Timestamp == Timestamp(seconds: 0, nanos: 0))
+        #expect(next["geoPoint"] as! GeoPoint == GeoPoint(latitude: 0, longitude: 0))
+        #expect(next["reference"] as! DocumentReference == DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))
+
+        let deep = next["nested"] as! [String: Any]
+        #expect(deep["number"] as! Int == 0)
+        #expect(deep["string"] as! String == "string")
+        #expect(deep["url"] as! String == "https://firebase.google.com/")
+        #expect(deep["bool"] as! Bool == true)
+        #expect(deep["array"] as! [String] == ["0", "1"])
+        #expect(deep["map"] as! [String: String] == ["key": "value"])
+        #expect(data["date"] as! String == dateFormatter.string(from: Date(timeIntervalSince1970: 0)))
+        #expect(deep["timestamp"] as! Timestamp == Timestamp(seconds: 0, nanos: 0))
+        #expect(deep["geoPoint"] as! GeoPoint == GeoPoint(latitude: 0, longitude: 0))
+        #expect(deep["reference"] as! DocumentReference == DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))
+    }
 }

@@ -1,11 +1,12 @@
 //
 //  WriteBatch.swift
-//  
+//
 //
 //  Created by Norikazu Muramoto on 2023/05/12.
 //
 
 import Foundation
+import GRPCCore
 
 struct WriteData {
     var documentReference: DocumentReference
@@ -15,18 +16,18 @@ struct WriteData {
     var exist: Bool?
 }
 
-public class WriteBatch {
+public class WriteBatch<Transport: ClientTransport> {
 
-    var firestore: Firestore
+    var firestore: Firestore<Transport>
 
     var writes: [WriteData] = []
 
-    init(firestore: Firestore) {
+    init(firestore: Firestore<Transport>) {
         self.firestore = firestore
     }
 
     @discardableResult
-    func create(data: [String: Any], forDocument document: DocumentReference) -> WriteBatch {
+    func create(data: [String: Any], forDocument document: DocumentReference) -> WriteBatch<Transport> {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self
@@ -36,7 +37,7 @@ public class WriteBatch {
     }
 
     @discardableResult
-    public func setData(data: [String: Any], forDocument document: DocumentReference) -> WriteBatch {
+    public func setData(data: [String: Any], forDocument document: DocumentReference) -> WriteBatch<Transport> {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self
@@ -46,7 +47,7 @@ public class WriteBatch {
     }
 
     @discardableResult
-    public func setData(data: [String: Any], forDocument document: DocumentReference, merge: Bool) -> WriteBatch {
+    public func setData(data: [String: Any], forDocument document: DocumentReference, merge: Bool) -> WriteBatch<Transport> {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self
@@ -56,7 +57,7 @@ public class WriteBatch {
     }
 
     @discardableResult
-    public func setData(data: [String: Any], forDocument document: DocumentReference, mergeFields: [String]) -> WriteBatch {
+    public func setData(data: [String: Any], forDocument document: DocumentReference, mergeFields: [String]) -> WriteBatch<Transport> {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self
@@ -66,7 +67,7 @@ public class WriteBatch {
     }
 
     @discardableResult
-    public func updateData(fields: [String: Any], forDocument document: DocumentReference) -> WriteBatch {
+    public func updateData(fields: [String: Any], forDocument document: DocumentReference) -> WriteBatch<Transport> {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self
@@ -76,7 +77,7 @@ public class WriteBatch {
     }
 
     @discardableResult
-    public func deleteDocument(document: DocumentReference) -> WriteBatch {
+    public func deleteDocument(document: DocumentReference) -> WriteBatch<Transport> {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self
@@ -89,7 +90,7 @@ public class WriteBatch {
 extension WriteBatch {
 
     @discardableResult
-    func create<T: Encodable>(from data: T, forDocument document: DocumentReference) throws -> WriteBatch {
+    func create<T: Encodable>(from data: T, forDocument document: DocumentReference) throws -> WriteBatch<Transport> {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self
@@ -100,7 +101,7 @@ extension WriteBatch {
     }
 
     @discardableResult
-    public func setData<T: Encodable>(from data: T, forDocument document: DocumentReference) throws -> WriteBatch {
+    public func setData<T: Encodable>(from data: T, forDocument document: DocumentReference) throws -> WriteBatch<Transport> {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self
@@ -111,7 +112,7 @@ extension WriteBatch {
     }
 
     @discardableResult
-    public func setData<T: Encodable>(from data: T, forDocument document: DocumentReference, merge: Bool) throws -> WriteBatch {
+    public func setData<T: Encodable>(from data: T, forDocument document: DocumentReference, merge: Bool) throws -> WriteBatch<Transport> {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self
@@ -122,7 +123,7 @@ extension WriteBatch {
     }
 
     @discardableResult
-    public func setData<T: Encodable>(from data: T, forDocument document: DocumentReference, mergeFields: [String]) throws -> WriteBatch {
+    public func setData<T: Encodable>(from data: T, forDocument document: DocumentReference, mergeFields: [String]) throws -> WriteBatch<Transport> {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self
@@ -133,7 +134,7 @@ extension WriteBatch {
     }
 
     @discardableResult
-    public func updateData<T: Encodable>(from fields: T, forDocument document: DocumentReference) throws -> WriteBatch {
+    public func updateData<T: Encodable>(from fields: T, forDocument document: DocumentReference) throws -> WriteBatch<Transport> {
         guard document.database == firestore.database else {
             print("Invalid project ID")
             return self

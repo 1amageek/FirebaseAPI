@@ -6,10 +6,8 @@
 //
 
 import Foundation
-import GRPC
-import NIO
+import GRPCCore
 import SwiftProtobuf
-import NIOHPACK
 
 public struct TransactionOptions {
     var maxAttempts: Int
@@ -29,11 +27,11 @@ enum TransactionError: Error {
     case rollbackFailed
 }
 
-public class Transaction {
+public class Transaction<Transport: ClientTransport> {
 
-    private var firestore: Firestore
+    private var firestore: Firestore<Transport>
 
-    private var writeBatch: WriteBatch
+    private var writeBatch: WriteBatch<Transport>
 
     private var requestTag: String
 
@@ -43,7 +41,7 @@ public class Transaction {
 
     var options: TransactionOptions
 
-    init(firestore: Firestore, options: TransactionOptions = TransactionOptions(maxAttempts: 5, readOnly: false)) {
+    init(firestore: Firestore<Transport>, options: TransactionOptions = TransactionOptions(maxAttempts: 5, readOnly: false)) {
         self.firestore = firestore
         self.requestTag = UUID().uuidString
         self.writeBatch = WriteBatch(firestore: firestore)

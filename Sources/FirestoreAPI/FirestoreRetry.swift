@@ -6,10 +6,9 @@
 //
 
 import Foundation
-import GRPC
-import NIO
+import GRPCCore
 
-public protocol FirestoreRetryable {
+public protocol FirestoreRetryable: Sendable {
     associatedtype Output
     func execute() async throws -> Output
 }
@@ -68,30 +67,30 @@ public actor FirestoreRetryHandler {
                 
                 let delay = calculateDelay(for: context)
                 if let delay = delay {
-                    try await Task.sleep(nanoseconds: UInt64(delay.nanoseconds))
+                    try await Task.sleep(for: delay)
                 } else {
                     throw error
                 }
             }
         }
     }
-    
-    private func calculateDelay(for context: FirestoreRetryContext) -> TimeAmount? {
+
+    private func calculateDelay(for context: FirestoreRetryContext) -> Duration? {
         switch strategy {
         case .exponentialBackoff(let initial, let maximum, let multiplier, let jitter):
             let base = Double(initial.nanoseconds) * pow(multiplier, Double(context.attempt - 1))
             let jitterRange = base * jitter
             let jitterAmount = Double.random(in: -jitterRange...jitterRange)
-            let delay = base + jitterAmount
-            return .nanoseconds(Int64(min(delay, Double(maximum.nanoseconds))))
-            
+            let delayNanos = Int64(min(base + jitterAmount, Double(maximum.nanoseconds)))
+            return .nanoseconds(delayNanos)
+
         case .linearBackoff(let interval, let maximum):
-            let delay = interval.nanoseconds * Int64(context.attempt)
-            return .nanoseconds(min(delay, maximum.nanoseconds))
-            
+            let delayNanos = interval.nanoseconds * Int64(context.attempt)
+            return .nanoseconds(min(delayNanos, maximum.nanoseconds))
+
         case .custom(let calculator):
             return calculator(context.attempt)
-            
+
         case .none:
             return nil
         }

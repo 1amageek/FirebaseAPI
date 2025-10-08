@@ -6,10 +6,8 @@
 //
 
 import Foundation
-import GRPC
-import NIO
+import GRPCCore
 import SwiftProtobuf
-import NIOHPACK
 
 public struct Query {
     
@@ -35,20 +33,22 @@ public struct Query {
         self.predicates = predicates
     }
     
-    public func getDocuments(firestore: Firestore) async throws -> QuerySnapshot {
+    public func getDocuments<Transport: ClientTransport>(firestore: Firestore<Transport>) async throws -> QuerySnapshot {
         guard let accessToken = try await firestore.getAccessToken() else {
             fatalError("AccessToken is empty")
         }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        return try await getDocuments(firestore: firestore, headers: headers)
+        var metadata: Metadata = [:]
+        metadata.addString("Bearer \(accessToken)", forKey: "authorization")
+        return try await getDocuments(firestore: firestore, metadata: metadata)
     }
-    
-    public func getDocuments<T: Decodable>(type: T.Type, firestore: Firestore) async throws -> [T] {
+
+    public func getDocuments<T: Decodable, Transport: ClientTransport>(type: T.Type, firestore: Firestore<Transport>) async throws -> [T] {
         guard let accessToken = try await firestore.getAccessToken() else {
             fatalError("AccessToken is empty")
         }
-        let headers = HPACKHeaders([("authorization", "Bearer \(accessToken)")])
-        return try await getDocuments(type: type, firestore: firestore, headers: headers)
+        var metadata: Metadata = [:]
+        metadata.addString("Bearer \(accessToken)", forKey: "authorization")
+        return try await getDocuments(type: type, firestore: firestore, metadata: metadata)
     }
 }
 

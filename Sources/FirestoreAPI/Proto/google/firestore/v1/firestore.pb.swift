@@ -8,7 +8,7 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 
 /// The request for
 /// [Firestore.GetDocument][google.firestore.v1.Firestore.GetDocument].
-public struct Google_Firestore_V1_GetDocumentRequest: @unchecked Sendable {
+public struct Google_Firestore_V1_GetDocumentRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -89,7 +89,7 @@ public struct Google_Firestore_V1_GetDocumentRequest: @unchecked Sendable {
 
   /// The consistency mode for this transaction.
   /// If not set, defaults to strong consistency.
-  public enum OneOf_ConsistencySelector: Equatable, @unchecked Sendable {
+  public enum OneOf_ConsistencySelector: Equatable, Sendable {
     /// Reads the document in a transaction.
     case transaction(Data)
     /// Reads the version of the document at the given time.
@@ -108,7 +108,7 @@ public struct Google_Firestore_V1_GetDocumentRequest: @unchecked Sendable {
 
 /// The request for
 /// [Firestore.ListDocuments][google.firestore.v1.Firestore.ListDocuments].
-public struct Google_Firestore_V1_ListDocumentsRequest: @unchecked Sendable {
+public struct Google_Firestore_V1_ListDocumentsRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -205,7 +205,7 @@ public struct Google_Firestore_V1_ListDocumentsRequest: @unchecked Sendable {
 
   /// The consistency mode for this transaction.
   /// If not set, defaults to strong consistency.
-  public enum OneOf_ConsistencySelector: Equatable, @unchecked Sendable {
+  public enum OneOf_ConsistencySelector: Equatable, Sendable {
     /// Perform the read as part of an already active transaction.
     case transaction(Data)
     /// Perform the read at the provided time.
@@ -393,7 +393,7 @@ public struct Google_Firestore_V1_DeleteDocumentRequest: Sendable {
 
 /// The request for
 /// [Firestore.BatchGetDocuments][google.firestore.v1.Firestore.BatchGetDocuments].
-public struct Google_Firestore_V1_BatchGetDocumentsRequest: @unchecked Sendable {
+public struct Google_Firestore_V1_BatchGetDocumentsRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -463,7 +463,7 @@ public struct Google_Firestore_V1_BatchGetDocumentsRequest: @unchecked Sendable 
 
   /// The consistency mode for this transaction.
   /// If not set, defaults to strong consistency.
-  public enum OneOf_ConsistencySelector: Equatable, @unchecked Sendable {
+  public enum OneOf_ConsistencySelector: Equatable, Sendable {
     /// Reads documents in a transaction.
     case transaction(Data)
     /// Starts a new transaction and reads the documents.
@@ -487,7 +487,7 @@ public struct Google_Firestore_V1_BatchGetDocumentsRequest: @unchecked Sendable 
 
 /// The streamed response for
 /// [Firestore.BatchGetDocuments][google.firestore.v1.Firestore.BatchGetDocuments].
-public struct Google_Firestore_V1_BatchGetDocumentsResponse: @unchecked Sendable {
+public struct Google_Firestore_V1_BatchGetDocumentsResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -583,7 +583,7 @@ public struct Google_Firestore_V1_BeginTransactionRequest: Sendable {
 
 /// The response for
 /// [Firestore.BeginTransaction][google.firestore.v1.Firestore.BeginTransaction].
-public struct Google_Firestore_V1_BeginTransactionResponse: @unchecked Sendable {
+public struct Google_Firestore_V1_BeginTransactionResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -597,7 +597,7 @@ public struct Google_Firestore_V1_BeginTransactionResponse: @unchecked Sendable 
 }
 
 /// The request for [Firestore.Commit][google.firestore.v1.Firestore.Commit].
-public struct Google_Firestore_V1_CommitRequest: @unchecked Sendable {
+public struct Google_Firestore_V1_CommitRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -650,7 +650,7 @@ public struct Google_Firestore_V1_CommitResponse: Sendable {
 }
 
 /// The request for [Firestore.Rollback][google.firestore.v1.Firestore.Rollback].
-public struct Google_Firestore_V1_RollbackRequest: @unchecked Sendable {
+public struct Google_Firestore_V1_RollbackRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -668,7 +668,7 @@ public struct Google_Firestore_V1_RollbackRequest: @unchecked Sendable {
 }
 
 /// The request for [Firestore.RunQuery][google.firestore.v1.Firestore.RunQuery].
-public struct Google_Firestore_V1_RunQueryRequest: @unchecked Sendable {
+public struct Google_Firestore_V1_RunQueryRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -755,7 +755,7 @@ public struct Google_Firestore_V1_RunQueryRequest: @unchecked Sendable {
 
   /// The consistency mode for this transaction.
   /// If not set, defaults to strong consistency.
-  public enum OneOf_ConsistencySelector: Equatable, @unchecked Sendable {
+  public enum OneOf_ConsistencySelector: Equatable, Sendable {
     /// Run the query within an already active transaction.
     ///
     /// The value here is the opaque transaction ID to execute the query in.
@@ -878,7 +878,7 @@ public struct Google_Firestore_V1_RunQueryResponse: @unchecked Sendable {
 
 /// The request for
 /// [Firestore.RunAggregationQuery][google.firestore.v1.Firestore.RunAggregationQuery].
-public struct Google_Firestore_V1_RunAggregationQueryRequest: @unchecked Sendable {
+public struct Google_Firestore_V1_RunAggregationQueryRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -963,7 +963,7 @@ public struct Google_Firestore_V1_RunAggregationQueryRequest: @unchecked Sendabl
   }
 
   /// The consistency mode for the query, defaults to strong consistency.
-  public enum OneOf_ConsistencySelector: Equatable, @unchecked Sendable {
+  public enum OneOf_ConsistencySelector: Equatable, Sendable {
     /// Run the aggregation within an already active transaction.
     ///
     /// The value here is the opaque transaction ID to execute the query in.
@@ -989,7 +989,7 @@ public struct Google_Firestore_V1_RunAggregationQueryRequest: @unchecked Sendabl
 
 /// The response for
 /// [Firestore.RunAggregationQuery][google.firestore.v1.Firestore.RunAggregationQuery].
-public struct Google_Firestore_V1_RunAggregationQueryResponse: @unchecked Sendable {
+public struct Google_Firestore_V1_RunAggregationQueryResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1202,7 +1202,7 @@ public struct Google_Firestore_V1_PartitionQueryResponse: Sendable {
 /// When resuming a stream, the server first streams any responses later than the
 /// given token, then a response containing only an up-to-date token, to use in
 /// the next request.
-public struct Google_Firestore_V1_WriteRequest: @unchecked Sendable {
+public struct Google_Firestore_V1_WriteRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1250,7 +1250,7 @@ public struct Google_Firestore_V1_WriteRequest: @unchecked Sendable {
 }
 
 /// The response for [Firestore.Write][google.firestore.v1.Firestore.Write].
-public struct Google_Firestore_V1_WriteResponse: @unchecked Sendable {
+public struct Google_Firestore_V1_WriteResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1422,7 +1422,7 @@ public struct Google_Firestore_V1_ListenResponse: Sendable {
 }
 
 /// A specification of a set of documents to listen to.
-public struct Google_Firestore_V1_Target: @unchecked Sendable {
+public struct Google_Firestore_V1_Target: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1531,7 +1531,7 @@ public struct Google_Firestore_V1_Target: @unchecked Sendable {
   /// If specified, only the matching Documents that have been updated AFTER the
   /// `resume_token` or `read_time` will be returned. Otherwise, all matching
   /// Documents are returned before any subsequent changes.
-  public enum OneOf_ResumeType: Equatable, @unchecked Sendable {
+  public enum OneOf_ResumeType: Equatable, Sendable {
     /// A resume token from a prior
     /// [TargetChange][google.firestore.v1.TargetChange] for an identical target.
     ///
@@ -1605,7 +1605,7 @@ public struct Google_Firestore_V1_Target: @unchecked Sendable {
 }
 
 /// Targets being watched have changed.
-public struct Google_Firestore_V1_TargetChange: @unchecked Sendable {
+public struct Google_Firestore_V1_TargetChange: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1859,12 +1859,7 @@ fileprivate let _protobuf_package = "google.firestore.v1"
 
 extension Google_Firestore_V1_GetDocumentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetDocumentRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "name"),
-    2: .same(proto: "mask"),
-    3: .same(proto: "transaction"),
-    5: .standard(proto: "read_time"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0\u{1}mask\0\u{1}transaction\0\u{4}\u{2}read_time\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1936,17 +1931,7 @@ extension Google_Firestore_V1_GetDocumentRequest: SwiftProtobuf.Message, SwiftPr
 
 extension Google_Firestore_V1_ListDocumentsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListDocumentsRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "parent"),
-    2: .standard(proto: "collection_id"),
-    3: .standard(proto: "page_size"),
-    4: .standard(proto: "page_token"),
-    6: .standard(proto: "order_by"),
-    7: .same(proto: "mask"),
-    8: .same(proto: "transaction"),
-    10: .standard(proto: "read_time"),
-    12: .standard(proto: "show_missing"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}parent\0\u{3}collection_id\0\u{3}page_size\0\u{3}page_token\0\u{4}\u{2}order_by\0\u{1}mask\0\u{1}transaction\0\u{4}\u{2}read_time\0\u{4}\u{2}show_missing\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2043,10 +2028,7 @@ extension Google_Firestore_V1_ListDocumentsRequest: SwiftProtobuf.Message, Swift
 
 extension Google_Firestore_V1_ListDocumentsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListDocumentsResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "documents"),
-    2: .standard(proto: "next_page_token"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}documents\0\u{3}next_page_token\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2081,13 +2063,7 @@ extension Google_Firestore_V1_ListDocumentsResponse: SwiftProtobuf.Message, Swif
 
 extension Google_Firestore_V1_CreateDocumentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreateDocumentRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "parent"),
-    2: .standard(proto: "collection_id"),
-    3: .standard(proto: "document_id"),
-    4: .same(proto: "document"),
-    5: .same(proto: "mask"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}parent\0\u{3}collection_id\0\u{3}document_id\0\u{1}document\0\u{1}mask\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2141,12 +2117,7 @@ extension Google_Firestore_V1_CreateDocumentRequest: SwiftProtobuf.Message, Swif
 
 extension Google_Firestore_V1_UpdateDocumentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UpdateDocumentRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "document"),
-    2: .standard(proto: "update_mask"),
-    3: .same(proto: "mask"),
-    4: .standard(proto: "current_document"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}document\0\u{3}update_mask\0\u{1}mask\0\u{3}current_document\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2195,10 +2166,7 @@ extension Google_Firestore_V1_UpdateDocumentRequest: SwiftProtobuf.Message, Swif
 
 extension Google_Firestore_V1_DeleteDocumentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteDocumentRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "name"),
-    2: .standard(proto: "current_document"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0\u{3}current_document\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2237,14 +2205,7 @@ extension Google_Firestore_V1_DeleteDocumentRequest: SwiftProtobuf.Message, Swif
 
 extension Google_Firestore_V1_BatchGetDocumentsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BatchGetDocumentsRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "database"),
-    2: .same(proto: "documents"),
-    3: .same(proto: "mask"),
-    4: .same(proto: "transaction"),
-    5: .standard(proto: "new_transaction"),
-    7: .standard(proto: "read_time"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}database\0\u{1}documents\0\u{1}mask\0\u{1}transaction\0\u{3}new_transaction\0\u{4}\u{2}read_time\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2338,12 +2299,7 @@ extension Google_Firestore_V1_BatchGetDocumentsRequest: SwiftProtobuf.Message, S
 
 extension Google_Firestore_V1_BatchGetDocumentsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BatchGetDocumentsResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "found"),
-    2: .same(proto: "missing"),
-    3: .same(proto: "transaction"),
-    4: .standard(proto: "read_time"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}found\0\u{1}missing\0\u{1}transaction\0\u{3}read_time\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2415,10 +2371,7 @@ extension Google_Firestore_V1_BatchGetDocumentsResponse: SwiftProtobuf.Message, 
 
 extension Google_Firestore_V1_BeginTransactionRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BeginTransactionRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "database"),
-    2: .same(proto: "options"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}database\0\u{1}options\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2457,9 +2410,7 @@ extension Google_Firestore_V1_BeginTransactionRequest: SwiftProtobuf.Message, Sw
 
 extension Google_Firestore_V1_BeginTransactionResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BeginTransactionResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "transaction"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}transaction\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2489,11 +2440,7 @@ extension Google_Firestore_V1_BeginTransactionResponse: SwiftProtobuf.Message, S
 
 extension Google_Firestore_V1_CommitRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CommitRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "database"),
-    2: .same(proto: "writes"),
-    3: .same(proto: "transaction"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}database\0\u{1}writes\0\u{1}transaction\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2533,10 +2480,7 @@ extension Google_Firestore_V1_CommitRequest: SwiftProtobuf.Message, SwiftProtobu
 
 extension Google_Firestore_V1_CommitResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CommitResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "write_results"),
-    2: .standard(proto: "commit_time"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}write_results\0\u{3}commit_time\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2575,10 +2519,7 @@ extension Google_Firestore_V1_CommitResponse: SwiftProtobuf.Message, SwiftProtob
 
 extension Google_Firestore_V1_RollbackRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RollbackRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "database"),
-    2: .same(proto: "transaction"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}database\0\u{1}transaction\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2613,14 +2554,7 @@ extension Google_Firestore_V1_RollbackRequest: SwiftProtobuf.Message, SwiftProto
 
 extension Google_Firestore_V1_RunQueryRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RunQueryRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "parent"),
-    2: .standard(proto: "structured_query"),
-    5: .same(proto: "transaction"),
-    6: .standard(proto: "new_transaction"),
-    7: .standard(proto: "read_time"),
-    10: .standard(proto: "explain_options"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}parent\0\u{3}structured_query\0\u{2}\u{3}transaction\0\u{3}new_transaction\0\u{3}read_time\0\u{4}\u{3}explain_options\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2726,14 +2660,7 @@ extension Google_Firestore_V1_RunQueryRequest: SwiftProtobuf.Message, SwiftProto
 
 extension Google_Firestore_V1_RunQueryResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RunQueryResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    2: .same(proto: "transaction"),
-    1: .same(proto: "document"),
-    3: .standard(proto: "read_time"),
-    4: .standard(proto: "skipped_results"),
-    6: .same(proto: "done"),
-    11: .standard(proto: "explain_metrics"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}document\0\u{1}transaction\0\u{3}read_time\0\u{3}skipped_results\0\u{2}\u{2}done\0\u{4}\u{5}explain_metrics\0")
 
   fileprivate class _StorageClass {
     var _transaction: Data = Data()
@@ -2743,15 +2670,11 @@ extension Google_Firestore_V1_RunQueryResponse: SwiftProtobuf.Message, SwiftProt
     var _continuationSelector: Google_Firestore_V1_RunQueryResponse.OneOf_ContinuationSelector?
     var _explainMetrics: Google_Firestore_V1_ExplainMetrics? = nil
 
-    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
 
     private init() {}
 
@@ -2849,14 +2772,7 @@ extension Google_Firestore_V1_RunQueryResponse: SwiftProtobuf.Message, SwiftProt
 
 extension Google_Firestore_V1_RunAggregationQueryRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RunAggregationQueryRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "parent"),
-    2: .standard(proto: "structured_aggregation_query"),
-    4: .same(proto: "transaction"),
-    5: .standard(proto: "new_transaction"),
-    6: .standard(proto: "read_time"),
-    8: .standard(proto: "explain_options"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}parent\0\u{3}structured_aggregation_query\0\u{2}\u{2}transaction\0\u{3}new_transaction\0\u{3}read_time\0\u{4}\u{2}explain_options\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2962,12 +2878,7 @@ extension Google_Firestore_V1_RunAggregationQueryRequest: SwiftProtobuf.Message,
 
 extension Google_Firestore_V1_RunAggregationQueryResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RunAggregationQueryResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "result"),
-    2: .same(proto: "transaction"),
-    3: .standard(proto: "read_time"),
-    10: .standard(proto: "explain_metrics"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}result\0\u{1}transaction\0\u{3}read_time\0\u{4}\u{7}explain_metrics\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3016,14 +2927,7 @@ extension Google_Firestore_V1_RunAggregationQueryResponse: SwiftProtobuf.Message
 
 extension Google_Firestore_V1_PartitionQueryRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PartitionQueryRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "parent"),
-    2: .standard(proto: "structured_query"),
-    3: .standard(proto: "partition_count"),
-    4: .standard(proto: "page_token"),
-    5: .standard(proto: "page_size"),
-    6: .standard(proto: "read_time"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}parent\0\u{3}structured_query\0\u{3}partition_count\0\u{3}page_token\0\u{3}page_size\0\u{3}read_time\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3106,10 +3010,7 @@ extension Google_Firestore_V1_PartitionQueryRequest: SwiftProtobuf.Message, Swif
 
 extension Google_Firestore_V1_PartitionQueryResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PartitionQueryResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "partitions"),
-    2: .standard(proto: "next_page_token"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}partitions\0\u{3}next_page_token\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3144,13 +3045,7 @@ extension Google_Firestore_V1_PartitionQueryResponse: SwiftProtobuf.Message, Swi
 
 extension Google_Firestore_V1_WriteRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".WriteRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "database"),
-    2: .standard(proto: "stream_id"),
-    3: .same(proto: "writes"),
-    4: .standard(proto: "stream_token"),
-    5: .same(proto: "labels"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}database\0\u{3}stream_id\0\u{1}writes\0\u{3}stream_token\0\u{1}labels\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3200,12 +3095,7 @@ extension Google_Firestore_V1_WriteRequest: SwiftProtobuf.Message, SwiftProtobuf
 
 extension Google_Firestore_V1_WriteResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".WriteResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "stream_id"),
-    2: .standard(proto: "stream_token"),
-    3: .standard(proto: "write_results"),
-    4: .standard(proto: "commit_time"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}stream_id\0\u{3}stream_token\0\u{3}write_results\0\u{3}commit_time\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3254,12 +3144,7 @@ extension Google_Firestore_V1_WriteResponse: SwiftProtobuf.Message, SwiftProtobu
 
 extension Google_Firestore_V1_ListenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListenRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "database"),
-    2: .standard(proto: "add_target"),
-    3: .standard(proto: "remove_target"),
-    4: .same(proto: "labels"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}database\0\u{3}add_target\0\u{3}remove_target\0\u{1}labels\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3331,13 +3216,7 @@ extension Google_Firestore_V1_ListenRequest: SwiftProtobuf.Message, SwiftProtobu
 
 extension Google_Firestore_V1_ListenResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListenResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    2: .standard(proto: "target_change"),
-    3: .standard(proto: "document_change"),
-    4: .standard(proto: "document_delete"),
-    6: .standard(proto: "document_remove"),
-    5: .same(proto: "filter"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{4}\u{2}target_change\0\u{3}document_change\0\u{3}document_delete\0\u{1}filter\0\u{3}document_remove\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3455,15 +3334,7 @@ extension Google_Firestore_V1_ListenResponse: SwiftProtobuf.Message, SwiftProtob
 
 extension Google_Firestore_V1_Target: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Target"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    2: .same(proto: "query"),
-    3: .same(proto: "documents"),
-    4: .standard(proto: "resume_token"),
-    11: .standard(proto: "read_time"),
-    5: .standard(proto: "target_id"),
-    6: .same(proto: "once"),
-    12: .standard(proto: "expected_count"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\u{2}query\0\u{1}documents\0\u{3}resume_token\0\u{3}target_id\0\u{1}once\0\u{4}\u{5}read_time\0\u{3}expected_count\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3573,9 +3444,7 @@ extension Google_Firestore_V1_Target: SwiftProtobuf.Message, SwiftProtobuf._Mess
 
 extension Google_Firestore_V1_Target.DocumentsTarget: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Google_Firestore_V1_Target.protoMessageName + ".DocumentsTarget"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    2: .same(proto: "documents"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\u{2}documents\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3605,10 +3474,7 @@ extension Google_Firestore_V1_Target.DocumentsTarget: SwiftProtobuf.Message, Swi
 
 extension Google_Firestore_V1_Target.QueryTarget: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Google_Firestore_V1_Target.protoMessageName + ".QueryTarget"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "parent"),
-    2: .standard(proto: "structured_query"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}parent\0\u{3}structured_query\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3659,13 +3525,7 @@ extension Google_Firestore_V1_Target.QueryTarget: SwiftProtobuf.Message, SwiftPr
 
 extension Google_Firestore_V1_TargetChange: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TargetChange"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "target_change_type"),
-    2: .standard(proto: "target_ids"),
-    3: .same(proto: "cause"),
-    4: .standard(proto: "resume_token"),
-    6: .standard(proto: "read_time"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}target_change_type\0\u{3}target_ids\0\u{1}cause\0\u{3}resume_token\0\u{4}\u{2}read_time\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3718,23 +3578,12 @@ extension Google_Firestore_V1_TargetChange: SwiftProtobuf.Message, SwiftProtobuf
 }
 
 extension Google_Firestore_V1_TargetChange.TargetChangeType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "NO_CHANGE"),
-    1: .same(proto: "ADD"),
-    2: .same(proto: "REMOVE"),
-    3: .same(proto: "CURRENT"),
-    4: .same(proto: "RESET"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NO_CHANGE\0\u{1}ADD\0\u{1}REMOVE\0\u{1}CURRENT\0\u{1}RESET\0")
 }
 
 extension Google_Firestore_V1_ListCollectionIdsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListCollectionIdsRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "parent"),
-    2: .standard(proto: "page_size"),
-    3: .standard(proto: "page_token"),
-    4: .standard(proto: "read_time"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}parent\0\u{3}page_size\0\u{3}page_token\0\u{3}read_time\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3795,10 +3644,7 @@ extension Google_Firestore_V1_ListCollectionIdsRequest: SwiftProtobuf.Message, S
 
 extension Google_Firestore_V1_ListCollectionIdsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListCollectionIdsResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "collection_ids"),
-    2: .standard(proto: "next_page_token"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}collection_ids\0\u{3}next_page_token\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3833,11 +3679,7 @@ extension Google_Firestore_V1_ListCollectionIdsResponse: SwiftProtobuf.Message, 
 
 extension Google_Firestore_V1_BatchWriteRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BatchWriteRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "database"),
-    2: .same(proto: "writes"),
-    3: .same(proto: "labels"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}database\0\u{1}writes\0\u{1}labels\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3877,10 +3719,7 @@ extension Google_Firestore_V1_BatchWriteRequest: SwiftProtobuf.Message, SwiftPro
 
 extension Google_Firestore_V1_BatchWriteResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BatchWriteResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "write_results"),
-    2: .same(proto: "status"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}write_results\0\u{1}status\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

@@ -8,7 +8,7 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// 4. order_by + start_at + end_at
 /// 5. offset
 /// 6. limit
+/// 7. find_nearest
 public struct Google_Firestore_V1_StructuredQuery: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -781,8 +782,8 @@ public struct Google_Firestore_V1_StructuredQuery: @unchecked Sendable {
     /// Since DOT_PRODUCT distances increase when the vectors are more similar,
     /// the comparison is inverted.
     ///
-    /// For EUCLIDEAN, COSINE: WHERE distance <= distance_threshold
-    /// For DOT_PRODUCT:       WHERE distance >= distance_threshold
+    /// * For EUCLIDEAN, COSINE: WHERE distance <= distance_threshold
+    /// * For DOT_PRODUCT:       WHERE distance >= distance_threshold
     public var distanceThreshold: SwiftProtobuf.Google_Protobuf_DoubleValue {
       get {return _distanceThreshold ?? SwiftProtobuf.Google_Protobuf_DoubleValue()}
       set {_distanceThreshold = newValue}
@@ -1143,17 +1144,7 @@ fileprivate let _protobuf_package = "google.firestore.v1"
 
 extension Google_Firestore_V1_StructuredQuery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".StructuredQuery"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "select"),
-    2: .same(proto: "from"),
-    3: .same(proto: "where"),
-    4: .standard(proto: "order_by"),
-    7: .standard(proto: "start_at"),
-    8: .standard(proto: "end_at"),
-    6: .same(proto: "offset"),
-    5: .same(proto: "limit"),
-    9: .standard(proto: "find_nearest"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}select\0\u{1}from\0\u{1}where\0\u{3}order_by\0\u{1}limit\0\u{1}offset\0\u{3}start_at\0\u{3}end_at\0\u{3}find_nearest\0")
 
   fileprivate class _StorageClass {
     var _select: Google_Firestore_V1_StructuredQuery.Projection? = nil
@@ -1166,15 +1157,11 @@ extension Google_Firestore_V1_StructuredQuery: SwiftProtobuf.Message, SwiftProto
     var _limit: SwiftProtobuf.Google_Protobuf_Int32Value? = nil
     var _findNearest: Google_Firestore_V1_StructuredQuery.FindNearest? = nil
 
-    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
 
     private init() {}
 
@@ -1282,19 +1269,12 @@ extension Google_Firestore_V1_StructuredQuery: SwiftProtobuf.Message, SwiftProto
 }
 
 extension Google_Firestore_V1_StructuredQuery.Direction: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "DIRECTION_UNSPECIFIED"),
-    1: .same(proto: "ASCENDING"),
-    2: .same(proto: "DESCENDING"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DIRECTION_UNSPECIFIED\0\u{1}ASCENDING\0\u{1}DESCENDING\0")
 }
 
 extension Google_Firestore_V1_StructuredQuery.CollectionSelector: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Google_Firestore_V1_StructuredQuery.protoMessageName + ".CollectionSelector"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    2: .standard(proto: "collection_id"),
-    3: .standard(proto: "all_descendants"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{4}\u{2}collection_id\0\u{3}all_descendants\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1329,11 +1309,7 @@ extension Google_Firestore_V1_StructuredQuery.CollectionSelector: SwiftProtobuf.
 
 extension Google_Firestore_V1_StructuredQuery.Filter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Google_Firestore_V1_StructuredQuery.protoMessageName + ".Filter"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "composite_filter"),
-    2: .standard(proto: "field_filter"),
-    3: .standard(proto: "unary_filter"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}composite_filter\0\u{3}field_filter\0\u{3}unary_filter\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1417,10 +1393,7 @@ extension Google_Firestore_V1_StructuredQuery.Filter: SwiftProtobuf.Message, Swi
 
 extension Google_Firestore_V1_StructuredQuery.CompositeFilter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Google_Firestore_V1_StructuredQuery.protoMessageName + ".CompositeFilter"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "op"),
-    2: .same(proto: "filters"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}op\0\u{1}filters\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1454,20 +1427,12 @@ extension Google_Firestore_V1_StructuredQuery.CompositeFilter: SwiftProtobuf.Mes
 }
 
 extension Google_Firestore_V1_StructuredQuery.CompositeFilter.Operator: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "OPERATOR_UNSPECIFIED"),
-    1: .same(proto: "AND"),
-    2: .same(proto: "OR"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0OPERATOR_UNSPECIFIED\0\u{1}AND\0\u{1}OR\0")
 }
 
 extension Google_Firestore_V1_StructuredQuery.FieldFilter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Google_Firestore_V1_StructuredQuery.protoMessageName + ".FieldFilter"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "field"),
-    2: .same(proto: "op"),
-    3: .same(proto: "value"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}field\0\u{1}op\0\u{1}value\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1510,27 +1475,12 @@ extension Google_Firestore_V1_StructuredQuery.FieldFilter: SwiftProtobuf.Message
 }
 
 extension Google_Firestore_V1_StructuredQuery.FieldFilter.Operator: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "OPERATOR_UNSPECIFIED"),
-    1: .same(proto: "LESS_THAN"),
-    2: .same(proto: "LESS_THAN_OR_EQUAL"),
-    3: .same(proto: "GREATER_THAN"),
-    4: .same(proto: "GREATER_THAN_OR_EQUAL"),
-    5: .same(proto: "EQUAL"),
-    6: .same(proto: "NOT_EQUAL"),
-    7: .same(proto: "ARRAY_CONTAINS"),
-    8: .same(proto: "IN"),
-    9: .same(proto: "ARRAY_CONTAINS_ANY"),
-    10: .same(proto: "NOT_IN"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0OPERATOR_UNSPECIFIED\0\u{1}LESS_THAN\0\u{1}LESS_THAN_OR_EQUAL\0\u{1}GREATER_THAN\0\u{1}GREATER_THAN_OR_EQUAL\0\u{1}EQUAL\0\u{1}NOT_EQUAL\0\u{1}ARRAY_CONTAINS\0\u{1}IN\0\u{1}ARRAY_CONTAINS_ANY\0\u{1}NOT_IN\0")
 }
 
 extension Google_Firestore_V1_StructuredQuery.UnaryFilter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Google_Firestore_V1_StructuredQuery.protoMessageName + ".UnaryFilter"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "op"),
-    2: .same(proto: "field"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}op\0\u{1}field\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1580,21 +1530,12 @@ extension Google_Firestore_V1_StructuredQuery.UnaryFilter: SwiftProtobuf.Message
 }
 
 extension Google_Firestore_V1_StructuredQuery.UnaryFilter.Operator: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "OPERATOR_UNSPECIFIED"),
-    2: .same(proto: "IS_NAN"),
-    3: .same(proto: "IS_NULL"),
-    4: .same(proto: "IS_NOT_NAN"),
-    5: .same(proto: "IS_NOT_NULL"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0OPERATOR_UNSPECIFIED\0\u{2}\u{2}IS_NAN\0\u{1}IS_NULL\0\u{1}IS_NOT_NAN\0\u{1}IS_NOT_NULL\0")
 }
 
 extension Google_Firestore_V1_StructuredQuery.Order: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Google_Firestore_V1_StructuredQuery.protoMessageName + ".Order"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "field"),
-    2: .same(proto: "direction"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}field\0\u{1}direction\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1633,9 +1574,7 @@ extension Google_Firestore_V1_StructuredQuery.Order: SwiftProtobuf.Message, Swif
 
 extension Google_Firestore_V1_StructuredQuery.FieldReference: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Google_Firestore_V1_StructuredQuery.protoMessageName + ".FieldReference"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    2: .standard(proto: "field_path"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{4}\u{2}field_path\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1665,9 +1604,7 @@ extension Google_Firestore_V1_StructuredQuery.FieldReference: SwiftProtobuf.Mess
 
 extension Google_Firestore_V1_StructuredQuery.Projection: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Google_Firestore_V1_StructuredQuery.protoMessageName + ".Projection"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    2: .same(proto: "fields"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\u{2}fields\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1697,14 +1634,7 @@ extension Google_Firestore_V1_StructuredQuery.Projection: SwiftProtobuf.Message,
 
 extension Google_Firestore_V1_StructuredQuery.FindNearest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Google_Firestore_V1_StructuredQuery.protoMessageName + ".FindNearest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "vector_field"),
-    2: .standard(proto: "query_vector"),
-    3: .standard(proto: "distance_measure"),
-    4: .same(proto: "limit"),
-    5: .standard(proto: "distance_result_field"),
-    6: .standard(proto: "distance_threshold"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}vector_field\0\u{3}query_vector\0\u{3}distance_measure\0\u{1}limit\0\u{3}distance_result_field\0\u{3}distance_threshold\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1762,20 +1692,12 @@ extension Google_Firestore_V1_StructuredQuery.FindNearest: SwiftProtobuf.Message
 }
 
 extension Google_Firestore_V1_StructuredQuery.FindNearest.DistanceMeasure: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "DISTANCE_MEASURE_UNSPECIFIED"),
-    1: .same(proto: "EUCLIDEAN"),
-    2: .same(proto: "COSINE"),
-    3: .same(proto: "DOT_PRODUCT"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DISTANCE_MEASURE_UNSPECIFIED\0\u{1}EUCLIDEAN\0\u{1}COSINE\0\u{1}DOT_PRODUCT\0")
 }
 
 extension Google_Firestore_V1_StructuredAggregationQuery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".StructuredAggregationQuery"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "structured_query"),
-    3: .same(proto: "aggregations"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}structured_query\0\u{2}\u{2}aggregations\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1826,12 +1748,7 @@ extension Google_Firestore_V1_StructuredAggregationQuery: SwiftProtobuf.Message,
 
 extension Google_Firestore_V1_StructuredAggregationQuery.Aggregation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Google_Firestore_V1_StructuredAggregationQuery.protoMessageName + ".Aggregation"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "count"),
-    2: .same(proto: "sum"),
-    3: .same(proto: "avg"),
-    7: .same(proto: "alias"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}count\0\u{1}sum\0\u{1}avg\0\u{2}\u{4}alias\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1920,9 +1837,7 @@ extension Google_Firestore_V1_StructuredAggregationQuery.Aggregation: SwiftProto
 
 extension Google_Firestore_V1_StructuredAggregationQuery.Aggregation.Count: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Google_Firestore_V1_StructuredAggregationQuery.Aggregation.protoMessageName + ".Count"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "up_to"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}up_to\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1956,9 +1871,7 @@ extension Google_Firestore_V1_StructuredAggregationQuery.Aggregation.Count: Swif
 
 extension Google_Firestore_V1_StructuredAggregationQuery.Aggregation.Sum: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Google_Firestore_V1_StructuredAggregationQuery.Aggregation.protoMessageName + ".Sum"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "field"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}field\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1992,9 +1905,7 @@ extension Google_Firestore_V1_StructuredAggregationQuery.Aggregation.Sum: SwiftP
 
 extension Google_Firestore_V1_StructuredAggregationQuery.Aggregation.Avg: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Google_Firestore_V1_StructuredAggregationQuery.Aggregation.protoMessageName + ".Avg"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "field"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}field\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2028,10 +1939,7 @@ extension Google_Firestore_V1_StructuredAggregationQuery.Aggregation.Avg: SwiftP
 
 extension Google_Firestore_V1_Cursor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Cursor"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "values"),
-    2: .same(proto: "before"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}values\0\u{1}before\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

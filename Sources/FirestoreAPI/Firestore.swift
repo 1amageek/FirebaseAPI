@@ -1,48 +1,31 @@
 import Foundation
-import GRPC
-import NIO
+import GRPCCore
 import SwiftProtobuf
 import Logging
-import NIOSSL
 
-public final class Firestore {
-    
-    internal var database: Database
-    internal var channel: ClientConnection
-    internal var settings: FirestoreSettings
-    internal var logger: FirestoreLogger
-    
-    public var accessTokenProvider: (any AccessTokenProvider)?
-    
-    private let eventLoopGroup: EventLoopGroup
-    
+public final class Firestore<Transport: ClientTransport>: Sendable {
+
+    internal let database: Database
+    internal let transport: Transport
+    internal let settings: FirestoreSettings
+    internal let logger: Logger
+
+    public let accessTokenProvider: (any AccessTokenProvider & Sendable)?
+
     public init(
         projectId: String,
         databaseId: String = "(default)",
-        settings: FirestoreSettings = FirestoreSettings()
+        transport: Transport,
+        settings: FirestoreSettings = FirestoreSettings(),
+        accessTokenProvider: (any AccessTokenProvider & Sendable)? = nil
     ) {
         self.database = Database(projectId: projectId, databaseId: databaseId)
+        self.transport = transport
         self.settings = settings
-        self.eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
-        
-        if settings.usesSSL {
-            self.channel = ClientConnection.usingTLSBackedByNIOSSL(on: eventLoopGroup)
-                .withConnectionTimeout(minimum: settings.timeout)
-                .connect(host: settings.host, port: settings.port)
-        } else {
-            self.channel = ClientConnection.insecure(group: eventLoopGroup)
-                .withConnectionTimeout(minimum: settings.timeout)
-                .connect(host: settings.host, port: settings.port)
-        }
-        
-        self.logger = FirestoreLogger(
-            label: "com.firestore.\(projectId)",
-            logLevel: settings.logLevel
-        )
-    }
-    
-    deinit {
-        try? self.eventLoopGroup.syncShutdownGracefully()
+        self.accessTokenProvider = accessTokenProvider
+        var logger = Logger(label: "com.firestore.\(projectId)")
+        logger.logLevel = settings.logLevel.toLoggerLevel()
+        self.logger = logger
     }
     
     public func collectionGroup(_ groupID: String) -> CollectionGroup {
@@ -85,21 +68,16 @@ public final class Firestore {
         return DocumentReference(database, parentPath: parentPath, documentID: documentID)
     }
     
-    public func batch() -> WriteBatch {
+    public func batch() -> WriteBatch<Transport> {
         return WriteBatch(firestore: self)
     }
     
     public func setLogLevel(_ level: FirestoreLogLevel) {
-        self.settings.logLevel = level
-        self.logger.setLogLevel(level)
+        var mutableLogger = self.logger
+        mutableLogger.logLevel = level.toLoggerLevel()
     }
     
     internal func getAccessToken() async throws -> String? {
         return try await accessTokenProvider?.getAccessToken(expirationDuration: 3600)
-    }
-    
-    internal func terminate() {
-        try? self.channel.close().wait()
-        try? self.eventLoopGroup.syncShutdownGracefully()
     }
 }

@@ -8,7 +8,7 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -212,15 +212,5 @@ public let Google_Api_Extensions_field_behavior = SwiftProtobuf.MessageExtension
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 extension Google_Api_FieldBehavior: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "FIELD_BEHAVIOR_UNSPECIFIED"),
-    1: .same(proto: "OPTIONAL"),
-    2: .same(proto: "REQUIRED"),
-    3: .same(proto: "OUTPUT_ONLY"),
-    4: .same(proto: "INPUT_ONLY"),
-    5: .same(proto: "IMMUTABLE"),
-    6: .same(proto: "UNORDERED_LIST"),
-    7: .same(proto: "NON_EMPTY_DEFAULT"),
-    8: .same(proto: "IDENTIFIER"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0FIELD_BEHAVIOR_UNSPECIFIED\0\u{1}OPTIONAL\0\u{1}REQUIRED\0\u{1}OUTPUT_ONLY\0\u{1}INPUT_ONLY\0\u{1}IMMUTABLE\0\u{1}UNORDERED_LIST\0\u{1}NON_EMPTY_DEFAULT\0\u{1}IDENTIFIER\0")
 }

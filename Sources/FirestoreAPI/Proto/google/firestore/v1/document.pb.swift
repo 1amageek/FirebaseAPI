@@ -8,7 +8,7 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -110,7 +110,7 @@ public struct Google_Firestore_V1_Document: Sendable {
 }
 
 /// A message that can hold any of the supported value types.
-public struct Google_Firestore_V1_Value: @unchecked Sendable {
+public struct Google_Firestore_V1_Value: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -234,7 +234,7 @@ public struct Google_Firestore_V1_Value: @unchecked Sendable {
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   /// Must have a value set.
-  public enum OneOf_ValueType: Equatable, @unchecked Sendable {
+  public enum OneOf_ValueType: Equatable, Sendable {
     /// A null value.
     case nullValue(SwiftProtobuf.Google_Protobuf_NullValue)
     /// A boolean value.
@@ -316,12 +316,7 @@ fileprivate let _protobuf_package = "google.firestore.v1"
 
 extension Google_Firestore_V1_Document: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Document"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "name"),
-    2: .same(proto: "fields"),
-    3: .standard(proto: "create_time"),
-    4: .standard(proto: "update_time"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0\u{1}fields\0\u{3}create_time\0\u{3}update_time\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -370,19 +365,7 @@ extension Google_Firestore_V1_Document: SwiftProtobuf.Message, SwiftProtobuf._Me
 
 extension Google_Firestore_V1_Value: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Value"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    11: .standard(proto: "null_value"),
-    1: .standard(proto: "boolean_value"),
-    2: .standard(proto: "integer_value"),
-    3: .standard(proto: "double_value"),
-    10: .standard(proto: "timestamp_value"),
-    17: .standard(proto: "string_value"),
-    18: .standard(proto: "bytes_value"),
-    5: .standard(proto: "reference_value"),
-    8: .standard(proto: "geo_point_value"),
-    9: .standard(proto: "array_value"),
-    6: .standard(proto: "map_value"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}boolean_value\0\u{3}integer_value\0\u{3}double_value\0\u{4}\u{2}reference_value\0\u{3}map_value\0\u{4}\u{2}geo_point_value\0\u{3}array_value\0\u{3}timestamp_value\0\u{3}null_value\0\u{4}\u{6}string_value\0\u{3}bytes_value\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -567,9 +550,7 @@ extension Google_Firestore_V1_Value: SwiftProtobuf.Message, SwiftProtobuf._Messa
 
 extension Google_Firestore_V1_ArrayValue: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ArrayValue"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "values"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}values\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -599,9 +580,7 @@ extension Google_Firestore_V1_ArrayValue: SwiftProtobuf.Message, SwiftProtobuf._
 
 extension Google_Firestore_V1_MapValue: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MapValue"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "fields"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}fields\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

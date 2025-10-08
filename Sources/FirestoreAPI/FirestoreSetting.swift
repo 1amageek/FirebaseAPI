@@ -6,25 +6,25 @@
 //
 
 import Foundation
-import GRPC
-import NIO
+import GRPCCore
+import Logging
 
-public struct FirestoreSettings {
+public struct FirestoreSettings: Sendable {
     public var host: String
     public var port: Int
     public var usesSSL: Bool
-    public var timeout: TimeAmount
+    public var timeout: Duration
     public var cacheEnabled: Bool
     public var persistenceEnabled: Bool
     public var maxConcurrentLimits: Int
     public var retryStrategy: FirestoreRetryStrategy
     public var logLevel: FirestoreLogLevel
-    
+
     public init(
         host: String = "firestore.googleapis.com",
         port: Int = 443,
         usesSSL: Bool = true,
-        timeout: TimeAmount = .seconds(30),
+        timeout: Duration = .seconds(30),
         cacheEnabled: Bool = true,
         persistenceEnabled: Bool = false,
         maxConcurrentLimits: Int = 100,
@@ -43,22 +43,22 @@ public struct FirestoreSettings {
     }
 }
 
-public enum FirestoreRetryStrategy {
+public enum FirestoreRetryStrategy: Sendable {
     case exponentialBackoff(
-        initial: TimeAmount = .milliseconds(100),
-        maximum: TimeAmount = .seconds(60),
+        initial: Duration = .milliseconds(100),
+        maximum: Duration = .seconds(60),
         multiplier: Double = 1.5,
         jitter: Double = 0.1
     )
     case linearBackoff(
-        interval: TimeAmount = .seconds(1),
-        maximum: TimeAmount = .seconds(60)
+        interval: Duration = .seconds(1),
+        maximum: Duration = .seconds(60)
     )
-    case custom((Int) -> TimeAmount?)
+    case custom(@Sendable (Int) -> Duration?)
     case none
 }
 
-public enum FirestoreLogLevel: Int {
+public enum FirestoreLogLevel: Int, Sendable {
     case trace = 0
     case debug = 1
     case info = 2
@@ -66,4 +66,16 @@ public enum FirestoreLogLevel: Int {
     case warning = 4
     case error = 5
     case critical = 6
+
+    func toLoggerLevel() -> Logger.Level {
+        switch self {
+        case .trace: return .trace
+        case .debug: return .debug
+        case .info: return .info
+        case .notice: return .notice
+        case .warning: return .warning
+        case .error: return .error
+        case .critical: return .critical
+        }
+    }
 }

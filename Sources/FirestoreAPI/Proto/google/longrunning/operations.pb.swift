@@ -8,7 +8,7 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -66,7 +66,8 @@ public struct Google_Longrunning_Operation: Sendable {
 
   /// The operation result, which can be either an `error` or a valid `response`.
   /// If `done` == `false`, neither `error` nor `response` is set.
-  /// If `done` == `true`, exactly one of `error` or `response` is set.
+  /// If `done` == `true`, exactly one of `error` or `response` can be set.
+  /// Some services might not provide the result.
   public var result: Google_Longrunning_Operation.OneOf_Result? = nil
 
   /// The error result of the operation in case of failure or cancellation.
@@ -78,7 +79,7 @@ public struct Google_Longrunning_Operation: Sendable {
     set {result = .error(newValue)}
   }
 
-  /// The normal response of the operation in case of success.  If the original
+  /// The normal, successful response of the operation.  If the original
   /// method returns no data on success, such as `Delete`, the response is
   /// `google.protobuf.Empty`.  If the original method is standard
   /// `Get`/`Create`/`Update`, the response should be the resource.  For other
@@ -98,11 +99,12 @@ public struct Google_Longrunning_Operation: Sendable {
 
   /// The operation result, which can be either an `error` or a valid `response`.
   /// If `done` == `false`, neither `error` nor `response` is set.
-  /// If `done` == `true`, exactly one of `error` or `response` is set.
+  /// If `done` == `true`, exactly one of `error` or `response` can be set.
+  /// Some services might not provide the result.
   public enum OneOf_Result: Equatable, Sendable {
     /// The error result of the operation in case of failure or cancellation.
     case error(Google_Rpc_Status)
-    /// The normal response of the operation in case of success.  If the original
+    /// The normal, successful response of the operation.  If the original
     /// method returns no data on success, such as `Delete`, the response is
     /// `google.protobuf.Empty`.  If the original method is standard
     /// `Get`/`Create`/`Update`, the response should be the resource.  For other
@@ -119,7 +121,8 @@ public struct Google_Longrunning_Operation: Sendable {
   fileprivate var _metadata: SwiftProtobuf.Google_Protobuf_Any? = nil
 }
 
-/// The request message for [Operations.GetOperation][google.longrunning.Operations.GetOperation].
+/// The request message for
+/// [Operations.GetOperation][google.longrunning.Operations.GetOperation].
 public struct Google_Longrunning_GetOperationRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -133,7 +136,8 @@ public struct Google_Longrunning_GetOperationRequest: Sendable {
   public init() {}
 }
 
-/// The request message for [Operations.ListOperations][google.longrunning.Operations.ListOperations].
+/// The request message for
+/// [Operations.ListOperations][google.longrunning.Operations.ListOperations].
 public struct Google_Longrunning_ListOperationsRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -151,12 +155,25 @@ public struct Google_Longrunning_ListOperationsRequest: Sendable {
   /// The standard list page token.
   public var pageToken: String = String()
 
+  /// When set to `true`, operations that are reachable are returned as normal,
+  /// and those that are unreachable are returned in the
+  /// [ListOperationsResponse.unreachable] field.
+  ///
+  /// This can only be `true` when reading across collections e.g. when `parent`
+  /// is set to `"projects/example/locations/-"`.
+  ///
+  /// This field is not by default supported and will result in an
+  /// `UNIMPLEMENTED` error if set unless explicitly documented otherwise in
+  /// service or product specific documentation.
+  public var returnPartialSuccess: Bool = false
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 }
 
-/// The response message for [Operations.ListOperations][google.longrunning.Operations.ListOperations].
+/// The response message for
+/// [Operations.ListOperations][google.longrunning.Operations.ListOperations].
 public struct Google_Longrunning_ListOperationsResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -168,12 +185,19 @@ public struct Google_Longrunning_ListOperationsResponse: Sendable {
   /// The standard List next-page token.
   public var nextPageToken: String = String()
 
+  /// Unordered list. Unreachable resources. Populated when the request sets
+  /// `ListOperationsRequest.return_partial_success` and reads across
+  /// collections e.g. when attempting to list all resources across all supported
+  /// locations.
+  public var unreachable: [String] = []
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 }
 
-/// The request message for [Operations.CancelOperation][google.longrunning.Operations.CancelOperation].
+/// The request message for
+/// [Operations.CancelOperation][google.longrunning.Operations.CancelOperation].
 public struct Google_Longrunning_CancelOperationRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -187,7 +211,8 @@ public struct Google_Longrunning_CancelOperationRequest: Sendable {
   public init() {}
 }
 
-/// The request message for [Operations.DeleteOperation][google.longrunning.Operations.DeleteOperation].
+/// The request message for
+/// [Operations.DeleteOperation][google.longrunning.Operations.DeleteOperation].
 public struct Google_Longrunning_DeleteOperationRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -201,7 +226,8 @@ public struct Google_Longrunning_DeleteOperationRequest: Sendable {
   public init() {}
 }
 
-/// The request message for [Operations.WaitOperation][google.longrunning.Operations.WaitOperation].
+/// The request message for
+/// [Operations.WaitOperation][google.longrunning.Operations.WaitOperation].
 public struct Google_Longrunning_WaitOperationRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -233,13 +259,12 @@ public struct Google_Longrunning_WaitOperationRequest: Sendable {
 ///
 /// Example:
 ///
-///   rpc LongRunningRecognize(LongRunningRecognizeRequest)
-///       returns (google.longrunning.Operation) {
-///     option (google.longrunning.operation_info) = {
-///       response_type: "LongRunningRecognizeResponse"
-///       metadata_type: "LongRunningRecognizeMetadata"
-///     };
-///   }
+///     rpc Export(ExportRequest) returns (google.longrunning.Operation) {
+///       option (google.longrunning.operation_info) = {
+///         response_type: "ExportResponse"
+///         metadata_type: "ExportMetadata"
+///       };
+///     }
 public struct Google_Longrunning_OperationInfo: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -334,13 +359,7 @@ fileprivate let _protobuf_package = "google.longrunning"
 
 extension Google_Longrunning_Operation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Operation"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "name"),
-    2: .same(proto: "metadata"),
-    3: .same(proto: "done"),
-    4: .same(proto: "error"),
-    5: .same(proto: "response"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0\u{1}metadata\0\u{1}done\0\u{1}error\0\u{1}response\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -422,9 +441,7 @@ extension Google_Longrunning_Operation: SwiftProtobuf.Message, SwiftProtobuf._Me
 
 extension Google_Longrunning_GetOperationRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetOperationRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "name"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -454,12 +471,7 @@ extension Google_Longrunning_GetOperationRequest: SwiftProtobuf.Message, SwiftPr
 
 extension Google_Longrunning_ListOperationsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListOperationsRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    4: .same(proto: "name"),
-    1: .same(proto: "filter"),
-    2: .standard(proto: "page_size"),
-    3: .standard(proto: "page_token"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}filter\0\u{3}page_size\0\u{3}page_token\0\u{1}name\0\u{3}return_partial_success\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -471,6 +483,7 @@ extension Google_Longrunning_ListOperationsRequest: SwiftProtobuf.Message, Swift
       case 2: try { try decoder.decodeSingularInt32Field(value: &self.pageSize) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.pageToken) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.name) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.returnPartialSuccess) }()
       default: break
       }
     }
@@ -489,6 +502,9 @@ extension Google_Longrunning_ListOperationsRequest: SwiftProtobuf.Message, Swift
     if !self.name.isEmpty {
       try visitor.visitSingularStringField(value: self.name, fieldNumber: 4)
     }
+    if self.returnPartialSuccess != false {
+      try visitor.visitSingularBoolField(value: self.returnPartialSuccess, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -497,6 +513,7 @@ extension Google_Longrunning_ListOperationsRequest: SwiftProtobuf.Message, Swift
     if lhs.filter != rhs.filter {return false}
     if lhs.pageSize != rhs.pageSize {return false}
     if lhs.pageToken != rhs.pageToken {return false}
+    if lhs.returnPartialSuccess != rhs.returnPartialSuccess {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -504,10 +521,7 @@ extension Google_Longrunning_ListOperationsRequest: SwiftProtobuf.Message, Swift
 
 extension Google_Longrunning_ListOperationsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListOperationsResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "operations"),
-    2: .standard(proto: "next_page_token"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}operations\0\u{3}next_page_token\0\u{1}unreachable\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -517,6 +531,7 @@ extension Google_Longrunning_ListOperationsResponse: SwiftProtobuf.Message, Swif
       switch fieldNumber {
       case 1: try { try decoder.decodeRepeatedMessageField(value: &self.operations) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.nextPageToken) }()
+      case 3: try { try decoder.decodeRepeatedStringField(value: &self.unreachable) }()
       default: break
       }
     }
@@ -529,12 +544,16 @@ extension Google_Longrunning_ListOperationsResponse: SwiftProtobuf.Message, Swif
     if !self.nextPageToken.isEmpty {
       try visitor.visitSingularStringField(value: self.nextPageToken, fieldNumber: 2)
     }
+    if !self.unreachable.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.unreachable, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Google_Longrunning_ListOperationsResponse, rhs: Google_Longrunning_ListOperationsResponse) -> Bool {
     if lhs.operations != rhs.operations {return false}
     if lhs.nextPageToken != rhs.nextPageToken {return false}
+    if lhs.unreachable != rhs.unreachable {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -542,9 +561,7 @@ extension Google_Longrunning_ListOperationsResponse: SwiftProtobuf.Message, Swif
 
 extension Google_Longrunning_CancelOperationRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CancelOperationRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "name"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -574,9 +591,7 @@ extension Google_Longrunning_CancelOperationRequest: SwiftProtobuf.Message, Swif
 
 extension Google_Longrunning_DeleteOperationRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteOperationRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "name"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -606,10 +621,7 @@ extension Google_Longrunning_DeleteOperationRequest: SwiftProtobuf.Message, Swif
 
 extension Google_Longrunning_WaitOperationRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".WaitOperationRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "name"),
-    2: .same(proto: "timeout"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0\u{1}timeout\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -648,10 +660,7 @@ extension Google_Longrunning_WaitOperationRequest: SwiftProtobuf.Message, SwiftP
 
 extension Google_Longrunning_OperationInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".OperationInfo"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "response_type"),
-    2: .standard(proto: "metadata_type"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}response_type\0\u{3}metadata_type\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
