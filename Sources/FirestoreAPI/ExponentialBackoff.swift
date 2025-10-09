@@ -76,7 +76,7 @@ class ExponentialBackoff {
         self.maxDelay = maxDelay
         self.jitterFactor = jitterFactor
         self.retryCount = 0
-        self.currentBase = 0.0
+        self.currentBase = initialDelay
         self.maxAttempts = maxAttempts
     }
 

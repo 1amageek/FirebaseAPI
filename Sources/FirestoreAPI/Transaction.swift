@@ -25,6 +25,7 @@ enum TransactionError: Error {
     case missingTransactionID
     case commitFailed
     case rollbackFailed
+    case maxRetriesExceeded(attempts: Int, lastError: Error)
 }
 
 public class Transaction<Transport: ClientTransport> {

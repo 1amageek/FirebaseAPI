@@ -24,6 +24,8 @@ extension Firestore {
         options: TransactionOptions = TransactionOptions()
     ) async throws -> T? {
         let transaction = Transaction(firestore: self, options: options)
+        var lastError: Error?
+
         while transaction.backoff.shouldRetry {
             do {
                 // Begin the transaction.
@@ -37,6 +39,9 @@ extension Firestore {
 
                 return result
             } catch {
+                // Save the original error
+                lastError = error
+
                 // Check if error is an aborted transaction error
                 // If so, Firestore has already rolled back the transaction automatically
                 let isAbortedError: Bool = {
@@ -56,15 +61,22 @@ extension Firestore {
                     }
                 }
 
-                // If we've hit the maximum number of attempts, rethrow the error.
+                // Try to backoff and retry
                 do {
                     try await transaction.backoff.backoffAndWait()
                 } catch {
-                    // If we've hit the maximum number of attempts, rethrow the error.
-                    throw FirestoreError.transactionFailed(error: error)
+                    // Maximum retry attempts exceeded - throw with original error
+                    throw FirestoreError.transactionFailed(error: lastError ?? error)
                 }
             }
         }
-        return nil
+
+        // This point should not be reached, but throw error if it does
+        throw FirestoreError.transactionFailed(
+            error: lastError ?? TransactionError.maxRetriesExceeded(
+                attempts: transaction.backoff.retryCount,
+                lastError: NSError(domain: "FirestoreTransaction", code: -1, userInfo: [NSLocalizedDescriptionKey: "Transaction exceeded maximum retries"])
+            )
+        )
     }
 }
