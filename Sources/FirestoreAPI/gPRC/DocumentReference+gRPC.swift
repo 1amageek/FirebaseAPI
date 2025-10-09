@@ -170,3 +170,56 @@ extension DocumentReference {
         return try FirestoreDecoder().decode(type, from: data, in: self)
     }
 }
+
+extension DocumentReference {
+
+    func addSnapshotListener<Transport: ClientTransport>(firestore: Firestore<Transport>, metadata: Metadata) async throws -> AsyncThrowingStream<DocumentSnapshot, Error> {
+        // Create a target for this specific document
+        var target = Google_Firestore_V1_Target()
+        target.documents = Google_Firestore_V1_Target.DocumentsTarget.with {
+            $0.documents = [self.name]
+        }
+        target.targetID = 1
+
+        // Listen to changes
+        let responseStream = try await firestore.listen(target: target)
+
+        // Transform ListenResponse stream to DocumentSnapshot stream
+        return AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    for try await response in responseStream {
+                        // Check the response type and handle accordingly
+                        guard let responseType = response.responseType else {
+                            continue
+                        }
+
+                        switch responseType {
+                        case .documentChange(let change):
+                            let snapshot = DocumentSnapshot(
+                                document: change.document,
+                                documentReference: self
+                            )
+                            continuation.yield(snapshot)
+
+                        case .documentDelete(_):
+                            let snapshot = DocumentSnapshot(documentReference: self)
+                            continuation.yield(snapshot)
+
+                        case .documentRemove(_):
+                            let snapshot = DocumentSnapshot(documentReference: self)
+                            continuation.yield(snapshot)
+
+                        case .targetChange(_), .filter(_):
+                            // Target changes and filters don't affect document snapshots
+                            break
+                        }
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
+    }
+}

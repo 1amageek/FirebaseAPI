@@ -24,7 +24,7 @@ Add FirebaseAPI to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/1amageek/FirebaseAPI.git", from: "1.0.0")
+    .package(url: "https://github.com/1amageek/FirebaseAPI.git", from: "0.1.0")
 ]
 ```
 
@@ -236,11 +236,12 @@ The test suite uses **Swift Testing** framework (not XCTest):
 swift test
 ```
 
-All 59 tests should pass:
+All 67 tests should pass:
 - Reference Path Tests: 9 tests
 - Query Predicate Tests: 6 tests
 - Firestore Encoder Tests: 21 tests
 - Firestore Decoder Tests: 23 tests
+- Listen API Tests: 8 tests
 
 ### Test Coverage
 
@@ -248,6 +249,7 @@ All 59 tests should pass:
 - ✅ Document reference path generation
 - ✅ Query predicates and operators
 - ✅ Property wrappers (@DocumentID, @ReferencePath, @ExplicitNull)
+- ✅ Real-time listener response processing
 - ✅ Mock transport for testing without network calls
 
 ## Dependencies
@@ -264,12 +266,51 @@ This library has been migrated to **grpc-swift-2.x**. Key changes:
 - `HPACKHeaders` → `Metadata`
 - `ClientCall` → `ClientRequest` with new API
 - Direct `GRPCClient` creation instead of connection pooling
-- Streaming APIs are currently commented out (TODO: implement with new API)
+- Bidirectional streaming now fully supported for real-time listeners
 
-## Known Limitations
+## Real-time Listeners
 
-- 🚧 Streaming APIs (`listen()`, `streamDocuments()`) are not yet implemented for grpc-swift-2
-- These are marked with `// TODO: Fix streaming API for grpc-swift-2` in the codebase
+The library now supports real-time listeners for documents and queries using bidirectional streaming:
+
+```swift
+// Listen to document changes
+let docRef = firestore.collection("users").document("user123")
+let stream = try await docRef.addSnapshotListener(firestore: firestore)
+
+for try await snapshot in stream {
+    if snapshot.exists {
+        print("Document updated: \(snapshot.data())")
+    } else {
+        print("Document deleted or doesn't exist")
+    }
+}
+```
+
+```swift
+// Listen to query changes
+let query = firestore.collection("users").where("age" >= 18)
+let stream = try await query.addSnapshotListener(firestore: firestore)
+
+for try await snapshot in stream {
+    print("Query results updated: \(snapshot.documents.count) documents")
+    for doc in snapshot.documents {
+        print(doc.data())
+    }
+}
+```
+
+Note: The stream will continue until cancelled or an error occurs. Use task cancellation to stop listening:
+
+```swift
+let task = Task {
+    for try await snapshot in stream {
+        // Process snapshot
+    }
+}
+
+// Later: stop listening
+task.cancel()
+```
 
 ## License
 

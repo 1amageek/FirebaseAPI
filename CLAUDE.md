@@ -4,7 +4,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-FirebaseAPI is a Swift package that provides a native Swift interface to interact with Google Cloud Firestore using gRPC. It implements a Firestore client that closely mirrors the official Firebase SDKs but is built entirely on Swift concurrency (async/await) and gRPC-Swift.
+### Purpose
+
+FirebaseAPI is a **server-side Swift** package that enables Firestore integration on platforms where the official Firebase SDK cannot run.
+
+**Why this library exists:**
+- The official Firebase SDK is designed for iOS/Android/Web clients and **does not support server-side Swift environments** (Linux, Vapor, Hummingbird, etc.)
+- Server-side Swift applications need direct Firestore access without depending on client SDKs
+- Existing solutions require Node.js or other runtimes, preventing pure Swift backend implementations
+
+**What this library provides:**
+- Native Swift interface to Google Cloud Firestore using gRPC
+- Full compatibility with server-side Swift frameworks (Vapor, Hummingbird)
+- Cross-platform support including Linux servers
+- API design that closely mirrors official Firebase SDKs for familiarity
+- Built entirely on Swift concurrency (async/await) and gRPC-Swift 2.x
+
+**Primary use cases:**
+- Backend services written in Swift (Vapor, Hummingbird)
+- Command-line tools and scripts
+- macOS server applications
+- Linux-based cloud deployments
+- Any Swift environment where official Firebase SDK is unavailable
 
 ## Core Architecture
 
@@ -116,6 +137,50 @@ All paths are normalized using `.normalized` extension on String to handle trail
 2. **Path Validation**: Collection IDs and document IDs are validated for empty strings and invalid characters (no "/" allowed)
 3. **Transaction Reads Before Writes**: Transactions enforce read-before-write (throws `FirestoreError.readAfterWriteError`)
 4. **Concurrent Safety**: Uses NIO EventLoopGroup with thread count = CPU cores for concurrent operations
+
+## Real-time Listeners (NEW)
+
+### Implementation Status: ✅ Completed
+
+The library now fully supports real-time listeners using grpc-swift-2's bidirectional streaming API.
+
+**Available APIs:**
+- `DocumentReference.addSnapshotListener()` - Real-time document listeners
+- `Query.addSnapshotListener()` - Real-time query listeners
+- `Firestore.listen()` - Low-level streaming API (internal)
+
+**Implementation details:**
+- Uses `client.bidirectionalStreaming()` from grpc-swift-2
+- `StreamingClientRequest` with producer closure for sending targets
+- `StreamingClientResponse.messages` (AsyncSequence) for receiving updates
+- Returns `AsyncThrowingStream` for easy consumption with `for try await`
+
+**Example usage:**
+```swift
+// Document listener
+let docRef = firestore.collection("users").document("user123")
+let stream = try await docRef.addSnapshotListener(firestore: firestore)
+for try await snapshot in stream {
+    print("Document updated: \(snapshot.data())")
+}
+
+// Query listener
+let query = firestore.collection("users").where("age" >= 18)
+let stream = try await query.addSnapshotListener(firestore: firestore)
+for try await snapshot in stream {
+    print("Query results: \(snapshot.documents.count) documents")
+}
+```
+
+**Implementation locations:**
+- `Sources/FirestoreAPI/gPRC/Firestore+gRPC.swift:214` - Core listen() implementation
+- `Sources/FirestoreAPI/gPRC/DocumentReference+gRPC.swift:176` - Document snapshot listener
+- `Sources/FirestoreAPI/gPRC/Query+gRPC.swift:145` - Query snapshot listener
+
+**Note on testing:**
+- Real-time listeners require actual Firestore connections
+- Testing should be done with live Firestore instances
+- Use task cancellation to stop listening: `task.cancel()`
 
 ## Code Organization
 

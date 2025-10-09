@@ -50,6 +50,15 @@ public struct Query {
         metadata.addString("Bearer \(accessToken)", forKey: "authorization")
         return try await getDocuments(type: type, firestore: firestore, metadata: metadata)
     }
+
+    public func addSnapshotListener<Transport: ClientTransport>(firestore: Firestore<Transport>) async throws -> AsyncThrowingStream<QuerySnapshot, Error> {
+        guard let accessToken = try await firestore.getAccessToken() else {
+            fatalError("AccessToken is empty")
+        }
+        var metadata: Metadata = [:]
+        metadata.addString("Bearer \(accessToken)", forKey: "authorization")
+        return try await addSnapshotListener(firestore: firestore, metadata: metadata)
+    }
 }
 
 extension Query {

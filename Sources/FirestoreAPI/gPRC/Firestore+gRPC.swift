@@ -211,33 +211,56 @@ extension Firestore {
         })
     }
 
-    // TODO: Fix streaming API for grpc-swift-2
-    // internal func listen(target: Google_Firestore_V1_Target) async throws -> AsyncThrowingStream<Google_Firestore_V1_ListenResponse, Error> {
-    //     let grpcClient = GRPCClient(transport: self.transport)
-    //     let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
-    //
-    //     guard let accessToken = try await self.getAccessToken() else {
-    //         throw FirestoreError.invalidAccessToken("Access token is empty")
-    //     }
-    //
-    //     var metadata: Metadata = [:]
-    //     metadata.addString("Bearer \(accessToken)", forKey: "authorization")
-    //
-    //     var initialMessage = Google_Firestore_V1_ListenRequest()
-    //     initialMessage.database = self.database.database
-    //     initialMessage.addTarget = target
-    //
-    //     return AsyncThrowingStream { continuation in
-    //         Task {
-    //             do {
-    //                 // Need to fix: ClientRequest streaming API changed in grpc-swift-2
-    //                 continuation.finish()
-    //             } catch {
-    //                 continuation.finish(throwing: error)
-    //             }
-    //         }
-    //     }
-    // }
+    internal func listen(target: Google_Firestore_V1_Target) async throws -> AsyncThrowingStream<Google_Firestore_V1_ListenResponse, Error> {
+        let grpcClient = GRPCClient(transport: self.transport)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+
+        guard let accessToken = try await self.getAccessToken() else {
+            throw FirestoreError.invalidAccessToken("Access token is empty")
+        }
+
+        let authMetadata: Metadata = ["authorization": "Bearer \(accessToken)"]
+        let databasePath = self.database.database
+
+        return AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    let request = StreamingClientRequest<Google_Firestore_V1_ListenRequest>(
+                        metadata: authMetadata,
+                        producer: { writer in
+                            // Send initial request with target
+                            var initialMessage = Google_Firestore_V1_ListenRequest()
+                            initialMessage.database = databasePath
+                            initialMessage.addTarget = target
+                            try await writer.write(initialMessage)
+
+                            // Keep the stream open - the connection stays alive until cancelled
+                            // The server will send updates as they occur
+                        }
+                    )
+
+                    _ = try await client.listen(
+                        request: request,
+                        serializer: ProtobufSerializer<Google_Firestore_V1_ListenRequest>(),
+                        deserializer: ProtobufDeserializer<Google_Firestore_V1_ListenResponse>()
+                    ) { response in
+                        Task {
+                            do {
+                                for try await message in response.messages {
+                                    continuation.yield(message)
+                                }
+                                continuation.finish()
+                            } catch {
+                                continuation.finish(throwing: error)
+                            }
+                        }
+                    }
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
+    }
 
     internal func aggregate(query: Google_Firestore_V1_StructuredQuery, aggregations: [Google_Firestore_V1_StructuredAggregationQuery.Aggregation]) async throws -> [String: Google_Firestore_V1_Value] {
         let grpcClient = GRPCClient(transport: self.transport)

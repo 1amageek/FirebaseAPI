@@ -118,6 +118,15 @@ public struct DocumentReference: Sendable {
         metadata.addString("Bearer \(accessToken)", forKey: "authorization")
         try await updateData(fields, firestore: firestore, metadata: metadata)
     }
+
+    public func addSnapshotListener<Transport: ClientTransport>(firestore: Firestore<Transport>) async throws -> AsyncThrowingStream<DocumentSnapshot, Error> {
+        guard let accessToken = try await firestore.getAccessToken() else {
+            fatalError("AccessToken is empty")
+        }
+        var metadata: Metadata = [:]
+        metadata.addString("Bearer \(accessToken)", forKey: "authorization")
+        return try await addSnapshotListener(firestore: firestore, metadata: metadata)
+    }
 }
 
 extension DocumentReference: Hashable {

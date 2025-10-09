@@ -139,3 +139,76 @@ extension Query {
         }
     }
 }
+
+extension Query {
+
+    public func addSnapshotListener<Transport: ClientTransport>(firestore: Firestore<Transport>, metadata: Metadata) async throws -> AsyncThrowingStream<QuerySnapshot, Error> {
+        // Create a target for this query
+        var target = Google_Firestore_V1_Target()
+        target.query = Google_Firestore_V1_Target.QueryTarget.with {
+            $0.parent = self.name
+            $0.structuredQuery = self.makeQuery()
+        }
+        target.targetID = 1
+
+        // Listen to changes
+        let responseStream = try await firestore.listen(target: target)
+
+        // Transform ListenResponse stream to QuerySnapshot stream
+        return AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    // Maintain a map of documents by their path
+                    var documents: [String: QueryDocumentSnapshot] = [:]
+
+                    for try await response in responseStream {
+                        var hasChanges = false
+
+                        // Check the response type and handle accordingly
+                        guard let responseType = response.responseType else {
+                            continue
+                        }
+
+                        switch responseType {
+                        case .documentChange(let change):
+                            let documentReference = DocumentReference(name: change.document.name)
+                            let snapshot = QueryDocumentSnapshot(
+                                document: change.document,
+                                documentReference: documentReference
+                            )
+                            documents[change.document.name] = snapshot
+                            hasChanges = true
+
+                        case .documentDelete(let deleteInfo):
+                            let documentName = deleteInfo.document
+                            documents.removeValue(forKey: documentName)
+                            hasChanges = true
+
+                        case .documentRemove(let removeInfo):
+                            let documentName = removeInfo.document
+                            documents.removeValue(forKey: documentName)
+                            hasChanges = true
+
+                        case .targetChange(_):
+                            hasChanges = true
+
+                        case .filter(_):
+                            // Filter changes might affect the result set
+                            hasChanges = true
+                        }
+
+                        // Emit snapshot when changes occur
+                        if hasChanges {
+                            let sortedDocuments = documents.values.sorted { $0.documentReference.path < $1.documentReference.path }
+                            let snapshot = QuerySnapshot(documents: sortedDocuments)
+                            continuation.yield(snapshot)
+                        }
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
+    }
+}
