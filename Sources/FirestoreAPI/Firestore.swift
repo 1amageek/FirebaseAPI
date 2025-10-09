@@ -33,7 +33,9 @@ public final class Firestore<Transport: ClientTransport>: Sendable {
         let connectionLogger = logger
         Task {
             do {
+                connectionLogger.info("Starting gRPC connections...")
                 try await self.grpcClient.runConnections()
+                connectionLogger.info("gRPC connections completed")
             } catch {
                 connectionLogger.error("Failed to run gRPC connections: \(error)")
             }

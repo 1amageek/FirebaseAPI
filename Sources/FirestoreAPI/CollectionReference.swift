@@ -131,6 +131,12 @@ public struct CollectionReference: Sendable {
     }
 }
 
+extension CollectionReference {
+    func toQuery() -> Query {
+        return Query(database, parentPath: parentPath, collectionID: collectionID, allDescendants: false, predicates: [])
+    }
+}
+
 extension CollectionReference: Codable {
     
     enum CodingKeys: CodingKey {

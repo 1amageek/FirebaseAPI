@@ -37,8 +37,24 @@ extension Firestore {
 
                 return result
             } catch {
-                // If an error occurs, roll back the transaction.
-                try await transaction.rollback()
+                // Check if error is an aborted transaction error
+                // If so, Firestore has already rolled back the transaction automatically
+                let isAbortedError: Bool = {
+                    if case FirestoreError.rpcError(let rpcError) = error {
+                        return rpcError.code == .aborted
+                    }
+                    return false
+                }()
+
+                // Only rollback if the transaction wasn't aborted by Firestore
+                // (aborted transactions are automatically rolled back by Firestore)
+                if !isAbortedError {
+                    do {
+                        try await transaction.rollback()
+                    } catch {
+                        // Continue to retry even if rollback fails
+                    }
+                }
 
                 // If we've hit the maximum number of attempts, rethrow the error.
                 do {

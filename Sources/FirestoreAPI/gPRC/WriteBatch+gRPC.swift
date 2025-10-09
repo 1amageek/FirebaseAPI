@@ -64,14 +64,19 @@ extension WriteBatch {
             metadata: metadata
         )
 
-        let response = try await client.commit(
-            request: request,
-            serializer: ProtobufSerializer<Google_Firestore_V1_CommitRequest>(),
-            deserializer: ProtobufDeserializer<Google_Firestore_V1_CommitResponse>()
-        ) { response in
-            try response.message
+        do {
+            let response = try await client.commit(
+                request: request,
+                serializer: ProtobufSerializer<Google_Firestore_V1_CommitRequest>(),
+                deserializer: ProtobufDeserializer<Google_Firestore_V1_CommitResponse>()
+            ) { response in
+                return try response.message
+            }
+            return response
+        } catch let error as RPCError {
+            throw FirestoreError.rpcError(error)
+        } catch {
+            throw error
         }
-
-        return response
     }
 }

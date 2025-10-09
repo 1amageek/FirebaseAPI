@@ -20,49 +20,8 @@ extension CollectionReference {
     }
 
     func getDocuments<Transport: ClientTransport>(firestore: Firestore<Transport>, metadata: Metadata) async throws -> QuerySnapshot {
-        let client = Google_Firestore_V1_Firestore.Client(wrapping: firestore.grpcClient)
-
-        var requestMessage = Google_Firestore_V1_ListDocumentsRequest()
-        requestMessage.parent = name
-        requestMessage.collectionID = collectionID
-        requestMessage.orderBy = "document_id"
-        requestMessage.showMissing = false
-
-        var documents: [QueryDocumentSnapshot] = []
-        var pageToken: String?
-
-        repeat {
-            if let token = pageToken {
-                requestMessage.pageToken = token
-            }
-
-            let request = ClientRequest<Google_Firestore_V1_ListDocumentsRequest>(
-                message: requestMessage,
-                metadata: metadata
-            )
-
-            do {
-                let response = try await client.listDocuments(
-                    request: request,
-                    serializer: ProtobufSerializer<Google_Firestore_V1_ListDocumentsRequest>(),
-                    deserializer: ProtobufDeserializer<Google_Firestore_V1_ListDocumentsResponse>()
-                ) { response in
-                    try response.message
-                }
-
-                documents.append(contentsOf: response.documents.map { document in
-                    let documentReference = DocumentReference(name: document.name)
-                    return QueryDocumentSnapshot(document: document, documentReference: documentReference)
-                })
-                pageToken = response.nextPageToken.isEmpty ? nil : response.nextPageToken
-            } catch let error as RPCError {
-                throw FirestoreError.rpcError(error)
-            } catch {
-                throw error
-            }
-        } while pageToken != nil
-
-        return QuerySnapshot(documents: documents)
+        let query = self.toQuery()
+        return try await query.getDocuments(firestore: firestore, metadata: metadata)
     }
 
     func getDocuments<T: Decodable, Transport: ClientTransport>(type: T.Type, firestore: Firestore<Transport>, metadata: Metadata) async throws -> [T] {
