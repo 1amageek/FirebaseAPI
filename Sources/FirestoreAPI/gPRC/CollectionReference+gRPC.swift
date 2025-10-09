@@ -20,8 +20,7 @@ extension CollectionReference {
     }
 
     func getDocuments<Transport: ClientTransport>(firestore: Firestore<Transport>, metadata: Metadata) async throws -> QuerySnapshot {
-        let grpcClient = GRPCClient(transport: firestore.transport)
-        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: firestore.grpcClient)
 
         var requestMessage = Google_Firestore_V1_ListDocumentsRequest()
         requestMessage.parent = name
@@ -85,8 +84,7 @@ extension CollectionReference {
     // }
 
     func listCollectionIds<Transport: ClientTransport>(firestore: Firestore<Transport>, metadata: Metadata) async throws -> [String] {
-        let grpcClient = GRPCClient(transport: firestore.transport)
-        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: firestore.grpcClient)
 
         var requestMessage = Google_Firestore_V1_ListCollectionIdsRequest()
         requestMessage.parent = name

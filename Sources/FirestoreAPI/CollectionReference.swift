@@ -112,8 +112,7 @@ public struct CollectionReference: Sendable {
             metadata: metadata
         )
 
-        let grpcClient = GRPCClient(transport: firestore.transport)
-        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: firestore.grpcClient)
 
         nonisolated(unsafe) var count = 0
         try await client.runAggregationQuery(

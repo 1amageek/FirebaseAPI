@@ -17,8 +17,7 @@ extension WriteBatch {
     }
 
     func _commit(transactionID: Data? = nil) async throws -> Google_Firestore_V1_CommitResponse {
-        let grpcClient = GRPCClient(transport: firestore.transport)
-        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: firestore.grpcClient)
 
         guard let accessToken = try await firestore.getAccessToken() else {
             fatalError("AcessToken is empty")
@@ -36,8 +35,10 @@ extension WriteBatch {
             Google_Firestore_V1_Write.with {
                 if let data = write.data {
                     let documentData = DocumentData(data: data)
-                    $0.update.name = write.documentReference.name
-                    $0.update.fields = documentData.getFields()
+                    $0.update = Google_Firestore_V1_Document.with {
+                        $0.name = write.documentReference.name
+                        $0.fields = documentData.getFields()
+                    }
                     if let exists = write.exist {
                         $0.currentDocument = .with {
                             $0.exists = exists

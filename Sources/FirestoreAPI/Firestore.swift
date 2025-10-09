@@ -9,6 +9,7 @@ public final class Firestore<Transport: ClientTransport>: Sendable {
     internal let transport: Transport
     internal let settings: FirestoreSettings
     internal let logger: Logger
+    internal let grpcClient: GRPCClient<Transport>
 
     public let accessTokenProvider: (any AccessTokenProvider & Sendable)?
 
@@ -23,9 +24,20 @@ public final class Firestore<Transport: ClientTransport>: Sendable {
         self.transport = transport
         self.settings = settings
         self.accessTokenProvider = accessTokenProvider
+        self.grpcClient = GRPCClient(transport: transport)
         var logger = Logger(label: "com.firestore.\(projectId)")
         logger.logLevel = settings.logLevel.toLoggerLevel()
         self.logger = logger
+
+        // Start the gRPC client connections
+        let connectionLogger = logger
+        Task {
+            do {
+                try await self.grpcClient.runConnections()
+            } catch {
+                connectionLogger.error("Failed to run gRPC connections: \(error)")
+            }
+        }
     }
     
     public func collectionGroup(_ groupID: String) -> CollectionGroup {

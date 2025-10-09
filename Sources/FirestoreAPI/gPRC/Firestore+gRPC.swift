@@ -7,8 +7,7 @@ import Logging
 extension Firestore {
 
     internal func batchGetDocuments(documentReferences: [DocumentReference], transactionID: Data?) async throws -> [DocumentSnapshot] {
-        let grpcClient = GRPCClient(transport: self.transport)
-        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: self.grpcClient)
 
         guard let accessToken = try await self.getAccessToken() else {
             throw FirestoreError.invalidAccessToken("Access token is empty")
@@ -70,8 +69,7 @@ extension Firestore {
     }
 
     internal func runQuery(query: Google_Firestore_V1_StructuredQuery, transactionID: Data?) async throws -> QuerySnapshot {
-        let grpcClient = GRPCClient(transport: self.transport)
-        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: self.grpcClient)
 
         guard let accessToken = try await self.getAccessToken() else {
             throw FirestoreError.invalidAccessToken("Access token is empty")
@@ -123,8 +121,7 @@ extension Firestore {
     }
 
     internal func beginTransaction(readOnly: Bool, readTime: Timestamp?) async throws -> Google_Firestore_V1_BeginTransactionResponse {
-        let grpcClient = GRPCClient(transport: self.transport)
-        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: self.grpcClient)
 
         guard let accessToken = try await self.getAccessToken() else {
             throw FirestoreError.invalidAccessToken("Access token is empty")
@@ -175,8 +172,7 @@ extension Firestore {
     }
 
     internal func rollbackTransaction(transactionID: Data) async throws -> SwiftProtobuf.Google_Protobuf_Empty {
-        let grpcClient = GRPCClient(transport: self.transport)
-        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: self.grpcClient)
 
         guard let accessToken = try await self.getAccessToken() else {
             throw FirestoreError.invalidAccessToken("Access token is empty")
@@ -212,8 +208,7 @@ extension Firestore {
     }
 
     internal func listen(target: Google_Firestore_V1_Target) async throws -> AsyncThrowingStream<Google_Firestore_V1_ListenResponse, Error> {
-        let grpcClient = GRPCClient(transport: self.transport)
-        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: self.grpcClient)
 
         guard let accessToken = try await self.getAccessToken() else {
             throw FirestoreError.invalidAccessToken("Access token is empty")
@@ -263,8 +258,7 @@ extension Firestore {
     }
 
     internal func aggregate(query: Google_Firestore_V1_StructuredQuery, aggregations: [Google_Firestore_V1_StructuredAggregationQuery.Aggregation]) async throws -> [String: Google_Firestore_V1_Value] {
-        let grpcClient = GRPCClient(transport: self.transport)
-        let client = Google_Firestore_V1_Firestore.Client(wrapping: grpcClient)
+        let client = Google_Firestore_V1_Firestore.Client(wrapping: self.grpcClient)
 
         guard let accessToken = try await self.getAccessToken() else {
             throw FirestoreError.invalidAccessToken("Access token is empty")

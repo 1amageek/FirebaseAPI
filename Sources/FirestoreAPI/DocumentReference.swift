@@ -66,12 +66,20 @@ public struct DocumentReference: Sendable {
     }
 
     public func setData<Transport: ClientTransport>(_ documentData: [String: Any], merge: Bool = false, firestore: Firestore<Transport>) async throws {
+        print("[FirebaseAPI.DocumentReference] 📝 Wrapper setData (no metadata param) called")
+        print("[FirebaseAPI.DocumentReference] 📝 Getting access token from firestore...")
         guard let accessToken = try await firestore.getAccessToken() else {
+            print("[FirebaseAPI.DocumentReference] ❌ AccessToken is empty!")
             fatalError("AccessToken is empty")
         }
+        print("[FirebaseAPI.DocumentReference] ✅ AccessToken obtained in wrapper: \(accessToken.prefix(20))...")
+        print("[FirebaseAPI.DocumentReference] 📝 Creating metadata with Bearer token...")
         var metadata: Metadata = [:]
         metadata.addString("Bearer \(accessToken)", forKey: "authorization")
+        print("[FirebaseAPI.DocumentReference] ✅ Metadata created")
+        print("[FirebaseAPI.DocumentReference] 📝 Calling setData with metadata parameter...")
         try await setData(documentData, merge: merge, firestore: firestore, metadata: metadata)
+        print("[FirebaseAPI.DocumentReference] ✅ Wrapper setData completed")
     }
 
     public func updateData<Transport: ClientTransport>(_ fields: [String: Any], firestore: Firestore<Transport>) async throws {
