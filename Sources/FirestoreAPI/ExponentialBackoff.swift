@@ -37,7 +37,7 @@ enum ExponentialBackoffError: Error {
  }
  Parameters:
 
- initialDelay: The initial delay in seconds before the first retry. Default is 1.0 second.
+ initialDelay: The initial delay in seconds before the first retry. Default is 0.25 second.
  backoffFactor: The multiplier applied to the current delay to calculate the next delay. Default is 1.5.
  maxDelay: The maximum delay in seconds between retries. Default is 60.0 seconds.
  jitterFactor: The factor to introduce jitter in the delays. Jitter helps distribute the retries over a range of time to avoid potential congestion. Default is 1.0 (no jitter).
@@ -58,14 +58,14 @@ class ExponentialBackoff {
      Initializes an instance of ExponentialBackoff with the specified parameters.
 
      Parameters:
-     initialDelay: The initial delay in seconds before the first retry. Default is 1.0 second.
+     initialDelay: The initial delay in seconds before the first retry. Default is 0.25 second.
      backoffFactor: The multiplier applied to the current delay to calculate the next delay. Default is 1.5.
      maxDelay: The maximum delay in seconds between retries. Default is 60.0 seconds.
      jitterFactor: The factor to introduce jitter in the delays. Jitter helps distribute the retries over a range of time to avoid potential congestion. Default is 1.0 (no jitter).
      maxAttempts: The maximum number of retry attempts. Default is 5.
      */
     init(
-        initialDelay: TimeInterval = 1.0,
+        initialDelay: TimeInterval = 0.25,
         backoffFactor: Double = 1.5,
         maxDelay: TimeInterval = 60.0,
         jitterFactor: Double = 1.0,
@@ -85,7 +85,7 @@ class ExponentialBackoff {
      */
     func reset() {
         self.retryCount = 0
-        self.currentBase = 0.0
+        self.currentBase = initialDelay
     }
 
     /**
@@ -120,7 +120,6 @@ class ExponentialBackoff {
 
         let delayWithJitter = self.currentBase + self.jitterDelay()
         self.currentBase *= self.backoffFactor
-        self.currentBase = max(self.currentBase, self.initialDelay)
         self.currentBase = min(self.currentBase, self.maxDelay)
         self.retryCount += 1
 
