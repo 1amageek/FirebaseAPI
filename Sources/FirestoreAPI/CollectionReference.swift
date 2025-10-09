@@ -29,14 +29,16 @@ public struct CollectionReference: Sendable {
         self.collectionID = collectionID
     }
     
-    public var parent: CollectionReference? {
+    public var parent: DocumentReference? {
         guard let parentPath else { return nil }
         let components = parentPath
             .split(separator: "/")
             .filter({ !$0.isEmpty })
-        let path = components.dropLast(1).joined(separator: "/")
-        let collectionID = String(components.last!)
-        return CollectionReference(database, parentPath: path, collectionID: collectionID)
+        guard !components.isEmpty else { return nil }
+
+        let documentID = String(components.last!)
+        let parentPathForDocument = components.dropLast(1).joined(separator: "/")
+        return DocumentReference(database, parentPath: parentPathForDocument, documentID: documentID)
     }
     
     public func document(_ id: String = IDGenerator.generate()) -> DocumentReference {

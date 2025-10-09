@@ -8,7 +8,7 @@ public final class Firestore<Transport: ClientTransport>: Sendable {
     internal let database: Database
     internal let transport: Transport
     internal let settings: FirestoreSettings
-    internal let logger: Logger
+    internal nonisolated(unsafe) var logger: Logger
     internal let grpcClient: GRPCClient<Transport>
 
     public let accessTokenProvider: (any AccessTokenProvider & Sendable)?
@@ -87,8 +87,7 @@ public final class Firestore<Transport: ClientTransport>: Sendable {
     }
     
     public func setLogLevel(_ level: FirestoreLogLevel) {
-        var mutableLogger = self.logger
-        mutableLogger.logLevel = level.toLoggerLevel()
+        self.logger.logLevel = level.toLoggerLevel()
     }
     
     internal func getAccessToken() async throws -> String? {

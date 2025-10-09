@@ -147,7 +147,7 @@ extension DocumentReference: Codable {
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(database.database, forKey: .database)
+        try container.encode(database, forKey: .database)
         try container.encode(path, forKey: .path)
     }
     
@@ -159,7 +159,7 @@ extension DocumentReference: Codable {
             .split(separator: "/")
             .filter({ !$0.isEmpty })
         let documentID = String(components.last!)
-        let parentPath = components.dropLast(0).joined(separator: "/")
+        let parentPath = components.dropLast(1).joined(separator: "/")
         self.init(database, parentPath: parentPath, documentID: documentID)
     }
 }

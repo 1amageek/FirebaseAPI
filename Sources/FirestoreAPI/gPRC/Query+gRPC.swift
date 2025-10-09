@@ -48,12 +48,12 @@ extension Query {
                     query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
                 case .isGreaterThanOrEqualTo(_, _):
                     query.where = predicate.makeFilter(database: database, collectionID: collectionID)!
-                case .orderBy(let field, let ascending):
+                case .orderBy(let field, let descending):
                     query.orderBy.append(Google_Firestore_V1_StructuredQuery.Order.with {
                         $0.field = Google_Firestore_V1_StructuredQuery.FieldReference.with {
                             $0.fieldPath = field
                         }
-                        $0.direction = ascending ? .ascending : .descending
+                        $0.direction = descending ? .descending : .ascending
                     })
                 case .limitTo(let count):
                     query.limit = Google_Protobuf_Int32Value.with {
