@@ -701,11 +701,14 @@ struct ServerSideAPISafetyTests {
             "@_exported import FirestoreRuntimeConfig"
         ])
 
-        #expect(packageSource.components(separatedBy: ".library(").count - 1 == 3)
+        #expect(packageSource.components(separatedBy: ".library(").count - 1 == 4)
         #expect(packageSource.contains("name: \"FirestoreAPI\",\n            targets: [\"FirestoreAPI\"]"))
         #expect(packageSource.contains("name: \"FirestoreAdminServer\",\n            targets: [\"FirestoreAdminServer\"]"))
+        #expect(packageSource.contains("name: \"FirestoreEmbedded\",\n            targets: [\"FirestoreEmbedded\"]"))
         #expect(packageSource.contains("name: \"FirestoreMongoCore\",\n            targets: [\"FirestoreMongoCore\"]"))
+        #expect(packageSource.contains("name: \"FirestoreEmbedded\""))
         #expect(packageSource.contains("name: \"FirestoreMongoCore\""))
+        #expect(packageSource.contains("\"FirestoreEmbedded\""))
         #expect(packageSource.contains("\"FirestoreMongoCore\""))
         #expect(packageSource.contains("name: \"FirestoreAdminServer\""))
         #expect(packageSource.contains("targets: [\"FirestoreAdminServer\"]"))
@@ -742,6 +745,7 @@ struct ServerSideAPISafetyTests {
         )
 
         let forbiddenAdminServerExports = [
+            "@_exported import FirestoreEmbedded",
             "@_exported import FirestoreMongoCore",
             "@_exported import FirestoreRPC",
             "@_exported import FirestorePipelineRPC",
@@ -766,6 +770,7 @@ struct ServerSideAPISafetyTests {
             packageSource[adminServerTargetStart.lowerBound..<adminServerTargetEnd.lowerBound]
         )
         let forbiddenAdminServerDependencies = [
+            "\"FirestoreEmbedded\"",
             "\"FirestoreMongoCore\"",
             "\"FirestoreRPC\"",
             "\"FirestorePipelineRPC\"",
@@ -870,6 +875,69 @@ struct ServerSideAPISafetyTests {
         }
     }
 
+    @Test("FirestoreEmbedded remains dependency-free")
+    func testFirestoreEmbeddedRemainsDependencyFree() throws {
+        let rootURL = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let packageSource = try String(contentsOf: rootURL.appending(path: "Package.swift"), encoding: .utf8)
+        let embeddedReadinessScript = try String(
+            contentsOf: rootURL.appending(path: "scripts/check-embedded-readiness.sh"),
+            encoding: .utf8
+        )
+        let embeddedRootURL = rootURL.appending(path: "Sources/FirestoreEmbedded")
+        guard let enumerator = FileManager.default.enumerator(
+            at: embeddedRootURL,
+            includingPropertiesForKeys: nil
+        ) else {
+            Issue.record("FirestoreEmbedded source directory should be readable.")
+            return
+        }
+
+        #expect(packageSource.contains("name: \"FirestoreEmbedded\",\n            targets: [\"FirestoreEmbedded\"]"))
+        #expect(packageSource.contains("        .target(\n            name: \"FirestoreEmbedded\"),"))
+        #expect(embeddedReadinessScript.contains("swift +6.3.1"))
+        #expect(embeddedReadinessScript.contains("--target FirestoreEmbedded"))
+        #expect(embeddedReadinessScript.contains("-enable-experimental-feature"))
+        #expect(embeddedReadinessScript.contains("Embedded"))
+
+        let forbiddenTokens = [
+            "import ",
+            "Foundation",
+            "FirestoreCore",
+            "FirestoreRPC",
+            "FirestorePipeline",
+            "FirestoreProtobuf",
+            "FirestoreGRPCStubs",
+            "FirestoreGRPCTransport",
+            "GRPCCore",
+            "GRPCProtobuf",
+            "GRPCNIOTransport",
+            "SwiftProtobuf",
+            "Google_Firestore",
+            "Google_Protobuf",
+            "ClientTransport",
+            "RPCError",
+            "URLSession",
+            "DispatchQueue",
+            "EventLoopFuture",
+            "try?",
+            "try!"
+        ]
+        var checkedFileCount = 0
+
+        for case let sourceURL as URL in enumerator where sourceURL.pathExtension == "swift" {
+            checkedFileCount += 1
+            let source = try String(contentsOf: sourceURL, encoding: .utf8)
+            for token in forbiddenTokens {
+                #expect(!source.contains(token), "\(sourceURL.path()) should keep \(token) out of FirestoreEmbedded.")
+            }
+        }
+
+        #expect(checkedFileCount > 0, "FirestoreEmbedded source files should be checked.")
+    }
+
     @Test("README test count matches Swift Testing declarations")
     func testREADMETestCountMatchesSwiftTestingDeclarations() throws {
         let rootURL = URL(fileURLWithPath: #filePath)
@@ -954,6 +1022,8 @@ struct ServerSideAPISafetyTests {
             "FirestoreMongoCore must not depend on Native RPC, Pipeline RPC, Native GeoQuery, protobuf, or grpc-swift transport",
             "StructuredQuery",
             "ExecutePipeline",
+            "Checking Embedded Swift product readiness",
+            "bash scripts/check-embedded-readiness.sh",
             "swift package dump-symbol-graph --minimum-access-level public --skip-synthesized-members",
             "public symbol graph must not expose protobuf, gRPC transport, or internal planning symbols",
             "clearPersistence|enableNetwork|disableNetwork|waitForPendingWrites|ListenerRegistration|snapshotsInSync",
@@ -991,6 +1061,7 @@ struct ServerSideAPISafetyTests {
             #expect(script.contains(token), "Release readiness script should contain \(token).")
         }
         #expect(readme.contains("bash scripts/check-release-readiness.sh"))
+        #expect(readme.contains("bash scripts/check-embedded-readiness.sh"))
         #expect(readme.contains("xcodebuild -scheme FirebaseAPI-Package"))
         #expect(readme.contains("public symbol graph"))
         #expect(readme.contains("bash scripts/run-live-firestore-smoke.sh"))

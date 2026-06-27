@@ -17,6 +17,7 @@ This repository includes the [googleapis](https://github.com/googleapis/googleap
 - ✅ **Vector Search**: Core `findNearest` query support plus Firestore Pipeline vector nearest and distance functions
 - ✅ **GeoQuery**: Native Firestore geohash range queries with GeoPoint distance filtering
 - ✅ **Mongo-Compatible Geo Query Documents**: Separate Mongo-compatible GeoJSON `$near` query and `2dsphere` index builders without mixing them into Native Query
+- ✅ **Embedded Swift Descriptors**: Dependency-free `FirestoreEmbedded` product for Firestore-compatible value, reference, and query descriptors in Embedded Swift builds
 - ✅ **Transport-backed Runtime**: Support for any `ClientTransport` implementation from grpc-swift-2 without leaking transport types through app code
 - ✅ **Swift 6 Ready**: Full concurrency support with `async/await` and `Sendable`
 - ✅ **Type-safe Encoding/Decoding**: FirestoreEncoder and FirestoreDecoder for seamless Swift type conversion
@@ -49,7 +50,7 @@ Then add it to your target dependencies:
 )
 ```
 
-`FirestoreAdminServer` is the preferred server-side Firestore Admin product. `FirestoreAPI` remains available as a source-compatible all-in-one import for existing applications. Add the `FirestoreMongoCore` product explicitly only when building MongoDB-compatible query documents.
+`FirestoreAdminServer` is the preferred server-side Firestore Admin product. `FirestoreAPI` remains available as a source-compatible all-in-one import for existing applications. Add the `FirestoreMongoCore` product explicitly only when building MongoDB-compatible query documents. Add the `FirestoreEmbedded` product explicitly for Embedded Swift value/reference/query descriptors; it does not include gRPC, protobuf, authentication, Codable, or network execution.
 
 ## Usage
 
@@ -91,6 +92,22 @@ Call `shutdown()` during service teardown so the underlying gRPC client stops ac
 ```swift
 await firestore.shutdown()
 ```
+
+### Embedded Swift Descriptors
+
+`FirestoreEmbedded` is a separate dependency-free product for embedded environments that need Firestore-compatible descriptors without the Admin transport stack.
+
+```swift
+import FirestoreEmbedded
+
+let database = try FirestoreEmbeddedDatabase(projectID: "demo-project")
+let query = try FirestoreEmbeddedQuery(database: database, collectionPath: "devices")
+    .where(.field("active", .equal, .bool(true)))
+    .order(by: "updatedAt", descending: true)
+    .limit(to: 10)
+```
+
+`FirestoreAdminServer` and `FirestoreAPI` are not Embedded Swift products because they depend on Foundation, authentication, Codable, protobuf, grpc-swift, and network transport.
 
 ### Basic CRUD Operations
 
@@ -270,6 +287,7 @@ The implementation is split into these responsibilities:
 - **Public facade**: `FirestoreAdmin` and server-side Admin builders such as `FirestoreAdminWriteBatch` and `FirestoreAdminBulkWriter`
 - **Recommended server-side product**: `FirestoreAdminServer` re-exports the Admin facade, Admin Codable helpers, gRPC bootstrap, Auth, Core, Codable, Pipeline, RuntimeConfig, and Native GeoQuery targets without re-exporting Mongo-compatible query documents or RPC/transport implementation targets
 - **Compatibility import surface**: `FirestoreAPI` re-exports the dedicated `FirestoreAdmin`, `FirestoreAdminCodable`, Core, Codable, Pipeline, Auth, Native GeoQuery, and Mongo-compatible query document targets so existing applications can keep importing one module
+- **Embedded boundary**: `FirestoreEmbedded` owns dependency-free Firestore value, reference, and query descriptors for Embedded Swift builds; it does not depend on Core, Codable, protobuf, gRPC, Auth, or transport modules
 - **Admin write staging**: `FirestoreAdminWriteBuffer` centralizes internal write buffering, database validation, read-only transaction rejection, and BulkWriter duplicate-document checks
 - **Reference/query core**: `DocumentReference`, `CollectionReference`, `CollectionGroup`, `Query`, snapshots, path construction, query planning state, and runtime delegation without grpc-swift transport dependencies
 - **Codable boundary**: `FirestoreCodable` owns `FirestoreEncoder`, `FirestoreDecoder`, Firestore property wrappers, and reference/query/snapshot Codable convenience extensions; `FirestoreAdminCodable` owns Admin builder and transaction Codable overloads
@@ -386,7 +404,7 @@ The test suite uses **Swift Testing** framework (not XCTest):
 perl -e 'alarm shift; exec @ARGV' 90 xcodebuild -scheme FirebaseAPI-Package -destination 'platform=macOS' test
 ```
 
-The current suite should pass with 402 tests across 19 suites.
+The current suite should pass with 409 tests across 20 suites.
 
 To run the full local release-readiness gate:
 
@@ -395,6 +413,12 @@ bash scripts/check-release-readiness.sh
 ```
 
 The release-readiness gate also dumps the public symbol graph and fails if protobuf, gRPC transport, or internal query-planning symbols leak into the public API.
+
+To run only the Embedded Swift product check:
+
+```bash
+bash scripts/check-embedded-readiness.sh
+```
 
 The current implementation and verification status is tracked in [docs/FirestoreAdminCompletionAudit.md](docs/FirestoreAdminCompletionAudit.md).
 

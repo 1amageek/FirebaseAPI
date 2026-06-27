@@ -4,7 +4,7 @@
 
 ### Breaking Changes
 
-- Split the package into focused Firestore modules and products. `FirestoreAdminServer` is now the preferred server-side Admin product, `FirestoreMongoCore` is the explicit Mongo-compatible query document product, and `FirestoreAPI` remains the compatibility all-in-one import.
+- Split the package into focused Firestore modules and products. `FirestoreAdminServer` is now the preferred server-side Admin product, `FirestoreMongoCore` is the explicit Mongo-compatible query document product, `FirestoreEmbedded` is the explicit Embedded Swift descriptor product, and `FirestoreAPI` remains the compatibility all-in-one import.
 - Raised package requirements to Swift 6.2 and modern Apple platform baselines.
 - Removed the old public gRPC-adjacent implementation surface from the compatibility target. Generated protobuf and gRPC stubs now live in package-internal implementation targets.
 - Removed client-only Firebase iOS SDK behavior from the server Admin surface, including local cache and network toggle APIs.
@@ -18,6 +18,7 @@
 - Firestore Pipeline support, including typed stages, subqueries, Pipeline Search, DML stages, vector operations, geospatial distance expressions, and Pipeline Explain.
 - Native geohash GeoQuery support with exact distance filtering.
 - Separate MongoDB-compatible GeoJSON `$near` query and `2dsphere` index document builders.
+- Dependency-free `FirestoreEmbedded` value, reference, filter, and query descriptors for Embedded Swift builds.
 - Release-readiness checks for public symbol leakage, RPC ownership boundaries, generated source containment, Native/Mongo responsibility separation, and live-smoke diagnostics.
 
 ### Changed
@@ -32,6 +33,7 @@
 
 - `swift build --configuration debug`
 - `swift package update`
+- `bash scripts/check-embedded-readiness.sh`
 - `bash scripts/check-release-readiness.sh`
 - Firestore emulator integration via `firebase emulators:exec`
 - Firestore emulator Pipeline smoke via `FIRESTORE_EMULATOR_PIPELINE_SMOKE=1`

@@ -88,6 +88,9 @@ assert_no_matches \
   "FirestoreMongoCore must not depend on Native RPC, Pipeline RPC, Native GeoQuery, protobuf, or grpc-swift transport" \
   rg -n "import FirestoreGeoQuery|import FirestorePipeline|import FirestoreRPC|import FirestorePipelineRPC|import FirestoreProtobuf|import FirestoreGRPCStubs|import FirestoreGRPCTransport|import GRPCCore|import GRPCProtobuf|import GRPCNIOTransport|Google_Firestore|Google_Protobuf|SwiftProtobuf|ClientTransport|RPCError|StructuredQuery|ExecutePipeline|QueryCompiler|QueryPredicateFilterCompiler|PipelineCompiler" Sources/FirestoreMongoCore -S
 
+printf 'Checking Embedded Swift product readiness...\n'
+bash scripts/check-embedded-readiness.sh
+
 printf 'Checking public symbol graph surface...\n'
 swift package dump-symbol-graph --minimum-access-level public --skip-synthesized-members >/dev/null
 assert_no_matches \

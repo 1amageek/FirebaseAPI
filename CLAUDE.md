@@ -178,6 +178,7 @@ Sources/FirestoreAPI/
 Sources/FirestoreAdmin/               Server-side Admin facade
 Sources/FirestoreAdminServer/         Preferred server-side product re-exports
 Sources/FirestoreCore/                Public model/query/reference/snapshot types
+Sources/FirestoreEmbedded/            Dependency-free Embedded Swift descriptors
 Sources/FirestoreCodable/             FirestoreEncoder, FirestoreDecoder, property wrappers
 Sources/FirestoreRPC/                 Native Firestore compilers and response mappers
 Sources/FirestorePipelineRPC/         Pipeline compiler and response mapper
