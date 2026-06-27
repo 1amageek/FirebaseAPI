@@ -12,14 +12,6 @@ import Testing
 @Suite("Firestore Encoder Tests")
 struct FirestoreEncoderTests {
 
-    let dateFormatter: DateFormatter = {
-        let dateFormatter = DateFormatter()
-        dateFormatter.timeZone = .autoupdatingCurrent
-        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
-        return dateFormatter
-    }()
-
     @Test("Encode DocumentID property wrapper")
     func testEncoderDocumentID() throws {
         struct Nested: Identifiable, Codable, Equatable {
@@ -57,6 +49,33 @@ struct FirestoreEncoderTests {
 
         #expect(key == "key")
         #expect(value == nil)
+    }
+
+    @Test("Encode ServerTimestamp property wrapper")
+    func testEncoderServerTimestamp() throws {
+        struct Object: Codable, Equatable {
+            @ServerTimestamp var updatedAt: Timestamp?
+        }
+
+        let data = try FirestoreEncoder().encode(Object())
+        let value = data["updatedAt"] as? FieldValue
+
+        if case .serverTimestamp = value {
+            #expect(true)
+        } else {
+            Issue.record("Expected server timestamp sentinel")
+        }
+    }
+
+    @Test("Encode ServerTimestamp property wrapper value")
+    func testEncoderServerTimestampValue() throws {
+        struct Object: Codable, Equatable {
+            @ServerTimestamp var updatedAt: Timestamp? = Timestamp(seconds: 1, nanos: 2)
+        }
+
+        let data = try FirestoreEncoder().encode(Object())
+
+        #expect(data["updatedAt"] as? Timestamp == Timestamp(seconds: 1, nanos: 2))
     }
 
     @Test("Encode String value")
@@ -144,10 +163,10 @@ struct FirestoreEncoderTests {
         }
         let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
-        let value = data["key"] as! String
+        let value = data["key"] as! Timestamp
 
         #expect(key == "key")
-        #expect(value == dateFormatter.string(from: Date(timeIntervalSince1970: 0)))
+        #expect(value == Timestamp(seconds: 0, nanos: 0))
     }
 
     @Test("Encode Timestamp value")
@@ -187,6 +206,19 @@ struct FirestoreEncoderTests {
 
         #expect(key == "key")
         #expect(value == DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))
+    }
+
+    @Test("Encode Data value")
+    func testEncoderData() throws {
+        struct Object: Codable, Equatable {
+            var key: Data = Data([1, 2, 3])
+        }
+        let data = try FirestoreEncoder().encode(Object())
+        let key = data.keys.first!
+        let value = data["key"] as! Data
+
+        #expect(key == "key")
+        #expect(value == Data([1, 2, 3]))
     }
 
     @Test("Encode String array")
@@ -235,10 +267,10 @@ struct FirestoreEncoderTests {
         }
         let data = try FirestoreEncoder().encode(Object())
         let key = data.keys.first!
-        let value = data["key"] as! [String]
+        let value = data["key"] as! [Timestamp]
 
         #expect(key == "key")
-        #expect(value == [dateFormatter.string(from: Date(timeIntervalSince1970: 0)), dateFormatter.string(from: Date(timeIntervalSince1970: 1))])
+        #expect(value == [Timestamp(seconds: 0, nanos: 0), Timestamp(seconds: 1, nanos: 0)])
     }
 
     @Test("Encode Timestamp array")
@@ -336,7 +368,7 @@ struct FirestoreEncoderTests {
         #expect(data["bool"] as! Bool == true)
         #expect(data["array"] as! [String] == ["0", "1"])
         #expect(data["map"] as! [String: String] == ["key": "value"])
-        #expect(data["date"] as! String == dateFormatter.string(from: Date(timeIntervalSince1970: 0)))
+        #expect(data["date"] as! Timestamp == Timestamp(seconds: 0, nanos: 0))
         #expect(data["timestamp"] as! Timestamp == Timestamp(seconds: 0, nanos: 0))
         #expect(data["geoPoint"] as! GeoPoint == GeoPoint(latitude: 0, longitude: 0))
         #expect(data["reference"] as! DocumentReference == DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))
@@ -348,7 +380,7 @@ struct FirestoreEncoderTests {
         #expect(next["bool"] as! Bool == true)
         #expect(next["array"] as! [String] == ["0", "1"])
         #expect(next["map"] as! [String: String] == ["key": "value"])
-        #expect(next["date"] as! String == dateFormatter.string(from: Date(timeIntervalSince1970: 0)))
+        #expect(next["date"] as! Timestamp == Timestamp(seconds: 0, nanos: 0))
         #expect(next["timestamp"] as! Timestamp == Timestamp(seconds: 0, nanos: 0))
         #expect(next["geoPoint"] as! GeoPoint == GeoPoint(latitude: 0, longitude: 0))
         #expect(next["reference"] as! DocumentReference == DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))
@@ -360,7 +392,7 @@ struct FirestoreEncoderTests {
         #expect(deep["bool"] as! Bool == true)
         #expect(deep["array"] as! [String] == ["0", "1"])
         #expect(deep["map"] as! [String: String] == ["key": "value"])
-        #expect(data["date"] as! String == dateFormatter.string(from: Date(timeIntervalSince1970: 0)))
+        #expect(deep["date"] as! Timestamp == Timestamp(seconds: 0, nanos: 0))
         #expect(deep["timestamp"] as! Timestamp == Timestamp(seconds: 0, nanos: 0))
         #expect(deep["geoPoint"] as! GeoPoint == GeoPoint(latitude: 0, longitude: 0))
         #expect(deep["reference"] as! DocumentReference == DocumentReference(Database(projectId: "project"), parentPath: "documents", documentID: "id"))

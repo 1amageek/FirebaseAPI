@@ -7,3 +7,11 @@ DerivedData/
 .swiftpm/config/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
+/.cache/
+/firebase-debug.log
+/firestore-debug.log
+/database-debug.log
+/pubsub-debug.log
+/ui-debug.log
+/ServiceAccount.json
+/.env

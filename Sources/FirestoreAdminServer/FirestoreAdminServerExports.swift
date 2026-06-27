@@ -1,0 +1,10 @@
+@_exported import FirestoreAdmin
+@_exported import FirestoreAdminCodable
+@_exported import FirestoreAdminGRPCBootstrap
+@_exported import FirestoreAuth
+@_exported import FirestoreAuthCore
+@_exported import FirestoreCodable
+@_exported import FirestoreCore
+@_exported import FirestoreGeoQuery
+@_exported import FirestorePipeline
+@_exported import FirestoreRuntimeConfig

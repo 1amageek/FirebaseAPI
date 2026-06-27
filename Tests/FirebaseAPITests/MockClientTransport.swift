@@ -6,18 +6,28 @@
 //
 
 import Foundation
+import FirestoreAdminGRPCBootstrap
+import FirestoreAuth
+import FirestoreGRPCTransport
+import FirestoreRuntimeConfig
 import GRPCCore
+@testable import FirestoreAPI
+@testable import FirestoreAdmin
 
 /// Mock ClientTransport for testing
 struct MockClientTransport: ClientTransport {
     typealias Bytes = [UInt8]
+
+    private let state = MockClientTransportState()
 
     var retryThrottle: RetryThrottle? {
         return nil
     }
 
     func connect() async throws {
-        // No-op for mock - tests don't actually connect
+        while await !state.isShuttingDown {
+            try await Task.sleep(for: .milliseconds(10))
+        }
     }
 
     func withStream<T: Sendable>(
@@ -34,6 +44,39 @@ struct MockClientTransport: ClientTransport {
     }
 
     func beginGracefulShutdown() {
-        // No-op for mock
+        Task {
+            await state.beginShutdown()
+        }
+    }
+}
+
+private actor MockClientTransportState {
+    private var shuttingDown = false
+
+    var isShuttingDown: Bool {
+        shuttingDown
+    }
+
+    func beginShutdown() {
+        shuttingDown = true
+    }
+}
+
+extension FirestoreAdmin {
+    convenience init<Transport: ClientTransport>(
+        projectId: String,
+        databaseId: String = "(default)",
+        transport: Transport,
+        settings: FirestoreSettings = FirestoreSettings(),
+        accessTokenProvider: (any AccessTokenProvider & Sendable)? = nil
+    ) {
+        let transportRuntime = FirestoreGRPCTransportFactory.make(
+            projectId: projectId,
+            databaseId: databaseId,
+            transport: transport,
+            settings: settings,
+            accessTokenProvider: accessTokenProvider
+        )
+        self.init(transportRuntime: transportRuntime)
     }
 }

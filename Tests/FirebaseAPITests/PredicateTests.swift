@@ -94,4 +94,30 @@ struct PredicateTests {
         #expect(field == "test")
         #expect(intValue == 0)
     }
+
+    @Test("DocumentID filter uses the queried collection path")
+    func testDocumentIDFilterUsesCollectionPath() throws {
+        let database = Database(projectId: "test-project")
+        let query = Query(database, parentPath: nil, collectionID: "users", predicates: [
+            .isEqualToDocumentID("user123")
+        ])
+
+        let filter = try query.makeQuery().where.fieldFilter
+
+        #expect(filter.field.fieldPath == "__name__")
+        #expect(filter.value.referenceValue == "projects/test-project/databases/(default)/documents/users/user123")
+    }
+
+    @Test("DocumentID filter uses parent collection path")
+    func testDocumentIDFilterUsesParentCollectionPath() throws {
+        let database = Database(projectId: "test-project")
+        let query = Query(database, parentPath: "organizations/org123", collectionID: "users", predicates: [
+            .isEqualToDocumentID("user123")
+        ])
+
+        let filter = try query.makeQuery().where.fieldFilter
+
+        #expect(filter.field.fieldPath == "__name__")
+        #expect(filter.value.referenceValue == "projects/test-project/databases/(default)/documents/organizations/org123/users/user123")
+    }
 }

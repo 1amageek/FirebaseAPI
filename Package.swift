@@ -12,25 +12,195 @@ let package = Package(
         .library(
             name: "FirestoreAPI",
             targets: ["FirestoreAPI"]),
+        .library(
+            name: "FirestoreAdminServer",
+            targets: ["FirestoreAdminServer"]),
+        .library(
+            name: "FirestoreMongoCore",
+            targets: ["FirestoreMongoCore"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.31.1"),
-        .package(url: "https://github.com/grpc/grpc-swift-2.git", from: "2.1.0"),
-        .package(url: "https://github.com/grpc/grpc-swift-protobuf.git", from: "2.0.0"),
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.6.4")
+        .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.38.1"),
+        .package(url: "https://github.com/apple/swift-crypto.git", from: "4.5.0"),
+        .package(url: "https://github.com/grpc/grpc-swift-2.git", from: "2.4.2"),
+        .package(url: "https://github.com/grpc/grpc-swift-nio-transport.git", from: "2.9.0"),
+        .package(url: "https://github.com/grpc/grpc-swift-protobuf.git", from: "2.4.1"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.14.0")
     ],
     targets: [
         .target(
-            name: "FirestoreAPI",
+            name: "FirestoreCore"),
+        .target(
+            name: "FirestoreAuthCore"),
+        .target(
+            name: "FirestoreAuth",
             dependencies: [
-                .product(name: "Logging", package: "swift-log"),
+                "FirestoreAuthCore",
+                "FirestoreCore",
+                .product(name: "CryptoExtras", package: "swift-crypto")
+            ]),
+        .target(
+            name: "FirestorePipeline",
+            dependencies: [
+                "FirestoreCore"
+            ]),
+        .target(
+            name: "FirestoreRuntimeConfig",
+            dependencies: [
+                "FirestoreCore"
+            ]),
+        .target(
+            name: "FirestoreProtobuf",
+            dependencies: [
+                .product(name: "SwiftProtobuf", package: "swift-protobuf")
+            ]),
+        .target(
+            name: "FirestoreGRPCStubs",
+            dependencies: [
+                "FirestoreProtobuf",
                 .product(name: "GRPCCore", package: "grpc-swift-2"),
                 .product(name: "GRPCProtobuf", package: "grpc-swift-protobuf"),
                 .product(name: "SwiftProtobuf", package: "swift-protobuf")
             ]),
+        .target(
+            name: "FirestoreRPCSupport",
+            dependencies: [
+                "FirestoreCore",
+                "FirestoreProtobuf"
+            ]),
+        .target(
+            name: "FirestoreRPC",
+            dependencies: [
+                "FirestoreCore",
+                "FirestoreRuntimeConfig",
+                "FirestoreRPCSupport",
+                "FirestoreProtobuf",
+                .product(name: "SwiftProtobuf", package: "swift-protobuf")
+            ]),
+        .target(
+            name: "FirestorePipelineRPC",
+            dependencies: [
+                "FirestoreCore",
+                "FirestorePipeline",
+                "FirestoreRPCSupport",
+                "FirestoreProtobuf",
+                .product(name: "SwiftProtobuf", package: "swift-protobuf")
+            ]),
+        .target(
+            name: "FirestoreRuntimeSupport",
+            dependencies: [
+                "FirestoreCore",
+                "FirestorePipeline"
+            ]),
+        .target(
+            name: "FirestoreCodable",
+            dependencies: [
+                "FirestoreCore"
+            ]),
+        .target(
+            name: "FirestoreGeoQuery",
+            dependencies: [
+                "FirestoreCore"
+            ]),
+        .target(
+            name: "FirestoreMongoCore",
+            dependencies: [
+                "FirestoreCore"
+            ]),
+        .target(
+            name: "FirestoreAdmin",
+            dependencies: [
+                "FirestoreCore",
+                "FirestorePipeline",
+                "FirestoreRuntimeSupport",
+                "FirestoreRuntimeConfig"
+            ]),
+        .target(
+            name: "FirestoreAdminCodable",
+            dependencies: [
+                "FirestoreAdmin",
+                "FirestoreCodable",
+                "FirestoreCore"
+            ]),
+        .target(
+            name: "FirestoreAdminGRPCBootstrap",
+            dependencies: [
+                "FirestoreAdmin",
+                "FirestoreAuthCore",
+                "FirestoreAuth",
+                "FirestoreCore",
+                "FirestoreRuntimeConfig",
+                "FirestoreGRPCTransport"
+            ]),
+        .target(
+            name: "FirestoreGRPCTransport",
+            dependencies: [
+                "FirestoreCore",
+                "FirestoreAuthCore",
+                "FirestoreRuntimeConfig",
+                "FirestorePipeline",
+                "FirestoreRuntimeSupport",
+                "FirestoreRPC",
+                "FirestorePipelineRPC",
+                "FirestoreProtobuf",
+                "FirestoreGRPCStubs",
+                .product(name: "Logging", package: "swift-log"),
+                .product(name: "GRPCCore", package: "grpc-swift-2"),
+                .product(name: "GRPCNIOTransportHTTP2", package: "grpc-swift-nio-transport"),
+                .product(name: "GRPCProtobuf", package: "grpc-swift-protobuf"),
+                .product(name: "SwiftProtobuf", package: "swift-protobuf")
+            ]),
+        .target(
+            name: "FirestoreAPI",
+            dependencies: [
+                "FirestoreCore",
+                "FirestoreAuthCore",
+                "FirestoreAuth",
+                "FirestorePipeline",
+                "FirestoreRuntimeConfig",
+                "FirestoreRuntimeSupport",
+                "FirestoreCodable",
+                "FirestoreGeoQuery",
+                "FirestoreMongoCore",
+                "FirestoreAdmin",
+                "FirestoreAdminCodable",
+                "FirestoreAdminGRPCBootstrap"
+            ]),
+        .target(
+            name: "FirestoreAdminServer",
+            dependencies: [
+                "FirestoreCore",
+                "FirestoreAuthCore",
+                "FirestoreAuth",
+                "FirestorePipeline",
+                "FirestoreRuntimeConfig",
+                "FirestoreCodable",
+                "FirestoreGeoQuery",
+                "FirestoreAdmin",
+                "FirestoreAdminCodable",
+                "FirestoreAdminGRPCBootstrap"
+            ]),
         .testTarget(
             name: "FirebaseAPITests",
             dependencies: [
+                "FirestoreAdmin",
+                "FirestoreAdminCodable",
+                "FirestoreAdminGRPCBootstrap",
+                "FirestoreAuthCore",
+                "FirestoreAuth",
+                "FirestoreCodable",
+                "FirestoreGeoQuery",
+                "FirestoreMongoCore",
+                "FirestoreAdminServer",
+                "FirestorePipeline",
+                "FirestoreRuntimeConfig",
+                "FirestoreRuntimeSupport",
+                "FirestoreRPCSupport",
+                "FirestoreRPC",
+                "FirestorePipelineRPC",
+                "FirestoreGRPCTransport",
+                "FirestoreProtobuf",
+                .product(name: "CryptoExtras", package: "swift-crypto"),
                 .product(name: "GRPCCore", package: "grpc-swift-2"),
                 .product(name: "GRPCProtobuf", package: "grpc-swift-protobuf"),
                 .product(name: "SwiftProtobuf", package: "swift-protobuf"),
