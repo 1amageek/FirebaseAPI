@@ -34,7 +34,7 @@ Add FirebaseAPI to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/1amageek/FirebaseAPI.git", from: "0.1.0")
+    .package(url: "https://github.com/1amageek/FirebaseAPI.git", from: "2.0.0")
 ]
 ```
 
@@ -386,7 +386,7 @@ The test suite uses **Swift Testing** framework (not XCTest):
 perl -e 'alarm shift; exec @ARGV' 90 xcodebuild -scheme FirebaseAPI-Package -destination 'platform=macOS' test
 ```
 
-The current suite should pass with 398 tests across 19 suites.
+The current suite should pass with 402 tests across 19 suites.
 
 To run the full local release-readiness gate:
 
@@ -449,6 +449,7 @@ XDG_CONFIG_HOME=/tmp/firebase-cli-config firebase emulators:exec --only firestor
 - ✅ Service account JWT bearer auth, ADC service account loading from environment or gcloud well-known files, and metadata server project ID resolution
 - ✅ Firestore emulator configuration and integration coverage for CRUD, query, count, and listen
 - ✅ Firestore emulator integration coverage for `limit(toLast:)` document snapshot cursors
+- ✅ Firestore emulator integration coverage for compound AND/OR filters and array-membership OR branches
 - ✅ Firestore emulator integration coverage for native GeoQuery
 - ✅ Opt-in Firestore emulator smoke coverage for Pipeline aggregations, lambda expressions, DML, and subqueries
 - ✅ Opt-in live Firestore smoke coverage for Admin CRUD, query, and count

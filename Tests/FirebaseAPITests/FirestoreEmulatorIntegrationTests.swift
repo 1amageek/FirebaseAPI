@@ -76,6 +76,120 @@ struct FirestoreEmulatorIntegrationTests {
         }
     }
 
+    @Test("Firestore emulator performs compound AND OR queries", .timeLimit(.minutes(1)))
+    func testFirestoreEmulatorCompoundAndOrQueries() async throws {
+        guard let configuration = try Self.configuration() else {
+            return
+        }
+
+        let firestore = try FirestoreAdmin.emulator(
+            projectId: configuration.projectID,
+            databaseId: configuration.databaseID,
+            host: configuration.host,
+            port: configuration.port,
+            logLevel: .warning
+        )
+
+        let testID = UUID().uuidString.replacingOccurrences(of: "-", with: "")
+        let collection = try firestore.collection("firebase_api_compound_\(testID)")
+        let adaDocument = try collection.document("ada")
+        let graceDocument = try collection.document("grace")
+        let linusDocument = try collection.document("linus")
+        let inactiveDocument = try collection.document("inactive")
+        let documents = [
+            adaDocument,
+            graceDocument,
+            linusDocument,
+            inactiveDocument
+        ]
+
+        do {
+            try await adaDocument.setData([
+                "active": true,
+                "region": "west",
+                "role": "admin",
+                "score": 95,
+                "tags": ["swift", "admin"]
+            ])
+            try await graceDocument.setData([
+                "active": true,
+                "region": "east",
+                "role": "owner",
+                "score": 88,
+                "tags": ["swift", "owner"]
+            ])
+            try await linusDocument.setData([
+                "active": true,
+                "region": "west",
+                "role": "user",
+                "score": 92,
+                "tags": ["linux"]
+            ])
+            try await inactiveDocument.setData([
+                "active": false,
+                "region": "west",
+                "role": "admin",
+                "score": 99,
+                "tags": ["swift", "admin"]
+            ])
+
+            let nestedSnapshot = try await collection
+                .whereFilter(
+                    .orFilter(
+                        with: [
+                            .andFilter(
+                                with: [
+                                    .filter(whereField: "role", isEqualTo: "admin"),
+                                    .filter(whereField: "region", isEqualTo: "west")
+                                ]
+                            ),
+                            .andFilter(
+                                with: [
+                                    .filter(whereField: "role", isEqualTo: "owner"),
+                                    .filter(whereField: "score", isGreaterThanOrEqualTo: 80)
+                                ]
+                            )
+                        ]
+                    )
+                )
+                .whereField("active", isEqualTo: true)
+                .getDocuments()
+
+            #expect(Self.sortedDocumentIDs(nestedSnapshot) == ["ada", "grace"])
+
+            let membershipSnapshot = try await collection
+                .whereFilter(
+                    .orFilter(
+                        with: [
+                            .andFilter(
+                                with: [
+                                    .filter(whereField: "tags", arrayContains: "admin"),
+                                    .filter(whereField: "region", isEqualTo: "west")
+                                ]
+                            ),
+                            .andFilter(
+                                with: [
+                                    .filter(whereField: "tags", arrayContains: "owner"),
+                                    .filter(whereField: "role", isEqualTo: "owner")
+                                ]
+                            )
+                        ]
+                    )
+                )
+                .whereField("active", isEqualTo: true)
+                .getDocuments()
+
+            #expect(Self.sortedDocumentIDs(membershipSnapshot) == ["ada", "grace"])
+
+            await Self.deleteIgnoringErrors(documents)
+            await firestore.shutdown()
+        } catch {
+            await Self.deleteIgnoringErrors(documents)
+            await firestore.shutdown()
+            throw error
+        }
+    }
+
     @Test("Firestore emulator restores limitToLast document cursor result order", .timeLimit(.minutes(1)))
     func testFirestoreEmulatorLimitToLastDocumentCursorRestoresResultOrder() async throws {
         guard let configuration = try Self.configuration() else {
@@ -507,6 +621,10 @@ struct FirestoreEmulatorIntegrationTests {
                 continue
             }
         }
+    }
+
+    private static func sortedDocumentIDs(_ snapshot: QuerySnapshot) -> [String] {
+        snapshot.documents.map(\.documentReference.documentID).sorted()
     }
 
     private static func pipelineSmokeEnabled(

@@ -342,7 +342,8 @@ struct ServerSideAPISafetyTests {
             "`FirestoreRPC/PartitionQueryResponseMapper.swift`",
             "Runtime contract tests decode actual protobuf request bodies",
             "GetDocument, RunQuery, RunQuery vector nearest, RunQuery Explain, RunAggregationQuery, RunAggregationQuery Explain, ExecutePipeline, ExecutePipeline vector nearest, ExecutePipeline Explain, PartitionQuery, BatchWrite, ListDocuments, ListCollectionIds, Commit, Listen, BeginTransaction, BatchGetDocuments, and Rollback",
-            "Firestore emulator integration covers `limit(toLast:)` document snapshot cursor result ordering"
+            "Firestore emulator integration covers `limit(toLast:)` document snapshot cursor result ordering",
+            "Firestore emulator integration covers compound AND/OR filters and array-membership OR branches"
         ]
 
         for token in requiredTokens {

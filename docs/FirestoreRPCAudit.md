@@ -6,14 +6,15 @@ Last reviewed: 2026-06-27
 
 ## Scope
 
-This audit covers the hand-written Firestore gRPC layer after regenerating Firestore v1 protobufs from the `goolgeapis` submodule at `256f0860cc8a4ae2e5f4f606ce7915fd10b5e5e7`.
-The fetched `goolgeapis` `origin/master` is `21ebf267616ce5544deb088c6f8afb84271cf30c`; there is no `google/firestore/v1` proto diff between that revision and the checked out submodule revision.
+This audit covers the hand-written Firestore gRPC layer after regenerating Firestore v1 protobufs from the `goolgeapis` submodule at `0a38d04e5f6c265e74a994240b762c22666329a5`.
+The checked out submodule revision matches `googleapis/googleapis` upstream `HEAD` at release preparation time.
 
 The primary sources used for this audit are:
 
 - `goolgeapis/google/firestore/v1/firestore.proto`
 - `goolgeapis/google/firestore/v1/common.proto`
-- `Sources/FirestoreAPI/Proto/google/firestore/v1/firestore.grpc.swift`
+- `Sources/FirestoreProtobuf/Proto/google/firestore/v1/firestore.pb.swift`
+- `Sources/FirestoreGRPCStubs/Proto/google/firestore/v1/firestore.grpc.swift`
 - `grpc-swift-2` local package sources under `.build/checkouts`
 
 ## Boundary

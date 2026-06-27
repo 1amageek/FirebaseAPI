@@ -41,14 +41,14 @@ package struct QueryConstraintValidator {
 
     private static func validateArrayMembershipRules(_ terms: [DNFConjunction]) throws {
         for term in terms {
-            if term.arrayContainsCount > 1 {
-                throw FirestoreError.invalidQuery("Use at most one arrayContains filter per disjunction.")
-            }
             if term.arrayContainsCount > 0 && term.arrayContainsAnyCount > 0 && term.arrayContainsCount > term.arrayContainsAnyCount {
                 throw FirestoreError.invalidQuery("arrayContains cannot be combined with arrayContainsAny in the same disjunction.")
             }
             if term.arrayContainsAnyCount > 1 {
                 throw FirestoreError.invalidQuery("Use at most one arrayContainsAny filter per disjunction.")
+            }
+            if term.arrayContainsCount > 1 {
+                throw FirestoreError.invalidQuery("Use at most one arrayContains filter per disjunction.")
             }
         }
     }

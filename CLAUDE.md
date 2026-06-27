@@ -29,57 +29,59 @@ FirebaseAPI is a **server-side Swift** package that enables Firestore integratio
 
 ## Core Architecture
 
-### Client-Side Abstraction
-The library uses a **hierarchical reference model** similar to Firebase SDKs:
-- `Firestore`: Root client that manages gRPC connections and authentication
+### Server-Side Admin Abstraction
+The library uses a **hierarchical reference model** similar to Firebase SDKs, but the entry point is server-side Admin:
+- `FirestoreAdmin`: Root Admin facade that owns runtime dispatch and server-side lifecycle
 - `CollectionReference`: Represents a Firestore collection path
 - `DocumentReference`: Represents a specific document path
 - `Query`: Represents a query with filters, ordering, and limits
 - `CollectionGroup`: Queries across all collections with the same ID
 
-### gRPC Integration Layer
-All API operations are implemented in separate `+gRPC.swift` extension files in `Sources/FirestoreAPI/gPRC/`:
-- `Firestore+gRPC.swift`: Core Firestore operations (transactions, batch operations)
-- `DocumentReference+gRPC.swift`: Document CRUD operations
-- `CollectionReference+gRPC.swift`: Collection queries and counts
-- `Query+gRPC.swift`: Query execution
-- `QueryPredicate+gRPC.swift`: Converts Swift predicates to Firestore protocol buffers
+### RPC and gRPC Integration Layers
+Public API code, protobuf request compilation, and concrete grpc-swift transport execution are separate responsibilities:
+- `Sources/FirestoreCore`: Protobuf-free model, query, reference, snapshot, value, source, listen, aggregation, vector, and error types
+- `Sources/FirestoreAdmin`: Server-side Admin workflow facade and narrow dependency-injection protocols
+- `Sources/FirestoreRPC`: Native Firestore request compilers, response mappers, query validation, and Listen reducers
+- `Sources/FirestorePipelineRPC`: Firestore Pipeline request compiler and ExecutePipeline response mapper
+- `Sources/FirestoreGRPCTransport`: Concrete grpc-swift transport lifecycle, authorization metadata, retry execution, and generated client calls
+- `Sources/FirestoreProtobuf/Proto`: Generated protobuf messages
+- `Sources/FirestoreGRPCStubs/Proto`: Generated gRPC stubs
 
-This separation keeps business logic clean from protocol buffer implementation details.
+This separation keeps public Admin workflow code free of protobuf, generated gRPC, and concrete transport details.
 
 ### Custom Codable Implementation
-The library provides custom `FirestoreEncoder` and `FirestoreDecoder` in `Sources/FirestoreAPI/Cadable/`:
+The library provides custom `FirestoreEncoder` and `FirestoreDecoder` in `Sources/FirestoreCodable/Cadable/`:
 - Handles Firestore-specific types: `Timestamp`, `GeoPoint`, `DocumentReference`
-- Supports special property wrappers: `@DocumentID`, `@ExplicitNull`, `@ReferencePath`
+- Supports special property wrappers: `@DocumentID`, `@ExplicitNull`, `@ReferencePath`, `@ServerTimestamp`
 - Converts between Swift types and Firestore protocol buffer values
 
 ### Query System
-Queries use a **predicate chain pattern** (`QueryPredicate` enum):
+Queries use a public `Filter` facade backed by package-internal `QueryPredicate` planning state:
 - Predicates are accumulated in an array and composed into composite filters
 - Supports field filters, unary filters, and composite filters (AND/OR)
 - Special handling for document ID queries vs field queries
-- Automatic conversion to Firestore's `StructuredQuery` protocol buffers
+- `QueryCompiler` converts query state into Firestore `StructuredQuery` protobuf requests
 
 ### Transaction & Batch Writes
-- `Transaction`: Atomic read-then-write operations with automatic retry using exponential backoff
-- `WriteBatch`: Batched write operations (no reads)
-- Both use the same underlying `WriteData` structure but differ in execution semantics
+- `FirestoreAdminTransaction`: Atomic read-then-write operations with transaction-level retry
+- `FirestoreAdminWriteBatch`: Atomic Commit-backed batched writes
+- `FirestoreAdminBulkWriter`: Non-atomic BatchWrite-backed bulk writes with per-write status results
 
 ## Development Commands
 
 ### Build & Test
 ```bash
 # Build the package
-swift build
+swift build --configuration debug
 
 # Run all tests
-swift test
+perl -e 'alarm shift; exec @ARGV' 300 xcodebuild -quiet -scheme FirebaseAPI-Package -destination 'platform=macOS' test
 
 # Build specific configuration
 swift build -c release
 
 # Run specific test
-swift test --filter FirestoreEncoderTests
+perl -e 'alarm shift; exec @ARGV' 120 xcodebuild -quiet -scheme FirebaseAPI-Package -destination 'platform=macOS' test -only-testing:FirebaseAPITests/FirestoreEncoderTests
 ```
 
 ### Protocol Buffer Generation
@@ -87,39 +89,27 @@ The project uses a googleapis submodule (`goolgeapis/`) to generate Firestore AP
 
 ```bash
 # Generate proto files (run from project root)
-mkdir -p Sources/FirestoreAPI/Proto
-cd goolgeapis
-protoc \
-  ./google/firestore/v1/*.proto \
-  ./google/api/field_behavior.proto \
-  ./google/api/resource.proto \
-  ./google/longrunning/operations.proto \
-  ./google/rpc/status.proto \
-  ./google/type/latlng.proto \
-  --swift_out=../Sources/FirestoreAPI/Proto \
-  --grpc-swift_out=../Sources/FirestoreAPI/Proto \
-  --swift_opt=Visibility=Public \
-  --grpc-swift_opt=Visibility=Public
+./scripts/generate-firestore-protos.sh
 ```
 
-Generated files are in `Sources/FirestoreAPI/Proto/` and should not be manually edited.
+Generated protobuf files are in `Sources/FirestoreProtobuf/Proto/`; generated gRPC stubs are in `Sources/FirestoreGRPCStubs/Proto/`. They should not be manually edited.
 
 ### Testing Setup
-Tests require a Firebase service account key:
-1. Download `ServiceAccount.json` from Firebase Console
-2. Place it in `Tests/FirebaseAPITests/` directory (gitignored)
-3. The test target includes it as a copied resource
+Most tests run without external credentials. Firestore emulator integration uses `firebase emulators:exec`, and production Firestore smoke tests are opt-in through environment variables:
+- `FIRESTORE_LIVE_SMOKE=1`
+- `FIRESTORE_LIVE_PROJECT_ID`
+- `GOOGLE_APPLICATION_CREDENTIALS` or another supported Application Default Credentials source
 
 ## Key Implementation Patterns
 
 ### Access Token Authentication
 All Firestore operations require OAuth2 access tokens:
 - Implement `AccessTokenProvider` protocol to supply tokens
-- Set `firestore.accessTokenProvider` before making requests
-- Tokens are passed via gRPC metadata headers: `("authorization", "Bearer <token>")`
+- Prefer `FirestoreAdmin(credentials:)`, `FirestoreAdmin.applicationDefault()`, or `FirestoreAdmin.applicationDefaultResolvingProjectID()`
+- Tokens are passed through gRPC metadata by `FirestoreGRPCTransport`
 
 ### Error Handling & Retry
-- `ExponentialBackoff`: Retry logic for transactions (max attempts configurable)
+- `FirestoreTransactionBackoff`: Retry logic for transactions (max attempts configurable)
 - `FirestoreRetryHandler`: Actor-based retry with configurable strategies (exponential, linear, custom)
 - `FirestoreError`: Custom error types for Firestore-specific failures
 
@@ -136,9 +126,9 @@ All paths are normalized using `.normalized` extension on String to handle trail
 1. **Database Validation**: All write operations check that `document.database == firestore.database` before proceeding
 2. **Path Validation**: Collection IDs and document IDs are validated for empty strings and invalid characters (no "/" allowed)
 3. **Transaction Reads Before Writes**: Transactions enforce read-before-write (throws `FirestoreError.readAfterWriteError`)
-4. **Concurrent Safety**: Uses NIO EventLoopGroup with thread count = CPU cores for concurrent operations
+4. **Concurrency Safety**: Uses Swift concurrency and package-internal runtime seams; public API code should not depend on concrete grpc-swift transport types
 
-## Real-time Listeners (NEW)
+## Real-time Listeners
 
 ### Implementation Status: ✅ Completed
 
@@ -147,56 +137,59 @@ The library now fully supports real-time listeners using grpc-swift-2's bidirect
 **Available APIs:**
 - `DocumentReference.addSnapshotListener()` - Real-time document listeners
 - `Query.addSnapshotListener()` - Real-time query listeners
-- `Firestore.listen()` - Low-level streaming API (internal)
 
 **Implementation details:**
-- Uses `client.bidirectionalStreaming()` from grpc-swift-2
-- `StreamingClientRequest` with producer closure for sending targets
-- `StreamingClientResponse.messages` (AsyncSequence) for receiving updates
+- `FirestoreListenStreamExecutor` owns concrete streaming gRPC request construction
+- `ListenStreamCoordinator` owns target add/remove sequencing, retry, resume token, and full-resync control
 - Returns `AsyncThrowingStream` for easy consumption with `for try await`
 
 **Example usage:**
 ```swift
 // Document listener
 let docRef = firestore.collection("users").document("user123")
-let stream = try await docRef.addSnapshotListener(firestore: firestore)
+let stream = try await docRef.addSnapshotListener()
 for try await snapshot in stream {
     print("Document updated: \(snapshot.data())")
 }
 
 // Query listener
-let query = firestore.collection("users").where("age" >= 18)
-let stream = try await query.addSnapshotListener(firestore: firestore)
+let query = firestore.collection("users").whereField("age", isGreaterThanOrEqualTo: 18)
+let stream = try await query.addSnapshotListener()
 for try await snapshot in stream {
     print("Query results: \(snapshot.documents.count) documents")
 }
 ```
 
 **Implementation locations:**
-- `Sources/FirestoreAPI/gPRC/Firestore+gRPC.swift:214` - Core listen() implementation
-- `Sources/FirestoreAPI/gPRC/DocumentReference+gRPC.swift:176` - Document snapshot listener
-- `Sources/FirestoreAPI/gPRC/Query+gRPC.swift:145` - Query snapshot listener
+- `Sources/FirestoreRPC/Listen/ListenStreamCoordinator.swift` - Listen reconnect and resume-token coordination
+- `Sources/FirestoreRPC/Listen/DocumentListenState.swift` - Document listen response reduction
+- `Sources/FirestoreRPC/Listen/QueryListenState.swift` - Query listen response reduction
+- `Sources/FirestoreGRPCTransport/FirestoreListenStreamExecutor.swift` - Streaming gRPC request execution
 
 **Note on testing:**
-- Real-time listeners require actual Firestore connections
-- Testing should be done with live Firestore instances
+- Real-time listeners can be tested with the Firestore emulator
 - Use task cancellation to stop listening: `task.cancel()`
 
 ## Code Organization
 
 ```
 Sources/FirestoreAPI/
-├── Core types: Firestore, Database, CollectionReference, DocumentReference
-├── Query system: Query, QueryPredicate, QuerySnapshot
-├── Write operations: WriteBatch, Transaction
-├── Codable/: FirestoreEncoder, FirestoreDecoder
-├── PropertyWrapper/: @DocumentID, @ExplicitNull, @ReferencePath
-├── gPRC/: Protocol buffer conversion extensions
-├── Proto/: Generated protobuf files (google.firestore.v1.*)
-└── Support: FirestoreLogger, FirestoreRetry, ExponentialBackoff
+└── Compatibility re-export files
+Sources/FirestoreAdmin/               Server-side Admin facade
+Sources/FirestoreAdminServer/         Preferred server-side product re-exports
+Sources/FirestoreCore/                Public model/query/reference/snapshot types
+Sources/FirestoreCodable/             FirestoreEncoder, FirestoreDecoder, property wrappers
+Sources/FirestoreRPC/                 Native Firestore compilers and response mappers
+Sources/FirestorePipelineRPC/         Pipeline compiler and response mapper
+Sources/FirestoreGRPCTransport/       Concrete grpc-swift transport execution
+Sources/FirestoreProtobuf/Proto/      Generated protobuf files
+Sources/FirestoreGRPCStubs/Proto/     Generated gRPC stub files
 ```
 
 ## Platform Support
-- iOS 15+
-- macOS 10.15+
-- Uses Swift 5.10+ (see Package.swift)
+- iOS 18+
+- macOS 15+
+- watchOS 11+
+- tvOS 18+
+- visionOS 2+
+- Uses Swift 6.2+ (see Package.swift)

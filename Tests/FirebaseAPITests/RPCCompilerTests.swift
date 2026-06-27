@@ -502,6 +502,55 @@ struct RPCCompilerTests {
         #expect(activeFilter.value.booleanValue)
     }
 
+    @Test("SDK Filter facade preserves nested composite query shape")
+    func testSDKFilterFacadePreservesNestedCompositeQueryShape() throws {
+        let database = Database(projectId: "test-project")
+        let query = Query(
+            database,
+            parentPath: nil,
+            collectionID: "users",
+            predicates: []
+        )
+        .whereFilter(
+            .andFilter(
+                with: [
+                    .orFilter(
+                        with: [
+                            .filter(whereField: "role", isEqualTo: "admin"),
+                            .filter(whereField: "role", isEqualTo: "owner")
+                        ]
+                    ),
+                    .orFilter(
+                        with: [
+                            .filter(whereField: "region", isEqualTo: "west"),
+                            .filter(whereField: "score", isGreaterThanOrEqualTo: 90)
+                        ]
+                    )
+                ]
+            )
+        )
+        .whereField("active", isEqualTo: true)
+
+        let request = try QueryCompiler(query: query).makeRunQueryRequest()
+        let rootFilter = request.structuredQuery.where.compositeFilter
+        let roleFilter = rootFilter.filters[0].compositeFilter
+        let regionOrScoreFilter = rootFilter.filters[1].compositeFilter
+        let activeFilter = rootFilter.filters[2].fieldFilter
+
+        #expect(rootFilter.op == .and)
+        #expect(rootFilter.filters.count == 3)
+        #expect(roleFilter.op == .or)
+        #expect(roleFilter.filters.map { $0.fieldFilter.field.fieldPath } == ["role", "role"])
+        #expect(roleFilter.filters.map { $0.fieldFilter.value.stringValue } == ["admin", "owner"])
+        #expect(regionOrScoreFilter.op == .or)
+        #expect(regionOrScoreFilter.filters[0].fieldFilter.field.fieldPath == "region")
+        #expect(regionOrScoreFilter.filters[0].fieldFilter.op == .equal)
+        #expect(regionOrScoreFilter.filters[1].fieldFilter.field.fieldPath == "score")
+        #expect(regionOrScoreFilter.filters[1].fieldFilter.op == .greaterThanOrEqual)
+        #expect(activeFilter.field.fieldPath == "active")
+        #expect(activeFilter.value.booleanValue)
+    }
+
     @Test("SDK Filter facade supports FieldPath document ID filters")
     func testSDKFilterFacadeSupportsFieldPathDocumentIDFilters() throws {
         let database = Database(projectId: "test-project")
@@ -2496,6 +2545,57 @@ struct RPCCompilerTests {
 
         #expect(request.structuredQuery.where.compositeFilter.op == .or)
         #expect(request.structuredQuery.where.compositeFilter.filters.count == 2)
+    }
+
+    @Test("QueryCompiler rejects array membership conflicts inside nested disjunctions")
+    func testQueryCompilerRejectsArrayMembershipConflictsInsideNestedDisjunctions() throws {
+        let database = Database(projectId: "test-project")
+        let query = Query(
+            database,
+            parentPath: nil,
+            collectionID: "users",
+            predicates: [
+                .or([
+                    .and([
+                        .arrayContains("regions", "west"),
+                        .arrayContainsAny("roles", ["admin", "owner"])
+                    ]),
+                    .isEqualTo("active", true)
+                ])
+            ]
+        )
+
+        do {
+            _ = try QueryCompiler(query: query).makeRunQueryRequest()
+            Issue.record("Expected invalid query error")
+        } catch FirestoreError.invalidQuery(let message) {
+            #expect(message.contains("arrayContains"))
+            #expect(message.contains("arrayContainsAny"))
+        }
+    }
+
+    @Test("QueryCompiler rejects notIn inside explicit OR filters")
+    func testQueryCompilerRejectsNotInInsideExplicitORFilters() throws {
+        let database = Database(projectId: "test-project")
+        let query = Query(
+            database,
+            parentPath: nil,
+            collectionID: "users",
+            predicates: [
+                .or([
+                    .isNotIn("region", ["north", "south"]),
+                    .isEqualTo("active", true)
+                ])
+            ]
+        )
+
+        do {
+            _ = try QueryCompiler(query: query).makeRunQueryRequest()
+            Issue.record("Expected invalid query error")
+        } catch FirestoreError.invalidQuery(let message) {
+            #expect(message.contains("notIn"))
+            #expect(message.contains("OR"))
+        }
     }
 
     @Test("QueryCompiler rejects first order mismatch for inequality filters")
