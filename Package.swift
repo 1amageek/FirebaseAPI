@@ -16,9 +16,6 @@ let package = Package(
             name: "FirestoreAdminServer",
             targets: ["FirestoreAdminServer"]),
         .library(
-            name: "FirestoreEmbedded",
-            targets: ["FirestoreEmbedded"]),
-        .library(
             name: "FirestoreMongoCore",
             targets: ["FirestoreMongoCore"]),
     ],
@@ -31,8 +28,6 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log.git", from: "1.14.0")
     ],
     targets: [
-        .target(
-            name: "FirestoreEmbedded"),
         .target(
             name: "FirestoreCore"),
         .target(
@@ -193,7 +188,6 @@ let package = Package(
                 "FirestoreAdminGRPCBootstrap",
                 "FirestoreAuthCore",
                 "FirestoreAuth",
-                "FirestoreEmbedded",
                 "FirestoreCodable",
                 "FirestoreGeoQuery",
                 "FirestoreMongoCore",
