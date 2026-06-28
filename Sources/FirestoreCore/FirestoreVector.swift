@@ -11,6 +11,16 @@ public struct FirestoreVector: Sendable, Equatable, Codable {
         self.values = values
     }
 
+    /// Returns a vector embedding value.
+    public static func vector(_ values: [Double]) -> FirestoreVector {
+        FirestoreVector(values)
+    }
+
+    /// Returns a vector embedding value.
+    public static func vector(_ values: [Float]) -> FirestoreVector {
+        FirestoreVector(values.map(Double.init))
+    }
+
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         var values: [Double] = []

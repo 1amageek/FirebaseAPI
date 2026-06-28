@@ -75,6 +75,15 @@ struct FieldValueTests {
         })
     }
 
+    @Test("FirestoreVector factory supports contextual vector shorthand")
+    func testFirestoreVectorFactorySupportsContextualVectorShorthand() {
+        let doubleVector: FirestoreVector = .vector([0.12, 0.42, 0.86])
+        let floatVector = FirestoreVector.vector([Float(0.12), Float(0.42), Float(0.86)])
+
+        #expect(doubleVector == FirestoreVector([0.12, 0.42, 0.86]))
+        #expect(floatVector.values.map { Float($0) } == [0.12, 0.42, 0.86])
+    }
+
     @Test("Reserved document field names are rejected")
     func testReservedDocumentFieldNamesAreRejected() throws {
         let documentData = DocumentData(data: [

@@ -338,12 +338,10 @@ construction.
 ## Vector Search
 
 ```swift
-let vector = FirestoreVector([0.12, 0.42, 0.86])
-
 let snapshot = try await firestore.collection("articles")
     .findNearest(
         vectorField: "embedding",
-        queryVector: vector,
+        queryVector: .vector([0.12, 0.42, 0.86]),
         limit: 10,
         distanceMeasure: .cosine,
         distanceResultField: "distance"
@@ -469,7 +467,7 @@ Run the test suite:
 perl -e 'alarm shift; exec @ARGV' 90 xcodebuild -scheme FirebaseAPI-Package -destination 'platform=macOS' test
 ```
 
-The current suite contains 406 tests across 19 suites.
+The current suite contains 407 tests across 19 suites.
 
 Run the release-readiness gate:
 
