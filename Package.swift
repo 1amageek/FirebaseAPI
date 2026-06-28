@@ -5,12 +5,15 @@ import PackageDescription
 import Foundation
 
 let manifestDirectoryURL = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+let manifestPath = manifestDirectoryURL.standardizedFileURL.path
+let isDependencyCheckout = manifestPath.contains("/.build/checkouts/")
+    || manifestPath.contains("/SourcePackages/checkouts/")
 
 func localOrForkDependency(_ repository: String, localPath: String) -> Package.Dependency {
     let resolvedLocalPath = URL(fileURLWithPath: localPath, relativeTo: manifestDirectoryURL)
         .standardizedFileURL
         .path
-    if FileManager.default.fileExists(atPath: resolvedLocalPath) {
+    if !isDependencyCheckout && FileManager.default.fileExists(atPath: resolvedLocalPath) {
         return .package(path: resolvedLocalPath)
     }
 
