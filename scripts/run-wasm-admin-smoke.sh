@@ -4,7 +4,6 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WASM_SDK="${WASM_SDK:-swift-6.3.1-RELEASE_wasm}"
 SMOKE_DIR="${SMOKE_DIR:-$ROOT_DIR/.build/wasm-admin-smoke}"
-GRPC_SWIFT_2_DIR="${GRPC_SWIFT_2_DIR:-$ROOT_DIR/../networking/grpc-swift-2}"
 
 export CLANG_MODULE_CACHE_PATH="$ROOT_DIR/.build/wasm-clang-module-cache"
 export SWIFTPM_MODULECACHE_OVERRIDE="$ROOT_DIR/.build/wasm-swiftpm-module-cache"
@@ -31,21 +30,7 @@ mkdir -p "$SMOKE_DIR/Sources/FirebaseAPIWasmSmoke"
 cat >"$SMOKE_DIR/Package.swift" <<SWIFT
 // swift-tools-version:6.1
 
-import Foundation
 import PackageDescription
-
-let manifestDirectoryURL = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-
-func localOrForkDependency(_ repository: String, localPath: String) -> Package.Dependency {
-    let resolvedLocalPath = URL(fileURLWithPath: localPath, relativeTo: manifestDirectoryURL)
-        .standardizedFileURL
-        .path
-    if FileManager.default.fileExists(atPath: resolvedLocalPath) {
-        return .package(path: resolvedLocalPath)
-    }
-
-    return .package(url: "https://github.com/1amageek/\\(repository).git", branch: "main")
-}
 
 let package = Package(
     name: "FirebaseAPIWasmSmoke",
@@ -54,7 +39,7 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "$ROOT_DIR"),
-        localOrForkDependency("grpc-swift-2", localPath: "$GRPC_SWIFT_2_DIR")
+        .package(url: "https://github.com/1amageek/grpc-swift-2.git", branch: "main")
     ],
     targets: [
         .executableTarget(
