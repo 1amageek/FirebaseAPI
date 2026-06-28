@@ -25,7 +25,7 @@ fi
 
 targets=(
   FirestoreCore
-  FirestoreMongoCore
+  FirestoreMongo
   FirestoreGeoQuery
   FirestorePipeline
   FirestoreCodable
@@ -35,14 +35,14 @@ targets=(
   FirestoreRPCSupport
   FirestoreRPC
   FirestorePipelineRPC
-  FirestoreAdmin
+  FirestoreAdminCore
   FirestoreAdminCodable
   FirestoreAuthCore
   FirestoreAuth
   FirestoreGRPCStubs
   FirestoreGRPCTransport
   FirestoreAdminGRPCBootstrap
-  FirestoreAdminServer
+  FirestoreAdmin
   FirestoreAPI
 )
 

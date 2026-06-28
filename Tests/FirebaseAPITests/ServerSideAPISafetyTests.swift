@@ -4,7 +4,7 @@ import FirestoreRuntimeSupport
 import Testing
 @testable import FirestoreAPI
 @testable import FirestoreAdmin
-@testable import FirestoreAdminServer
+@testable import FirestoreAdminCore
 
 @Suite("Server-side API Safety Tests")
 struct ServerSideAPISafetyTests {
@@ -17,9 +17,9 @@ struct ServerSideAPISafetyTests {
         let documentURL = rootURL.appending(path: "docs/FirestoreAdminCompatibility.md")
         let document = try String(contentsOf: documentURL, encoding: .utf8)
         let requiredTokens = [
-            "FirestoreAdmin.collection(_:)",
-            "FirestoreAdmin.document(_:)",
-            "FirestoreAdmin.collectionGroup(_:)",
+            "Firestore.collection(_:)",
+            "Firestore.document(_:)",
+            "Firestore.collectionGroup(_:)",
             "FirestoreAdminClient",
             "Server-side code depends on the narrowest Admin protocol",
             "FirestoreAdminReferenceClient",
@@ -98,9 +98,9 @@ struct ServerSideAPISafetyTests {
             "FirestoreVectorDistanceMeasure",
             "StructuredQuery.FindNearest",
             "Firestore Pipeline operations",
-            "FirestoreAdmin.pipeline()",
-            "FirestoreAdmin.execute(_:)",
-            "FirestoreAdmin.explain(_:options:)",
+            "Firestore.pipeline()",
+            "Firestore.execute(_:)",
+            "Firestore.explain(_:options:)",
             "Firestore Pipeline aggregate functions",
             "Firestore Pipeline generic functions",
             "Firestore Pipeline map functions",
@@ -264,9 +264,9 @@ struct ServerSideAPISafetyTests {
             "`Visibility=Internal` only works while generated files and RPC/transport code are compiled in one target",
             "`Visibility=Public` must not become the default public API escape hatch",
             "`FirestoreProtobuf` and `FirestoreGRPCStubs` as non-product target dependencies",
-            "The preferred server-side application import is the `FirestoreAdminServer` product",
-            "`FirestoreAdminServer` does not re-export it",
-            "New MongoDB-compatible work should depend on the explicit `FirestoreMongoCore` product",
+            "The preferred server-side application import is the `FirestoreAdmin` product",
+            "`FirestoreAdmin` does not re-export it",
+            "New MongoDB-compatible work should depend on the explicit `FirestoreMongo` product",
             "Offline persistence, local cache, `clearPersistence()`",
             "`disableNetwork()` / `enableNetwork()`",
             "RPC Boundary Contract",
@@ -635,7 +635,7 @@ struct ServerSideAPISafetyTests {
         let requiredTokens = [
             "Status: Initial boundary implemented",
             "MongoDB-compatible Firestore APIs are implemented through a separate boundary",
-            "FirestoreMongoCore",
+            "FirestoreMongo",
             "FirestoreMongoGeoNearQuery",
             "FirestoreMongoGeoIndex",
             "Mongo query document builders",
@@ -661,11 +661,11 @@ struct ServerSideAPISafetyTests {
             encoding: .utf8
         )
         let mongoExportSource = try String(
-            contentsOf: rootURL.appending(path: "Sources/FirestoreAPI/FirestoreMongoCoreExports.swift"),
+            contentsOf: rootURL.appending(path: "Sources/FirestoreAPI/FirestoreMongoExports.swift"),
             encoding: .utf8
         )
         let adminServerExportSource = try String(
-            contentsOf: rootURL.appending(path: "Sources/FirestoreAdminServer/FirestoreAdminServerExports.swift"),
+            contentsOf: rootURL.appending(path: "Sources/FirestoreAdmin/FirestoreAdminExports.swift"),
             encoding: .utf8
         )
         let apiExportDirectory = rootURL.appending(path: "Sources/FirestoreAPI")
@@ -697,27 +697,27 @@ struct ServerSideAPISafetyTests {
             "@_exported import FirestoreCodable",
             "@_exported import FirestoreCore",
             "@_exported import FirestoreGeoQuery",
-            "@_exported import FirestoreMongoCore",
+            "@_exported import FirestoreMongo",
             "@_exported import FirestorePipeline",
             "@_exported import FirestoreRuntimeConfig"
         ])
 
         #expect(packageSource.components(separatedBy: ".library(").count - 1 == 3)
         #expect(packageSource.contains("name: \"FirestoreAPI\",\n            targets: [\"FirestoreAPI\"]"))
-        #expect(packageSource.contains("name: \"FirestoreAdminServer\",\n            targets: [\"FirestoreAdminServer\"]"))
-        #expect(packageSource.contains("name: \"FirestoreMongoCore\",\n            targets: [\"FirestoreMongoCore\"]"))
-        #expect(packageSource.contains("name: \"FirestoreMongoCore\""))
-        #expect(packageSource.contains("\"FirestoreMongoCore\""))
-        #expect(packageSource.contains("name: \"FirestoreAdminServer\""))
-        #expect(packageSource.contains("targets: [\"FirestoreAdminServer\"]"))
-        #expect(mongoExportSource.contains("@_exported import FirestoreMongoCore"))
+        #expect(packageSource.contains("name: \"FirestoreAdmin\",\n            targets: [\"FirestoreAdmin\"]"))
+        #expect(packageSource.contains("name: \"FirestoreMongo\",\n            targets: [\"FirestoreMongo\"]"))
+        #expect(packageSource.contains("name: \"FirestoreMongo\""))
+        #expect(packageSource.contains("\"FirestoreMongo\""))
+        #expect(packageSource.contains("name: \"FirestoreAdmin\""))
+        #expect(packageSource.contains("targets: [\"FirestoreAdmin\"]"))
+        #expect(mongoExportSource.contains("@_exported import FirestoreMongo"))
         #expect(
             actualAPIExports == expectedAPIExports,
             "FirestoreAPI should remain the exact compatibility re-export surface."
         )
 
         let requiredAdminServerExports = [
-            "@_exported import FirestoreAdmin",
+            "@_exported import FirestoreAdminCore",
             "@_exported import FirestoreAdminCodable",
             "@_exported import FirestoreAdminGRPCBootstrap",
             "@_exported import FirestoreAuth",
@@ -729,7 +729,7 @@ struct ServerSideAPISafetyTests {
             "@_exported import FirestoreRuntimeConfig"
         ]
         for token in requiredAdminServerExports {
-            #expect(adminServerExportSource.contains(token), "FirestoreAdminServer should re-export \(token).")
+            #expect(adminServerExportSource.contains(token), "FirestoreAdmin should re-export \(token).")
         }
         let actualAdminServerExports = Set(
             adminServerExportSource
@@ -739,11 +739,11 @@ struct ServerSideAPISafetyTests {
         )
         #expect(
             actualAdminServerExports == Set(requiredAdminServerExports),
-            "FirestoreAdminServer should expose exactly the curated server-side import surface."
+            "FirestoreAdmin should expose exactly the curated server-side import surface."
         )
 
         let forbiddenAdminServerExports = [
-            "@_exported import FirestoreMongoCore",
+            "@_exported import FirestoreMongo",
             "@_exported import FirestoreRPC",
             "@_exported import FirestorePipelineRPC",
             "@_exported import FirestoreGRPCTransport",
@@ -752,22 +752,22 @@ struct ServerSideAPISafetyTests {
             "@_exported import FirestoreRuntimeSupport"
         ]
         for token in forbiddenAdminServerExports {
-            #expect(!adminServerExportSource.contains(token), "FirestoreAdminServer should not re-export \(token).")
+            #expect(!adminServerExportSource.contains(token), "FirestoreAdmin should not re-export \(token).")
         }
 
-        let adminServerTargetMarker = "        .target(\n            name: \"FirestoreAdminServer\""
+        let adminServerTargetMarker = "        .target(\n            name: \"FirestoreAdmin\""
         guard
             let adminServerTargetStart = packageSource.range(of: adminServerTargetMarker),
             let adminServerTargetEnd = packageSource[adminServerTargetStart.upperBound...].range(of: "        .testTarget(")
         else {
-            Issue.record("Package.swift should contain a FirestoreAdminServer target before the test target.")
+            Issue.record("Package.swift should contain a FirestoreAdmin target before the test target.")
             return
         }
         let adminServerTargetBlock = String(
             packageSource[adminServerTargetStart.lowerBound..<adminServerTargetEnd.lowerBound]
         )
         let forbiddenAdminServerDependencies = [
-            "\"FirestoreMongoCore\"",
+            "\"FirestoreMongo\"",
             "\"FirestoreRPC\"",
             "\"FirestorePipelineRPC\"",
             "\"FirestoreGRPCTransport\"",
@@ -776,20 +776,20 @@ struct ServerSideAPISafetyTests {
             "\"FirestoreRuntimeSupport\""
         ]
         for token in forbiddenAdminServerDependencies {
-            #expect(!adminServerTargetBlock.contains(token), "FirestoreAdminServer should not directly depend on \(token).")
+            #expect(!adminServerTargetBlock.contains(token), "FirestoreAdmin should not directly depend on \(token).")
         }
 
         let mongoSourcePaths = [
-            "Sources/FirestoreMongoCore/FirestoreMongoValue.swift",
-            "Sources/FirestoreMongoCore/FirestoreMongoGeoJSONPoint.swift",
-            "Sources/FirestoreMongoCore/FirestoreMongoGeoNearQuery.swift",
-            "Sources/FirestoreMongoCore/FirestoreMongoGeoIndex.swift"
+            "Sources/FirestoreMongo/FirestoreMongoValue.swift",
+            "Sources/FirestoreMongo/FirestoreMongoGeoJSONPoint.swift",
+            "Sources/FirestoreMongo/FirestoreMongoGeoNearQuery.swift",
+            "Sources/FirestoreMongo/FirestoreMongoGeoIndex.swift"
         ]
         let mongoSource = try mongoSourcePaths.map { sourcePath in
             try String(contentsOf: rootURL.appending(path: sourcePath), encoding: .utf8)
         }.joined(separator: "\n")
         for token in ["$near", "$geometry", "$maxDistance", "$minDistance", "2dsphere", "GeoJSON"] {
-            #expect(mongoSource.contains(token), "FirestoreMongoCore should own \(token).")
+            #expect(mongoSource.contains(token), "FirestoreMongo should own \(token).")
         }
 
         let forbiddenMongoCoreTokens = [
@@ -815,11 +815,11 @@ struct ServerSideAPISafetyTests {
             "PipelineCompiler"
         ]
         for token in forbiddenMongoCoreTokens {
-            #expect(!mongoSource.contains(token), "FirestoreMongoCore should not depend on \(token).")
+            #expect(!mongoSource.contains(token), "FirestoreMongo should not depend on \(token).")
         }
 
         let nativeSourcePaths = [
-            "Sources/FirestoreAdmin/FirestoreAdmin.swift",
+            "Sources/FirestoreAdminCore/Firestore.swift",
             "Sources/FirestoreCore/Query.swift",
             "Sources/FirestoreCore/QueryPredicate.swift",
             "Sources/FirestoreGeoQuery/FirestoreGeoQuery.swift",
@@ -950,17 +950,17 @@ struct ServerSideAPISafetyTests {
             "FirestoreCore must not own server runtime configuration types",
             "FirestoreRuntimeConfig must not depend on transport, auth implementations, RPC compilers, protobuf, Pipeline, or logging",
             "Mongo-compatible constructs must stay out of Native Firestore source",
-            "!Sources/FirestoreAPI/FirestoreMongoCoreExports.swift",
+            "!Sources/FirestoreAPI/FirestoreMongoExports.swift",
             "Checking Mongo-compatible core boundaries",
-            "FirestoreMongoCore must not depend on Native RPC, Pipeline RPC, Native GeoQuery, protobuf, or grpc-swift transport",
+            "FirestoreMongo must not depend on Native RPC, Pipeline RPC, Native GeoQuery, protobuf, or grpc-swift transport",
             "StructuredQuery",
             "ExecutePipeline",
             "emit_public_product_symbol_graphs",
             "swift build --quiet --product FirestoreAPI",
-            "swift build --quiet --product FirestoreAdminServer",
-            "swift build --quiet --product FirestoreMongoCore",
+            "swift build --quiet --product FirestoreAdmin",
+            "swift build --quiet --product FirestoreMongo",
             "swift symbolgraph-extract",
-            "for module in FirestoreAPI FirestoreAdminServer FirestoreMongoCore",
+            "for module in FirestoreAPI FirestoreAdmin FirestoreMongo",
             "GeneratedModuleMaps",
             "../networking .build/checkouts",
             "Sources/*/include/module.modulemap",
@@ -1030,7 +1030,7 @@ struct ServerSideAPISafetyTests {
         for token in requiredLiveSmokeTokens {
             #expect(liveSmokeScript.contains(token), "Live smoke script should contain \(token).")
         }
-        #expect(liveSmokeTest.contains("FirestoreAdmin.applicationDefaultResolvingProjectID("))
+        #expect(liveSmokeTest.contains("Firestore.applicationDefaultResolvingProjectID("))
         #expect(liveSmokeTest.contains("projectId: configuration.projectID"))
         #expect(liveSmokeTest.contains("databaseId: configuration.databaseID"))
     }
@@ -1061,7 +1061,7 @@ struct ServerSideAPISafetyTests {
         let requiredBoundaryTokens = [
             "Admin/API targets build for WASI",
             "runtime requires a host-provided gRPC `ClientTransport`",
-            "`FirestoreAdminServer` and `FirestoreAPI` now compile",
+            "`FirestoreAdmin` and `FirestoreAPI` now compile",
             "The supported runtime path for Wasm",
             "Provide a `GRPCCore.ClientTransport` implemented by the host environment",
             "`FirestoreSettings.hostManagedAuthentication(...)`",
@@ -1075,7 +1075,7 @@ struct ServerSideAPISafetyTests {
 
         let expectedCompatibleTargets = [
             "FirestoreCore",
-            "FirestoreMongoCore",
+            "FirestoreMongo",
             "FirestoreGeoQuery",
             "FirestorePipeline",
             "FirestoreCodable",
@@ -1085,14 +1085,14 @@ struct ServerSideAPISafetyTests {
             "FirestoreRPCSupport",
             "FirestoreRPC",
             "FirestorePipelineRPC",
-            "FirestoreAdmin",
+            "FirestoreAdminCore",
             "FirestoreAdminCodable",
             "FirestoreAuthCore",
             "FirestoreAuth",
             "FirestoreGRPCStubs",
             "FirestoreGRPCTransport",
             "FirestoreAdminGRPCBootstrap",
-            "FirestoreAdminServer",
+            "FirestoreAdmin",
             "FirestoreAPI"
         ]
         for target in expectedCompatibleTargets {
@@ -1242,13 +1242,13 @@ struct ServerSideAPISafetyTests {
             .deletingLastPathComponent()
             .deletingLastPathComponent()
         let sourcePaths = [
-            "Sources/FirestoreAdmin/FirestoreAdmin.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminClient.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminReferenceClient.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminWriteClient.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminTransactionClient.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminPipelineClient.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminLifecycleClient.swift",
+            "Sources/FirestoreAdminCore/Firestore.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminClient.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminReferenceClient.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminWriteClient.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminTransactionClient.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminPipelineClient.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminLifecycleClient.swift",
             "Sources/FirestoreRuntimeConfig/FirestoreSetting.swift",
             "Sources/FirestoreRuntimeConfig/FirestoreRetry.swift",
             "Sources/FirestoreRuntimeConfig/FirestoreAuthenticationMode.swift",
@@ -1312,11 +1312,11 @@ struct ServerSideAPISafetyTests {
             "Sources/FirestorePipeline/PipelineExplainResult.swift",
             "Sources/FirestoreCore/WriteData.swift",
             "Sources/FirestoreCore/TransactionOptions.swift",
-            "Sources/FirestoreAdmin/TransactionError.swift",
-            "Sources/FirestoreAdmin/FirestoreAdmin+Transaction.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminWriteBatch.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminTransaction.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminBulkWriter.swift",
+            "Sources/FirestoreAdminCore/TransactionError.swift",
+            "Sources/FirestoreAdminCore/Firestore+Transaction.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminWriteBatch.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminTransaction.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminBulkWriter.swift",
             "Sources/FirestoreCore/FirestoreBulkWriteResult.swift",
             "Sources/FirestoreCore/FirestoreBulkWriteOperationResult.swift"
         ]
@@ -1735,7 +1735,7 @@ struct ServerSideAPISafetyTests {
             encoding: .utf8
         )
         let adminGRPCBootstrapSource = try String(
-            contentsOf: rootURL.appending(path: "Sources/FirestoreAdminGRPCBootstrap/FirestoreAdmin+gRPC.swift"),
+            contentsOf: rootURL.appending(path: "Sources/FirestoreAdminGRPCBootstrap/Firestore+gRPC.swift"),
             encoding: .utf8
         )
         let adminExportSource = try String(
@@ -1747,16 +1747,16 @@ struct ServerSideAPISafetyTests {
             encoding: .utf8
         )
         let adminSource = try String(
-            contentsOf: rootURL.appending(path: "Sources/FirestoreAdmin/FirestoreAdmin.swift"),
+            contentsOf: rootURL.appending(path: "Sources/FirestoreAdminCore/Firestore.swift"),
             encoding: .utf8
         )
         let adminClientSourcePaths = [
-            "Sources/FirestoreAdmin/FirestoreAdminClient.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminReferenceClient.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminWriteClient.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminTransactionClient.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminPipelineClient.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminLifecycleClient.swift"
+            "Sources/FirestoreAdminCore/FirestoreAdminClient.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminReferenceClient.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminWriteClient.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminTransactionClient.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminPipelineClient.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminLifecycleClient.swift"
         ]
         let clientSource = try adminClientSourcePaths
             .map { try String(contentsOf: rootURL.appending(path: $0), encoding: .utf8) }
@@ -1819,12 +1819,12 @@ struct ServerSideAPISafetyTests {
             encoding: .utf8
         )
         let adminClientSourcePaths = [
-            "Sources/FirestoreAdmin/FirestoreAdminClient.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminReferenceClient.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminWriteClient.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminTransactionClient.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminPipelineClient.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminLifecycleClient.swift"
+            "Sources/FirestoreAdminCore/FirestoreAdminClient.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminReferenceClient.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminWriteClient.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminTransactionClient.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminPipelineClient.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminLifecycleClient.swift"
         ]
         let adminClientSource = try adminClientSourcePaths
             .map { try String(contentsOf: rootURL.appending(path: $0), encoding: .utf8) }
@@ -1926,9 +1926,9 @@ struct ServerSideAPISafetyTests {
             "Sources/FirestoreCodable/Cadable/Snapshot+Codable.swift"
         ]
         let adminModelSourcePaths = [
-            "Sources/FirestoreAdmin/FirestoreAdminWriteBatch.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminBulkWriter.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminTransaction.swift"
+            "Sources/FirestoreAdminCore/FirestoreAdminWriteBatch.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminBulkWriter.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminTransaction.swift"
         ]
         let adminCodableSourcePaths = [
             "Sources/FirestoreAdminCodable/FirestoreAdminWriteBatch+Codable.swift",
@@ -1963,7 +1963,7 @@ struct ServerSideAPISafetyTests {
 
         for sourcePath in adminCodableSourcePaths {
             let source = try String(contentsOf: rootURL.appending(path: sourcePath), encoding: .utf8)
-            #expect(source.contains("import FirestoreAdmin"), "\(sourcePath) should extend Admin builders from the Admin Codable target.")
+            #expect(source.contains("import FirestoreAdminCore"), "\(sourcePath) should extend Admin builders from the Admin Codable target.")
             #expect(source.contains("import FirestoreCodable"), "\(sourcePath) should own Admin Codable convenience.")
         }
 
@@ -1986,7 +1986,7 @@ struct ServerSideAPISafetyTests {
         #expect(adminCodableExportSource.contains("@_exported import FirestoreAdminCodable"))
 
         let codableRootURL = rootURL.appending(path: "Sources/FirestoreCodable")
-        let adminRootURL = rootURL.appending(path: "Sources/FirestoreAdmin")
+        let adminRootURL = rootURL.appending(path: "Sources/FirestoreAdminCore")
         let adminCodableRootURL = rootURL.appending(path: "Sources/FirestoreAdminCodable")
         let fileManager = FileManager.default
         guard let enumerator = fileManager.enumerator(
@@ -2302,7 +2302,7 @@ struct ServerSideAPISafetyTests {
             .deletingLastPathComponent()
             .deletingLastPathComponent()
         let sourcePaths = [
-            "Sources/FirestoreAdmin/FirestoreAdmin.swift",
+            "Sources/FirestoreAdminCore/Firestore.swift",
             "Sources/FirestoreCore/DocumentReference.swift",
             "Sources/FirestoreCore/CollectionReference.swift",
             "Sources/FirestoreCore/CollectionGroup.swift",
@@ -2492,11 +2492,11 @@ struct ServerSideAPISafetyTests {
             .deletingLastPathComponent()
         let sourcePaths = [
             "Sources/FirestoreCore/WriteData.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminWriteBuffer.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminWriteBatch.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminWriteBuffer.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminWriteBatch.swift",
             "Sources/FirestoreCore/TransactionOptions.swift",
-            "Sources/FirestoreAdmin/TransactionError.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminTransaction.swift"
+            "Sources/FirestoreAdminCore/TransactionError.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminTransaction.swift"
         ]
         let forbiddenTokens = [
             "import GRPCCore",
@@ -2524,13 +2524,13 @@ struct ServerSideAPISafetyTests {
             .deletingLastPathComponent()
             .deletingLastPathComponent()
         let bufferSource = try String(
-            contentsOf: rootURL.appending(path: "Sources/FirestoreAdmin/FirestoreAdminWriteBuffer.swift"),
+            contentsOf: rootURL.appending(path: "Sources/FirestoreAdminCore/FirestoreAdminWriteBuffer.swift"),
             encoding: .utf8
         )
         let publicWriteSources = [
-            "Sources/FirestoreAdmin/FirestoreAdminWriteBatch.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminBulkWriter.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminTransaction.swift"
+            "Sources/FirestoreAdminCore/FirestoreAdminWriteBatch.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminBulkWriter.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminTransaction.swift"
         ]
 
         #expect(bufferSource.contains("final class FirestoreAdminWriteBuffer"))
@@ -3297,7 +3297,7 @@ struct ServerSideAPISafetyTests {
 
     @Test("FirestoreAdmin transaction run throws typed access token error")
     func testFirestoreAdminTransactionRunThrowsTypedAccessTokenError() async {
-        let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "test", transport: MockClientTransport())
 
         var didThrowInvalidAccessToken = false
         do {
@@ -3315,7 +3315,7 @@ struct ServerSideAPISafetyTests {
 
     @Test("FirestoreAdmin transaction commit throws database mismatch")
     func testFirestoreAdminTransactionCommitThrowsDatabaseMismatch() async {
-        let firestore = FirestoreAdmin(projectId: "expected-project", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "expected-project", transport: MockClientTransport())
         let transaction = FirestoreAdminTransaction(
             database: firestore.database,
             runtime: firestore.transactionRuntime
@@ -3342,7 +3342,7 @@ struct ServerSideAPISafetyTests {
 
     @Test("FirestoreAdmin transaction query read after write throws")
     func testFirestoreAdminTransactionQueryReadAfterWriteThrows() async throws {
-        let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "test", transport: MockClientTransport())
         let transaction = FirestoreAdminTransaction(
             database: firestore.database,
             runtime: firestore.transactionRuntime
@@ -3364,7 +3364,7 @@ struct ServerSideAPISafetyTests {
 
     @Test("FirestoreAdmin transaction getDocument read after write throws")
     func testFirestoreAdminTransactionGetDocumentReadAfterWriteThrows() async throws {
-        let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "test", transport: MockClientTransport())
         let transaction = FirestoreAdminTransaction(
             database: firestore.database,
             runtime: firestore.transactionRuntime
@@ -3386,7 +3386,7 @@ struct ServerSideAPISafetyTests {
 
     @Test("FirestoreAdmin transaction supports SDK-compatible write methods")
     func testFirestoreAdminTransactionSupportsSDKCompatibleWriteMethods() async throws {
-        let firestore = FirestoreAdmin(projectId: "expected-project", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "expected-project", transport: MockClientTransport())
         let transaction = FirestoreAdminTransaction(
             database: firestore.database,
             runtime: firestore.transactionRuntime
@@ -3423,7 +3423,7 @@ struct ServerSideAPISafetyTests {
 
     @Test("FirestoreAdmin read-only transaction rejects writes")
     func testFirestoreAdminReadOnlyTransactionRejectsWrites() async throws {
-        let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "test", transport: MockClientTransport())
         let transaction = FirestoreAdminTransaction(
             database: firestore.database,
             runtime: firestore.transactionRuntime,
@@ -3450,17 +3450,21 @@ struct ServerSideAPISafetyTests {
             .deletingLastPathComponent()
             .deletingLastPathComponent()
         let sourcePaths = [
-            "Sources/FirestoreAdmin/FirestoreAdmin.swift",
+            "Sources/FirestoreAdminCore/Firestore.swift",
             "Sources/FirestoreCore/CollectionReference.swift",
             "Sources/FirestoreCore/DocumentReference.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminWriteBatch.swift",
-            "Sources/FirestoreAdmin/FirestoreAdminTransaction.swift"
+            "Sources/FirestoreAdminCore/FirestoreAdminWriteBatch.swift",
+            "Sources/FirestoreAdminCore/FirestoreAdminTransaction.swift"
         ]
         let source = try sourcePaths
             .map { try String(contentsOf: rootURL.appending(path: $0), encoding: .utf8) }
             .joined(separator: "\n")
+        #expect(!FileManager.default.fileExists(
+            atPath: rootURL.appending(path: "Sources/FirestoreAdminCore/FirestoreAdmin.swift").path()
+        ))
         let forbiddenTokens = [
             "@available(*, deprecated",
+            "typealias FirestoreAdmin",
             "func collectionReference(",
             "func documentReference(",
             "func collectionGroupReference(",

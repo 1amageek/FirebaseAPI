@@ -5,12 +5,13 @@ import Synchronization
 import Testing
 @testable import FirestoreAPI
 @testable import FirestoreAdmin
+@testable import FirestoreAdminCore
 
 @Suite("Runtime Bound Reference Tests")
 struct RuntimeBoundReferenceTests {
     @Test("Firestore-created references keep runtime")
     func testFirestoreCreatedReferencesKeepRuntime() throws {
-        let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "test", transport: MockClientTransport())
 
         let document = try firestore.document("users/user123")
         let collection = try firestore.collection("users")
@@ -29,7 +30,7 @@ struct RuntimeBoundReferenceTests {
 
     @Test("SDK-compatible methods keep runtime")
     func testSDKCompatibleMethodsKeepRuntime() throws {
-        let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "test", transport: MockClientTransport())
 
         let document = try firestore.document("users/user123")
         let collection = try firestore.collection("users")
@@ -339,7 +340,7 @@ struct RuntimeBoundReferenceTests {
     @Test("FirestoreAdmin delegates batch bulk and pipeline operations to runtime boundaries")
     func testFirestoreAdminDelegatesBatchBulkAndPipelineOperationsToRuntimeBoundaries() async throws {
         let runtime = RecordingRuntime()
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             database: runtime.runtimeDatabase,
             referenceRuntime: runtime,
             collectionGroupRuntime: runtime,
@@ -632,7 +633,7 @@ struct RuntimeBoundReferenceTests {
 
     @Test("Runtime-backed API throws typed access token error")
     func testRuntimeBackedAPIThrowsTypedAccessTokenError() async throws {
-        let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "test", transport: MockClientTransport())
         let reference = try firestore.document("users/user123")
 
         var didThrowInvalidAccessToken = false

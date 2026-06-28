@@ -2,7 +2,7 @@ import Foundation
 import FirestoreCore
 import FirestoreRuntimeSupport
 
-extension FirestoreAdmin {
+extension Firestore {
     public func runTransaction<T>(
         _ transactionFunction: @escaping (FirestoreAdminTransaction) async throws -> T?,
         options: TransactionOptions = TransactionOptions()

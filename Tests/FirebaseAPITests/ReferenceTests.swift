@@ -12,7 +12,7 @@ import Testing
 @Suite("Reference Path Tests")
 struct ReferenceTests {
 
-    let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+    let firestore = Firestore(projectId: "test", transport: MockClientTransport())
 
     @Test("Collection reference path - single level")
     func testCollectionPathSingleLevel() throws {

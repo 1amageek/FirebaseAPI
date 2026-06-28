@@ -6,12 +6,13 @@ import Synchronization
 import Testing
 @testable import FirestoreAPI
 @testable import FirestoreAdmin
+@testable import FirestoreAdminCore
 
 @Suite("FirestoreAdmin API Tests")
 struct FirestoreAdminTests {
     @Test("FirestoreAdmin creates runtime-bound references")
     func testFirestoreAdminCreatesRuntimeBoundReferences() throws {
-        let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "test", transport: MockClientTransport())
 
         let document = try firestore.document("users/user123")
         let collection = try firestore.collection("users")
@@ -29,7 +30,7 @@ struct FirestoreAdminTests {
 
     @Test("FirestoreAdmin SDK-compatible reference methods validate paths")
     func testFirestoreAdminSDKCompatibleReferenceMethodsValidatePaths() throws {
-        let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "test", transport: MockClientTransport())
 
         let document = try firestore.document("users/user123")
         let collection = try firestore.collection("users")
@@ -46,7 +47,7 @@ struct FirestoreAdminTests {
 
     @Test("FirestoreAdmin batch is not generic")
     func testFirestoreAdminBatchIsNotGeneric() {
-        let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "test", transport: MockClientTransport())
 
         let batch: FirestoreAdminWriteBatch = firestore.batch()
 
@@ -55,7 +56,7 @@ struct FirestoreAdminTests {
 
     @Test("FirestoreAdmin bulk writer is not generic")
     func testFirestoreAdminBulkWriterIsNotGeneric() {
-        let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "test", transport: MockClientTransport())
 
         let bulkWriter: FirestoreAdminBulkWriter = firestore.bulkWriter()
 
@@ -64,7 +65,7 @@ struct FirestoreAdminTests {
 
     @Test("FirestoreAdmin conforms to the server-side client protocol")
     func testFirestoreAdminConformsToServerSideClientProtocol() throws {
-        let firestore: any FirestoreAdminClient = FirestoreAdmin(
+        let firestore: any FirestoreAdminClient = Firestore(
             projectId: "test",
             transport: MockClientTransport()
         )
@@ -84,7 +85,7 @@ struct FirestoreAdminTests {
 
     @Test("FirestoreAdmin batch supports SDK-compatible write methods")
     func testFirestoreAdminBatchSupportsSDKCompatibleWriteMethods() async throws {
-        let firestore = FirestoreAdmin(projectId: "expected-project", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "expected-project", transport: MockClientTransport())
         let reference = try firestore.document("users/user123")
         let otherReference = DocumentReference(
             Database(projectId: "actual-project"),
@@ -117,7 +118,7 @@ struct FirestoreAdminTests {
 
     @Test("FirestoreAdmin bulk writer validates server-side BatchWrite constraints")
     func testFirestoreAdminBulkWriterValidatesServerSideBatchWriteConstraints() async throws {
-        let firestore = FirestoreAdmin(projectId: "expected-project", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "expected-project", transport: MockClientTransport())
         let reference = try firestore.document("users/user123")
         let otherReference = DocumentReference(
             Database(projectId: "actual-project"),
@@ -160,7 +161,7 @@ struct FirestoreAdminTests {
 
     @Test("FirestoreAdmin transaction is not generic")
     func testFirestoreAdminTransactionIsNotGeneric() {
-        let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "test", transport: MockClientTransport())
 
         let transaction = FirestoreAdminTransaction(
             database: firestore.database,
@@ -173,7 +174,7 @@ struct FirestoreAdminTests {
     @Test("FirestoreAdmin transaction retries aborted commit with retry transaction ID")
     func testFirestoreAdminTransactionRetriesAbortedCommitWithRetryTransactionID() async throws {
         let runtime = TransactionRetryRuntime()
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             database: runtime.runtimeDatabase,
             referenceRuntime: runtime,
             collectionGroupRuntime: runtime,
@@ -206,7 +207,7 @@ struct FirestoreAdminTests {
     @Test("FirestoreAdmin transaction clears writes between retry attempts")
     func testFirestoreAdminTransactionClearsWritesBetweenRetryAttempts() async throws {
         let runtime = TransactionRetryRuntime()
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             database: runtime.runtimeDatabase,
             referenceRuntime: runtime,
             collectionGroupRuntime: runtime,
@@ -248,7 +249,7 @@ struct FirestoreAdminTests {
         }
 
         let runtime = TransactionRetryRuntime()
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             database: runtime.runtimeDatabase,
             referenceRuntime: runtime,
             collectionGroupRuntime: runtime,
@@ -304,7 +305,7 @@ struct FirestoreAdminTests {
     @Test("FirestoreAdmin read-only transaction skips commit")
     func testFirestoreAdminReadOnlyTransactionSkipsCommit() async throws {
         let runtime = TransactionRetryRuntime()
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             database: runtime.runtimeDatabase,
             referenceRuntime: runtime,
             collectionGroupRuntime: runtime,
@@ -335,7 +336,7 @@ struct FirestoreAdminTests {
     @Test("FirestoreAdmin read-only transaction rejects writes without commit")
     func testFirestoreAdminReadOnlyTransactionRejectsWritesWithoutCommit() async throws {
         let runtime = TransactionRetryRuntime()
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             database: runtime.runtimeDatabase,
             referenceRuntime: runtime,
             collectionGroupRuntime: runtime,
@@ -372,7 +373,7 @@ struct FirestoreAdminTests {
     @Test("FirestoreAdmin transaction wraps rollback failure")
     func testFirestoreAdminTransactionWrapsRollbackFailure() async throws {
         let runtime = TransactionRetryRuntime(rollbackShouldFail: true)
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             database: runtime.runtimeDatabase,
             referenceRuntime: runtime,
             collectionGroupRuntime: runtime,
@@ -411,7 +412,7 @@ struct FirestoreAdminTests {
 
     @Test("FirestoreAdmin batch commit throws typed access token error")
     func testFirestoreAdminBatchCommitThrowsTypedAccessTokenError() async throws {
-        let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "test", transport: MockClientTransport())
         let reference = try firestore.document("users/user123")
         let batch = firestore.batch()
         batch.setData(["name": "Ada"], forDocument: reference)
@@ -455,7 +456,7 @@ struct FirestoreAdminTests {
 
     @Test("FirestoreAdmin maps gRPC errors to Firestore error codes")
     func testFirestoreAdminMapsGRPCErrorsToFirestoreErrorCodes() async throws {
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test",
             transport: MockClientTransport(),
             accessTokenProvider: StaticAccessTokenProvider()
@@ -488,7 +489,7 @@ struct FirestoreAdminTests {
     @Test("FirestoreAdmin emulator settings disable authentication")
     func testFirestoreAdminEmulatorSettingsDisableAuthentication() async throws {
         let settings = FirestoreSettings.emulator(host: "127.0.0.1", port: 8080)
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test",
             transport: MockClientTransport(),
             settings: settings
@@ -514,7 +515,7 @@ struct FirestoreAdminTests {
     @Test("FirestoreAdmin host-managed authentication requires custom transport")
     func testFirestoreAdminHostManagedAuthenticationRequiresCustomTransport() throws {
         do {
-            _ = try FirestoreAdmin(
+            _ = try Firestore(
                 projectId: "test",
                 settings: .hostManagedAuthentication()
             )
@@ -527,7 +528,7 @@ struct FirestoreAdminTests {
     @Test("FirestoreAdmin custom host transport owns host-managed authentication")
     func testFirestoreAdminCustomHostTransportOwnsHostManagedAuthentication() async throws {
         let settings = FirestoreSettings.hostManagedAuthentication()
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test",
             transport: MockClientTransport(),
             settings: settings
@@ -551,7 +552,7 @@ struct FirestoreAdminTests {
 
     @Test("FirestoreAdmin host-managed authentication rejects access token provider")
     func testFirestoreAdminHostManagedAuthenticationRejectsAccessTokenProvider() async throws {
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test",
             transport: MockClientTransport(),
             settings: .hostManagedAuthentication(),
@@ -572,14 +573,14 @@ struct FirestoreAdminTests {
     @Test("FirestoreAdmin validates server-side authentication settings before transport startup")
     func testFirestoreAdminValidatesServerSideAuthenticationSettingsBeforeTransportStartup() throws {
         do {
-            _ = try FirestoreAdmin(projectId: "test")
+            _ = try Firestore(projectId: "test")
             Issue.record("Expected missing access token provider configuration error")
         } catch FirestoreError.invalidConfiguration(let message) {
             #expect(message.contains("Firestore authentication is required"))
         }
 
         do {
-            _ = try FirestoreAdmin(
+            _ = try Firestore(
                 projectId: "test",
                 settings: FirestoreSettings(authenticationMode: .disabled)
             )
@@ -589,7 +590,7 @@ struct FirestoreAdminTests {
         }
 
         do {
-            _ = try FirestoreAdmin(
+            _ = try Firestore(
                 projectId: "test",
                 settings: .hostManagedAuthentication()
             )
@@ -628,7 +629,7 @@ struct FirestoreAdminTests {
 
     @Test("FirestoreAdmin batch commit throws database mismatch")
     func testFirestoreAdminBatchCommitThrowsDatabaseMismatch() async {
-        let firestore = FirestoreAdmin(projectId: "expected-project", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "expected-project", transport: MockClientTransport())
         let otherReference = DocumentReference(
             Database(projectId: "actual-project"),
             parentPath: "users",
@@ -652,7 +653,7 @@ struct FirestoreAdminTests {
 
     @Test("FirestoreAdmin reference creation throws invalid path")
     func testFirestoreAdminReferenceCreationThrowsInvalidPath() {
-        let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "test", transport: MockClientTransport())
 
         var didThrowInvalidPath = false
         do {
@@ -668,7 +669,7 @@ struct FirestoreAdminTests {
 
     @Test("FirestoreAdmin reference creation rejects empty path segments")
     func testFirestoreAdminReferenceCreationRejectsEmptyPathSegments() throws {
-        let firestore = FirestoreAdmin(projectId: "test", transport: MockClientTransport())
+        let firestore = Firestore(projectId: "test", transport: MockClientTransport())
         let collection = try firestore.collection("users")
         let document = try firestore.document("users/user123")
 

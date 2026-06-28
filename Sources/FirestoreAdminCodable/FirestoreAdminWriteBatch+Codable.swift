@@ -1,5 +1,5 @@
 import Foundation
-import FirestoreAdmin
+import FirestoreAdminCore
 import FirestoreCodable
 import FirestoreCore
 

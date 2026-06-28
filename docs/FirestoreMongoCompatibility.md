@@ -16,15 +16,15 @@ Official reference:
 
 ## Decision
 
-MongoDB-compatible Firestore APIs are implemented through a separate boundary, not as extensions on Native Firestore query types. `FirestoreMongoCore` is the first boundary: it owns Mongo query document builders for GeoJSON points, `$near` documents, and `2dsphere` index declarations. A full `FirestoreMongoAdminClient` and Future Mongo-compatible transport remain separate follow-up work.
+MongoDB-compatible Firestore APIs are implemented through a separate boundary, not as extensions on Native Firestore query types. `FirestoreMongo` is the first boundary: it owns Mongo query document builders for GeoJSON points, `$near` documents, and `2dsphere` index declarations. A full `FirestoreMongoAdminClient` and Future Mongo-compatible transport remain separate follow-up work.
 
 ```mermaid
 flowchart LR
   A["Application code"] --> B{"API family"}
-  B -->|"Native Firestore"| C["FirestoreAdmin"]
+  B -->|"Native Firestore"| C["Firestore"]
   C --> D["Query / GeoQuery / Pipeline"]
   D --> E["Firestore v1 gRPC compilers"]
-  B -->|"MongoDB-compatible Firestore"| F["FirestoreMongoCore"]
+  B -->|"MongoDB-compatible Firestore"| F["FirestoreMongo"]
   F --> G["Mongo query document builders"]
   G --> H["Future Mongo-compatible transport"]
 ```
@@ -33,7 +33,7 @@ flowchart LR
 
 | Concern | Native Firestore Admin | Mongo-compatible Admin |
 |---|---|---|
-| Public entry point | `FirestoreAdmin` | `FirestoreMongoCore` query-document builders re-exported by `FirestoreAPI`; future `FirestoreMongoAdminClient` or separate SwiftPM product |
+| Public entry point | `Firestore` | `FirestoreMongo` query-document builders re-exported by `FirestoreAPI`; future `FirestoreMongoAdminClient` or separate SwiftPM product |
 | Query representation | Typed Swift query builders compiled to Firestore v1 protobuf | BSON-like query documents represented by `FirestoreMongoDocument` and `FirestoreMongoValue` |
 | Geospatial API | `FirestoreGeoQuery` with geohash ranges and exact Swift distance filtering; Firestore Pipeline `geo_distance` expressions in Pipeline Search | `FirestoreMongoGeoNearQuery`, `$near`, `$geometry`, GeoJSON points, and `FirestoreMongoGeoIndex` `2dsphere` declarations |
 | Index model | Firestore single-field and composite indexes | Mongo-compatible geospatial indexes |
@@ -54,7 +54,7 @@ The only Core Native query geospatial contract is the geohash solution: store a 
 
 ## Implemented Boundary and Future Shape
 
-The current boundary is `FirestoreMongoCore`. It introduces query-document values and geospatial request/index builders without importing Native RPC compilers, Native geohash GeoQuery, Pipeline RPC compilers, protobuf, or grpc-swift transport modules.
+The current boundary is `FirestoreMongo`. It introduces query-document values and geospatial request/index builders without importing Native RPC compilers, Native geohash GeoQuery, Pipeline RPC compilers, protobuf, or grpc-swift transport modules.
 
 The boundary must preserve these dependency rules:
 

@@ -15,7 +15,7 @@ public final class FirestoreAdminBulkWriter {
 
     /// Creates an unbound bulk writer for custom Admin clients and test doubles.
     ///
-    /// Use `FirestoreAdmin.bulkWriter()` for runtime-backed server writes.
+    /// Use `Firestore.bulkWriter()` for runtime-backed server writes.
     public convenience init(
         projectId: String,
         databaseId: String = "(default)",

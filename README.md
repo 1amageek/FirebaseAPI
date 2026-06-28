@@ -6,7 +6,7 @@ This repository includes the [googleapis](https://github.com/googleapis/googleap
 
 ## Features
 
-- ✅ **Server-side Admin API**: Non-generic `FirestoreAdmin` facade for server applications
+- ✅ **Server-side Admin API**: Non-generic `Firestore` facade for server applications
 - ✅ **Google Auth**: Service account JWT bearer flow and Application Default Credentials support
 - ✅ **Firestore API**: Support for Firestore operations (CRUD, queries, transactions, batches)
 - ✅ **Bulk Writer**: Server-side non-atomic `BatchWrite` support with per-write status results
@@ -18,7 +18,7 @@ This repository includes the [googleapis](https://github.com/googleapis/googleap
 - ✅ **GeoQuery**: Native Firestore geohash range queries with GeoPoint distance filtering
 - ✅ **Mongo-Compatible Geo Query Documents**: Separate Mongo-compatible GeoJSON `$near` query and `2dsphere` index builders without mixing them into Native Query
 - ✅ **Transport-backed Runtime**: Default gRPC runtime plus explicit custom `ClientTransport` injection and `FirestoreSettings.hostManagedAuthentication(...)` for host-provided runtimes
-- ✅ **Wasm Admin Build Surface**: `FirestoreAdminServer` and `FirestoreAPI` build for WASI with a host-provided `ClientTransport` runtime and authentication boundary
+- ✅ **Wasm Admin Build Surface**: `FirestoreAdmin` and `FirestoreAPI` build for WASI with a host-provided `ClientTransport` runtime and authentication boundary
 - ✅ **Swift 6 Ready**: Full concurrency support with `async/await` and `Sendable`
 - ✅ **Type-safe Encoding/Decoding**: FirestoreEncoder and FirestoreDecoder for seamless Swift type conversion
 - ✅ **Property Wrappers**: `@DocumentID`, `@ReferencePath`, `@ExplicitNull`, and `@ServerTimestamp` for Firestore-specific behaviors
@@ -45,40 +45,40 @@ Then add it to your target dependencies:
 .target(
     name: "YourTarget",
     dependencies: [
-        .product(name: "FirestoreAdminServer", package: "FirebaseAPI")
+        .product(name: "FirestoreAdmin", package: "FirebaseAPI")
     ]
 )
 ```
 
-`FirestoreAdminServer` is the preferred server-side Firestore Admin product. `FirestoreAPI` remains available as a source-compatible all-in-one import for existing applications. Add the `FirestoreMongoCore` product explicitly only when building MongoDB-compatible query documents.
+`FirestoreAdmin` is the preferred server-side Firestore Admin product. `FirestoreAPI` remains available as a source-compatible all-in-one import for existing applications. Add the `FirestoreMongo` product explicitly only when building MongoDB-compatible query documents.
 
 ## Usage
 
 ### Initialize Firestore
 
 ```swift
-import FirestoreAdminServer
+import FirestoreAdmin
 
 let credentials = try ServiceAccountCredentials.load(from: serviceAccountJSONURL)
-let firestore = try FirestoreAdmin(credentials: credentials)
+let firestore = try Firestore(credentials: credentials)
 ```
 
 For environments configured with Application Default Credentials:
 
 ```swift
-let firestore = try FirestoreAdmin.applicationDefault()
+let firestore = try Firestore.applicationDefault()
 ```
 
 For Google Cloud runtimes that rely on the metadata server for both tokens and project ID:
 
 ```swift
-let firestore = try await FirestoreAdmin.applicationDefaultResolvingProjectID()
+let firestore = try await Firestore.applicationDefaultResolvingProjectID()
 ```
 
 For local Firestore emulator development:
 
 ```swift
-let firestore = try FirestoreAdmin.emulator(
+let firestore = try Firestore.emulator(
     projectId: "demo-project",
     host: "127.0.0.1",
     port: 18080
@@ -255,27 +255,27 @@ struct Post: Codable {
 
 ### Server-side Admin Facade
 
-Application code should use `FirestoreAdmin`. It keeps the public API non-generic while the internal runtime remains backed by a concrete grpc-swift transport.
+Application code should import `FirestoreAdmin` and use `Firestore`. It keeps the public API non-generic while the internal runtime remains backed by a concrete grpc-swift transport.
 
 ```swift
-import FirestoreAdminServer
+import FirestoreAdmin
 
 let credentials = try ServiceAccountCredentials.load(from: serviceAccountJSONURL)
-let firestore = try FirestoreAdmin(credentials: credentials)
+let firestore = try Firestore(credentials: credentials)
 ```
 
 ### Runtime and RPC Boundaries
 
 The implementation is split into these responsibilities:
 
-- **Public facade**: `FirestoreAdmin` and server-side Admin builders such as `FirestoreAdminWriteBatch` and `FirestoreAdminBulkWriter`
-- **Recommended server-side product**: `FirestoreAdminServer` re-exports the Admin facade, Admin Codable helpers, gRPC bootstrap, Auth, Core, Codable, Pipeline, RuntimeConfig, and Native GeoQuery targets without re-exporting Mongo-compatible query documents or RPC/transport implementation targets
+- **Public facade**: `Firestore` and server-side Admin builders such as `FirestoreAdminWriteBatch` and `FirestoreAdminBulkWriter`
+- **Recommended server-side product**: `FirestoreAdmin` re-exports the Admin facade, Admin Codable helpers, gRPC bootstrap, Auth, Core, Codable, Pipeline, RuntimeConfig, and Native GeoQuery targets without re-exporting Mongo-compatible query documents or RPC/transport implementation targets
 - **Compatibility import surface**: `FirestoreAPI` re-exports the dedicated `FirestoreAdmin`, `FirestoreAdminCodable`, Core, Codable, Pipeline, Auth, Native GeoQuery, and Mongo-compatible query document targets so existing applications can keep importing one module
 - **Admin write staging**: `FirestoreAdminWriteBuffer` centralizes internal write buffering, database validation, read-only transaction rejection, and BulkWriter duplicate-document checks
 - **Reference/query core**: `DocumentReference`, `CollectionReference`, `CollectionGroup`, `Query`, snapshots, path construction, query planning state, and runtime delegation without grpc-swift transport dependencies
 - **Codable boundary**: `FirestoreCodable` owns `FirestoreEncoder`, `FirestoreDecoder`, Firestore property wrappers, and reference/query/snapshot Codable convenience extensions; `FirestoreAdminCodable` owns Admin builder and transaction Codable overloads
 - **Native GeoQuery boundary**: `FirestoreGeoQuery` owns geohash range planning, `FirestoreGeoHash`, and exact Swift distance filtering
-- **Mongo-compatible boundary**: `FirestoreMongoCore` owns GeoJSON `$near` query documents and `2dsphere` index declarations; future Mongo-compatible transport work must stay outside Native Query, Native GeoQuery, and Pipeline
+- **Mongo-compatible boundary**: `FirestoreMongo` owns GeoJSON `$near` query documents and `2dsphere` index declarations; future Mongo-compatible transport work must stay outside Native Query, Native GeoQuery, and Pipeline
 - **Auth boundary**: service account credential loading, OAuth access token minting, token caching, and explicit emulator-only disabled authentication; private key material is consumed by the token provider and is not exposed as public credential state
 - **Runtime configuration boundary**: `FirestoreRuntimeConfig` owns `FirestoreSettings`, retry policy, log level, and authentication mode so Core model files stay focused on Firestore values and query state
 - **Runtime protocol boundary**: `FirestoreCore` owns reference/query/listen/partition runtime seams; `FirestoreRuntimeSupport` owns batch/Pipeline runtime seams and the facade composition `FirestoreRuntime`, all without grpc-swift transport types

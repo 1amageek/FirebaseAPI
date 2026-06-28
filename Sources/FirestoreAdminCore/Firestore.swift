@@ -4,7 +4,7 @@ import FirestorePipeline
 import FirestoreRuntimeConfig
 import FirestoreRuntimeSupport
 
-public final class FirestoreAdmin: Sendable {
+public final class Firestore: Sendable {
     let database: Database
     let referenceRuntime: any FirestoreReferenceRuntime
     let collectionGroupRuntime: any FirestoreCollectionGroupRuntime

@@ -13,6 +13,7 @@ import FirestoreRuntimeConfig
 import GRPCCore
 @testable import FirestoreAPI
 @testable import FirestoreAdmin
+@testable import FirestoreAdminCore
 
 /// Mock ClientTransport for testing
 struct MockClientTransport: ClientTransport {

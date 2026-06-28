@@ -1,5 +1,5 @@
 import Foundation
-import FirestoreAdmin
+import FirestoreAdminCore
 import FirestoreAuthCore
 import FirestoreAuth
 import FirestoreCore
@@ -7,7 +7,7 @@ import FirestoreGRPCTransport
 import FirestoreRuntimeConfig
 import GRPCCore
 
-extension FirestoreAdmin {
+extension Firestore {
     public convenience init(
         projectId: String,
         credentials: ServiceAccountCredentials,
@@ -44,7 +44,7 @@ extension FirestoreAdmin {
         databaseId: String = "(default)",
         settings: FirestoreSettings = FirestoreSettings(),
         scope: any AccessScope = FirestoreAccessScope.datastore
-    ) throws -> FirestoreAdmin {
+    ) throws -> Firestore {
         let accessTokenProvider = try GoogleApplicationDefaultCredentials.accessTokenProvider(scope: scope)
         let resolvedProjectId: String
         if let projectId {
@@ -53,11 +53,11 @@ extension FirestoreAdmin {
             resolvedProjectId = defaultProjectId
         } else {
             throw FirestoreError.invalidConfiguration(
-                "FirestoreAdmin.applicationDefault requires projectId when Application Default Credentials cannot resolve a project ID synchronously."
+                "Firestore.applicationDefault requires projectId when Application Default Credentials cannot resolve a project ID synchronously."
             )
         }
 
-        return try FirestoreAdmin(
+        return try Firestore(
             projectId: resolvedProjectId,
             databaseId: databaseId,
             settings: settings,
@@ -70,7 +70,7 @@ extension FirestoreAdmin {
         databaseId: String = "(default)",
         settings: FirestoreSettings = FirestoreSettings(),
         scope: any AccessScope = FirestoreAccessScope.datastore
-    ) async throws -> FirestoreAdmin {
+    ) async throws -> Firestore {
         let accessTokenProvider = try GoogleApplicationDefaultCredentials.accessTokenProvider(scope: scope)
         let resolvedProjectId: String
         if let projectId {
@@ -79,11 +79,11 @@ extension FirestoreAdmin {
             resolvedProjectId = defaultProjectId
         } else {
             throw FirestoreError.invalidConfiguration(
-                "FirestoreAdmin.applicationDefaultResolvingProjectID requires projectId when Application Default Credentials cannot resolve a project ID."
+                "Firestore.applicationDefaultResolvingProjectID requires projectId when Application Default Credentials cannot resolve a project ID."
             )
         }
 
-        return try FirestoreAdmin(
+        return try Firestore(
             projectId: resolvedProjectId,
             databaseId: databaseId,
             settings: settings,
@@ -100,8 +100,8 @@ extension FirestoreAdmin {
         maxRetryAttempts: Int = 5,
         retryStrategy: FirestoreRetryStrategy = .exponentialBackoff(),
         logLevel: FirestoreLogLevel = .info
-    ) throws -> FirestoreAdmin {
-        try FirestoreAdmin(
+    ) throws -> Firestore {
+        try Firestore(
             projectId: projectId,
             databaseId: databaseId,
             settings: .emulator(
@@ -133,6 +133,22 @@ extension FirestoreAdmin {
         self.init(transportRuntime: transportRuntime)
     }
 
+    public static func admin(
+        projectId: String,
+        databaseId: String = "(default)",
+        transport: some ClientTransport,
+        settings: FirestoreSettings = FirestoreSettings(),
+        accessTokenProvider: (any AccessTokenProvider & Sendable)? = nil
+    ) -> Firestore {
+        Firestore(
+            projectId: projectId,
+            databaseId: databaseId,
+            transport: transport,
+            settings: settings,
+            accessTokenProvider: accessTokenProvider
+        )
+    }
+
     public convenience init(
         projectId: String,
         databaseId: String = "(default)",
@@ -146,6 +162,20 @@ extension FirestoreAdmin {
             accessTokenProvider: accessTokenProvider
         )
         self.init(transportRuntime: transportRuntime)
+    }
+
+    public static func admin(
+        projectId: String,
+        databaseId: String = "(default)",
+        settings: FirestoreSettings = FirestoreSettings(),
+        accessTokenProvider: (any AccessTokenProvider & Sendable)? = nil
+    ) throws -> Firestore {
+        try Firestore(
+            projectId: projectId,
+            databaseId: databaseId,
+            settings: settings,
+            accessTokenProvider: accessTokenProvider
+        )
     }
 
     package convenience init(transportRuntime: FirestoreGRPCTransportRuntime) {

@@ -13,11 +13,11 @@ let package = Package(
             name: "FirestoreAPI",
             targets: ["FirestoreAPI"]),
         .library(
-            name: "FirestoreAdminServer",
-            targets: ["FirestoreAdminServer"]),
+            name: "FirestoreAdmin",
+            targets: ["FirestoreAdmin"]),
         .library(
-            name: "FirestoreMongoCore",
-            targets: ["FirestoreMongoCore"]),
+            name: "FirestoreMongo",
+            targets: ["FirestoreMongo"]),
     ],
     dependencies: [
         .package(url: "https://github.com/1amageek/swift-protobuf.git", branch: "main"),
@@ -103,12 +103,12 @@ let package = Package(
                 "FirestoreCore"
             ]),
         .target(
-            name: "FirestoreMongoCore",
+            name: "FirestoreMongo",
             dependencies: [
                 "FirestoreCore"
             ]),
         .target(
-            name: "FirestoreAdmin",
+            name: "FirestoreAdminCore",
             dependencies: [
                 "FirestoreCore",
                 "FirestorePipeline",
@@ -118,14 +118,14 @@ let package = Package(
         .target(
             name: "FirestoreAdminCodable",
             dependencies: [
-                "FirestoreAdmin",
+                "FirestoreAdminCore",
                 "FirestoreCodable",
                 "FirestoreCore"
             ]),
         .target(
             name: "FirestoreAdminGRPCBootstrap",
             dependencies: [
-                "FirestoreAdmin",
+                "FirestoreAdminCore",
                 "FirestoreAuthCore",
                 "FirestoreAuth",
                 "FirestoreCore",
@@ -159,14 +159,15 @@ let package = Package(
                 "FirestoreRuntimeSupport",
                 "FirestoreCodable",
                 "FirestoreGeoQuery",
-                "FirestoreMongoCore",
+                "FirestoreMongo",
                 "FirestoreAdmin",
                 "FirestoreAdminCodable",
                 "FirestoreAdminGRPCBootstrap"
             ]),
         .target(
-            name: "FirestoreAdminServer",
+            name: "FirestoreAdmin",
             dependencies: [
+                "FirestoreAdminCore",
                 "FirestoreCore",
                 "FirestoreAuthCore",
                 "FirestoreAuth",
@@ -174,7 +175,6 @@ let package = Package(
                 "FirestoreRuntimeConfig",
                 "FirestoreCodable",
                 "FirestoreGeoQuery",
-                "FirestoreAdmin",
                 "FirestoreAdminCodable",
                 "FirestoreAdminGRPCBootstrap"
             ]),
@@ -182,14 +182,14 @@ let package = Package(
             name: "FirebaseAPITests",
             dependencies: [
                 "FirestoreAdmin",
+                "FirestoreAdminCore",
                 "FirestoreAdminCodable",
                 "FirestoreAdminGRPCBootstrap",
                 "FirestoreAuthCore",
                 "FirestoreAuth",
                 "FirestoreCodable",
                 "FirestoreGeoQuery",
-                "FirestoreMongoCore",
-                "FirestoreAdminServer",
+                "FirestoreMongo",
                 "FirestorePipeline",
                 "FirestoreRuntimeConfig",
                 "FirestoreRuntimeSupport",

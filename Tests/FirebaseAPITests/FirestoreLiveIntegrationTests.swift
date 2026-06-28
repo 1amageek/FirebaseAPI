@@ -1,5 +1,5 @@
 import Foundation
-import FirestoreAdminServer
+import FirestoreAdmin
 import Testing
 
 @Suite("Firestore Live Integration Tests")
@@ -10,7 +10,7 @@ struct FirestoreLiveIntegrationTests {
             return
         }
 
-        let firestore = try await FirestoreAdmin.applicationDefaultResolvingProjectID(
+        let firestore = try await Firestore.applicationDefaultResolvingProjectID(
             projectId: configuration.projectID,
             databaseId: configuration.databaseID,
             settings: FirestoreSettings(

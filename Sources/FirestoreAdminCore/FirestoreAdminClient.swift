@@ -8,4 +8,4 @@ public protocol FirestoreAdminClient:
     FirestoreAdminLifecycleClient
 {}
 
-extension FirestoreAdmin: FirestoreAdminClient {}
+extension Firestore: FirestoreAdminClient {}

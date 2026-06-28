@@ -59,8 +59,8 @@ emit_public_product_symbol_graphs() {
   local module_search_args=()
 
   swift build --quiet --product FirestoreAPI >/dev/null
-  swift build --quiet --product FirestoreAdminServer >/dev/null
-  swift build --quiet --product FirestoreMongoCore >/dev/null
+  swift build --quiet --product FirestoreAdmin >/dev/null
+  swift build --quiet --product FirestoreMongo >/dev/null
 
   build_products_dir="$(swift build --show-bin-path)"
   sdk_path="$(xcrun --sdk macosx --show-sdk-path)"
@@ -100,7 +100,7 @@ emit_public_product_symbol_graphs() {
 
   rm -f "$seen_modules"
 
-  for module in FirestoreAPI FirestoreAdminServer FirestoreMongoCore; do
+  for module in FirestoreAPI FirestoreAdmin FirestoreMongo; do
     swift symbolgraph-extract \
       -module-name "$module" \
       "${module_search_args[@]}" \
@@ -156,7 +156,7 @@ assert_no_matches \
 printf 'Checking protobuf type containment...\n'
 assert_no_matches \
   "protobuf implementation types must stay out of core public source" \
-  rg -n "Google_Firestore|Google_Protobuf|SwiftProtobuf" Sources/FirestoreCore Sources/FirestoreRuntimeConfig Sources/FirestorePipeline Sources/FirestoreRuntimeSupport Sources/FirestoreCodable Sources/FirestoreGeoQuery Sources/FirestoreAdmin Sources/FirestoreAdminCodable Sources/FirestoreAPI -S
+  rg -n "Google_Firestore|Google_Protobuf|SwiftProtobuf" Sources/FirestoreCore Sources/FirestoreRuntimeConfig Sources/FirestorePipeline Sources/FirestoreRuntimeSupport Sources/FirestoreCodable Sources/FirestoreGeoQuery Sources/FirestoreAdminCore Sources/FirestoreAdmin Sources/FirestoreAdminCodable Sources/FirestoreAPI -S
 
 printf 'Checking runtime configuration boundaries...\n'
 assert_no_matches \
@@ -169,12 +169,12 @@ assert_no_matches \
 printf 'Checking Native/Mongo-compatible responsibility split...\n'
 assert_no_matches \
   "Mongo-compatible constructs must stay out of Native Firestore source" \
-  rg -n 'Mongo|BSON|\$near|2dsphere' Sources/FirestoreCore Sources/FirestoreRuntimeConfig Sources/FirestorePipeline Sources/FirestoreRuntimeSupport Sources/FirestoreCodable Sources/FirestoreGeoQuery Sources/FirestoreRPC Sources/FirestoreGRPCTransport Sources/FirestoreAdmin Sources/FirestoreAdminCodable Sources/FirestoreAPI --glob '!Sources/FirestoreAPI/FirestoreMongoCoreExports.swift' -S
+  rg -n 'Mongo|BSON|\$near|2dsphere' Sources/FirestoreCore Sources/FirestoreRuntimeConfig Sources/FirestorePipeline Sources/FirestoreRuntimeSupport Sources/FirestoreCodable Sources/FirestoreGeoQuery Sources/FirestoreRPC Sources/FirestoreGRPCTransport Sources/FirestoreAdminCore Sources/FirestoreAdmin Sources/FirestoreAdminCodable Sources/FirestoreAPI --glob '!Sources/FirestoreAPI/FirestoreMongoExports.swift' -S
 
 printf 'Checking Mongo-compatible core boundaries...\n'
 assert_no_matches \
-  "FirestoreMongoCore must not depend on Native RPC, Pipeline RPC, Native GeoQuery, protobuf, or grpc-swift transport" \
-  rg -n "import FirestoreGeoQuery|import FirestorePipeline|import FirestoreRPC|import FirestorePipelineRPC|import FirestoreProtobuf|import FirestoreGRPCStubs|import FirestoreGRPCTransport|import GRPCCore|import GRPCProtobuf|import GRPCNIOTransport|Google_Firestore|Google_Protobuf|SwiftProtobuf|ClientTransport|RPCError|StructuredQuery|ExecutePipeline|QueryCompiler|QueryPredicateFilterCompiler|PipelineCompiler" Sources/FirestoreMongoCore -S
+  "FirestoreMongo must not depend on Native RPC, Pipeline RPC, Native GeoQuery, protobuf, or grpc-swift transport" \
+  rg -n "import FirestoreGeoQuery|import FirestorePipeline|import FirestoreRPC|import FirestorePipelineRPC|import FirestoreProtobuf|import FirestoreGRPCStubs|import FirestoreGRPCTransport|import GRPCCore|import GRPCProtobuf|import GRPCNIOTransport|Google_Firestore|Google_Protobuf|SwiftProtobuf|ClientTransport|RPCError|StructuredQuery|ExecutePipeline|QueryCompiler|QueryPredicateFilterCompiler|PipelineCompiler" Sources/FirestoreMongo -S
 
 printf 'Checking public symbol graph surface...\n'
 emit_public_product_symbol_graphs >/dev/null

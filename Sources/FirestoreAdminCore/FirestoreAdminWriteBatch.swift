@@ -17,7 +17,7 @@ public final class FirestoreAdminWriteBatch {
 
     /// Creates an unbound batch for custom Admin clients and test doubles.
     ///
-    /// Use `FirestoreAdmin.batch()` for runtime-backed server writes.
+    /// Use `Firestore.batch()` for runtime-backed server writes.
     public convenience init(
         projectId: String,
         databaseId: String = "(default)",

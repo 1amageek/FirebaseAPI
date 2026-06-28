@@ -45,7 +45,7 @@ let package = Package(
         .executableTarget(
             name: "FirebaseAPIWasmSmoke",
             dependencies: [
-                .product(name: "FirestoreAdminServer", package: "FirebaseAPI"),
+                .product(name: "FirestoreAdmin", package: "FirebaseAPI"),
                 .product(name: "GRPCCore", package: "grpc-swift-2")
             ]
         )
@@ -54,13 +54,13 @@ let package = Package(
 SWIFT
 
 cat >"$SMOKE_DIR/Sources/FirebaseAPIWasmSmoke/FirebaseAPIWasmSmoke.swift" <<'SWIFT'
-import FirestoreAdminServer
+import FirestoreAdmin
 import GRPCCore
 
 @main
 struct FirebaseAPIWasmSmoke {
     static func main() async throws {
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "wasm-project",
             transport: SmokeTransport(),
             settings: FirestoreSettings.hostManagedAuthentication(logLevel: .warning)
@@ -81,7 +81,7 @@ struct FirebaseAPIWasmSmoke {
             throw error
         }
 
-        print("FirestoreAdmin WASM host transport smoke passed: users users/alice")
+        print("Firestore WASM host transport smoke passed: users users/alice")
     }
 }
 
@@ -150,7 +150,7 @@ actor SmokeTransportState {
 SWIFT
 
 cd "$SMOKE_DIR"
-printf 'Running FirestoreAdmin WASM host transport smoke...\n'
+printf 'Running Firestore WASM host transport smoke...\n'
 set +e
 set -o pipefail
 "${SWIFT_COMMAND[@]}" run --quiet --disable-sandbox --disable-index-store --swift-sdk "$WASM_SDK" FirebaseAPIWasmSmoke 2>&1 \

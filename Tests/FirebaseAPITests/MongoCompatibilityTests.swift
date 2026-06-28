@@ -1,4 +1,4 @@
-import FirestoreMongoCore
+import FirestoreMongo
 import Testing
 @testable import FirestoreAPI
 

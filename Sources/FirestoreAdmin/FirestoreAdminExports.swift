@@ -1,4 +1,4 @@
-@_exported import FirestoreAdmin
+@_exported import FirestoreAdminCore
 @_exported import FirestoreAdminCodable
 @_exported import FirestoreAdminGRPCBootstrap
 @_exported import FirestoreAuth

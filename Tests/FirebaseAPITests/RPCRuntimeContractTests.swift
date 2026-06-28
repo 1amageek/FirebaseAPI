@@ -26,7 +26,7 @@ struct RPCRuntimeContractTests {
             forMethod: "GetDocument"
         )
 
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(7), retryStrategy: .none, logLevel: .warning)
@@ -74,7 +74,7 @@ struct RPCRuntimeContractTests {
         )
 
         let tokenProvider = IncrementingAccessTokenProvider()
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: FirestoreSettings(
@@ -115,7 +115,7 @@ struct RPCRuntimeContractTests {
             forMethod: "RunQuery"
         )
 
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(12), retryStrategy: .none, logLevel: .warning)
@@ -167,7 +167,7 @@ struct RPCRuntimeContractTests {
             forMethod: "RunQuery"
         )
 
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(12), retryStrategy: .none, logLevel: .warning)
@@ -222,7 +222,7 @@ struct RPCRuntimeContractTests {
             forMethod: "RunQuery"
         )
 
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(13), retryStrategy: .none, logLevel: .warning)
@@ -273,7 +273,7 @@ struct RPCRuntimeContractTests {
             forMethod: "PartitionQuery"
         )
 
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(9), retryStrategy: .none, logLevel: .warning)
@@ -551,7 +551,7 @@ struct RPCRuntimeContractTests {
             ),
             forMethod: "BatchWrite"
         )
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(19), retryStrategy: .none, logLevel: .warning)
@@ -604,7 +604,7 @@ struct RPCRuntimeContractTests {
             ),
             forMethod: "RunAggregationQuery"
         )
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(17), retryStrategy: .none, logLevel: .warning)
@@ -658,7 +658,7 @@ struct RPCRuntimeContractTests {
             ),
             forMethod: "RunAggregationQuery"
         )
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(18), retryStrategy: .none, logLevel: .warning)
@@ -707,7 +707,7 @@ struct RPCRuntimeContractTests {
             ]),
             forMethod: "RunAggregationQuery"
         )
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(19), retryStrategy: .none, logLevel: .warning)
@@ -764,7 +764,7 @@ struct RPCRuntimeContractTests {
             ),
             forMethod: "ExecutePipeline"
         )
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(19), retryStrategy: .none, logLevel: .warning)
@@ -827,7 +827,7 @@ struct RPCRuntimeContractTests {
             ),
             forMethod: "ExecutePipeline"
         )
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(19), retryStrategy: .none, logLevel: .warning)
@@ -893,7 +893,7 @@ struct RPCRuntimeContractTests {
             ]),
             forMethod: "ExecutePipeline"
         )
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(19), retryStrategy: .none, logLevel: .warning)
@@ -944,7 +944,7 @@ struct RPCRuntimeContractTests {
             forMethod: "ListCollectionIds"
         )
 
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(9), retryStrategy: .none, logLevel: .warning)
@@ -1005,7 +1005,7 @@ struct RPCRuntimeContractTests {
             forMethod: "ListDocuments"
         )
 
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(10), retryStrategy: .none, logLevel: .warning)
@@ -1061,7 +1061,7 @@ struct RPCRuntimeContractTests {
             forMethod: "Commit"
         )
 
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(11), retryStrategy: .none, logLevel: .warning)
@@ -1102,7 +1102,7 @@ struct RPCRuntimeContractTests {
             holdFinalStatusUntilRequestFinish: true
         )
 
-        let firestore = FirestoreAdmin(
+        let firestore = Firestore(
             projectId: "test-project",
             transport: RecordingClientTransport(state: state),
             settings: .emulator(timeout: .seconds(13), retryStrategy: .none, logLevel: .warning)

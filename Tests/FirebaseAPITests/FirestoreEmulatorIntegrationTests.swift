@@ -11,7 +11,7 @@ struct FirestoreEmulatorIntegrationTests {
             return
         }
 
-        let firestore = try FirestoreAdmin.emulator(
+        let firestore = try Firestore.emulator(
             projectId: configuration.projectID,
             databaseId: configuration.databaseID,
             host: configuration.host,
@@ -82,7 +82,7 @@ struct FirestoreEmulatorIntegrationTests {
             return
         }
 
-        let firestore = try FirestoreAdmin.emulator(
+        let firestore = try Firestore.emulator(
             projectId: configuration.projectID,
             databaseId: configuration.databaseID,
             host: configuration.host,
@@ -196,7 +196,7 @@ struct FirestoreEmulatorIntegrationTests {
             return
         }
 
-        let firestore = try FirestoreAdmin.emulator(
+        let firestore = try Firestore.emulator(
             projectId: configuration.projectID,
             databaseId: configuration.databaseID,
             host: configuration.host,
@@ -256,7 +256,7 @@ struct FirestoreEmulatorIntegrationTests {
         )
         let proxyPort = try await proxy.start()
 
-        let listenerFirestore = try FirestoreAdmin.emulator(
+        let listenerFirestore = try Firestore.emulator(
             projectId: configuration.projectID,
             databaseId: configuration.databaseID,
             host: "127.0.0.1",
@@ -265,7 +265,7 @@ struct FirestoreEmulatorIntegrationTests {
             retryStrategy: .linearBackoff(interval: .milliseconds(50), maximum: .milliseconds(50)),
             logLevel: .warning
         )
-        let writerFirestore = try FirestoreAdmin.emulator(
+        let writerFirestore = try Firestore.emulator(
             projectId: configuration.projectID,
             databaseId: configuration.databaseID,
             host: configuration.host,
@@ -332,7 +332,7 @@ struct FirestoreEmulatorIntegrationTests {
             return
         }
 
-        let firestore = try FirestoreAdmin.emulator(
+        let firestore = try Firestore.emulator(
             projectId: configuration.projectID,
             databaseId: configuration.databaseID,
             host: configuration.host,
@@ -389,7 +389,7 @@ struct FirestoreEmulatorIntegrationTests {
             return
         }
 
-        let firestore = try FirestoreAdmin.emulator(
+        let firestore = try Firestore.emulator(
             projectId: configuration.projectID,
             databaseId: configuration.databaseID,
             host: configuration.host,
@@ -479,7 +479,7 @@ struct FirestoreEmulatorIntegrationTests {
             return
         }
 
-        let firestore = try FirestoreAdmin.emulator(
+        let firestore = try Firestore.emulator(
             projectId: configuration.projectID,
             databaseId: configuration.databaseID,
             host: configuration.host,

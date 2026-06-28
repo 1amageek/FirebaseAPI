@@ -2,18 +2,18 @@
 
 Status: Implemented; production live smoke pending credentials
 
-Last reviewed: 2026-06-27
+Last reviewed: 2026-06-28
 
 ## Context
 
-The package exposes three public library products. `FirestoreAdminServer` is the preferred server-side Admin product, `FirestoreMongoCore` is the explicit MongoDB-compatible query-document product, and `FirestoreAPI` remains the compatibility all-in-one product for existing imports. Generated Firestore protobuf messages, generated gRPC stubs, authentication, the Core model layer, the server-side Admin facade, Admin Codable conveniences, Firestore Pipeline builders, native Firestore RPC translation, runtime support protocols, Codable conversion helpers, Native geohash GeoQuery helpers, Mongo-compatible query document builders, and grpc-swift transport runtime are separated into dedicated targets.
+The package exposes three public library products. `FirestoreAdmin` is the preferred server-side Admin product, `FirestoreMongo` is the explicit MongoDB-compatible query-document product, and `FirestoreAPI` remains the compatibility all-in-one product for existing imports. Generated Firestore protobuf messages, generated gRPC stubs, authentication, the Core model layer, the server-side Admin facade, Admin Codable conveniences, Firestore Pipeline builders, native Firestore RPC translation, runtime support protocols, Codable conversion helpers, Native geohash GeoQuery helpers, Mongo-compatible query document builders, and grpc-swift transport runtime are separated into dedicated targets.
 
 File-level responsibility boundaries are already present:
 
-- Public Admin facade, server-side Admin builders, and narrow Admin dependency-injection protocols live in `Sources/FirestoreAdmin`.
+- Public Admin facade implementation, server-side Admin builders, and narrow Admin dependency-injection protocols live in `Sources/FirestoreAdminCore`.
 - SDK-style Admin Codable convenience extensions live in `Sources/FirestoreAdminCodable` and are re-exported by `Sources/FirestoreAPI/FirestoreAdminCodableExports.swift`.
 - gRPC-backed Admin construction convenience lives in `Sources/FirestoreAdminGRPCBootstrap`.
-- The preferred server-side Admin import surface lives in `Sources/FirestoreAdminServer` and re-exports Admin, Admin Codable, gRPC bootstrap, Auth, Core, Codable, Pipeline, RuntimeConfig, and Native GeoQuery modules without re-exporting Mongo-compatible query documents, protobuf, gRPC stubs, RPC compilers, or concrete transport modules.
+- The preferred server-side Admin import surface lives in `Sources/FirestoreAdmin` and re-exports Admin, Admin Codable, gRPC bootstrap, Auth, Core, Codable, Pipeline, RuntimeConfig, and Native GeoQuery modules without re-exporting Mongo-compatible query documents, protobuf, gRPC stubs, RPC compilers, or concrete transport modules.
 - SDK-style references, collection groups, queries, snapshots, document value storage, runtime seams for reference/query operations, scalar values, database identity, field path, query filter/planning state, aggregation, Explain, source/listen option, snapshot metadata, path validation, and error values live in `Sources/FirestoreCore` and are re-exported by `Sources/FirestoreAPI/FirestoreCoreExports.swift`.
 - Authentication provider contracts live in `Sources/FirestoreAuthCore` and are re-exported by `Sources/FirestoreAPI/FirestoreAuthCoreExports.swift`.
 - Authentication credential providers live in `Sources/FirestoreAuth` and are re-exported by `Sources/FirestoreAPI/FirestoreAuthExports.swift`.
@@ -27,7 +27,7 @@ File-level responsibility boundaries are already present:
 - Runtime support protocols that compose public facade operations live in `Sources/FirestoreRuntimeSupport`.
 - Codable conversion helpers and Firestore property wrappers live in `Sources/FirestoreCodable` and are re-exported by `Sources/FirestoreAPI/FirestoreCodableExports.swift`.
 - Native geohash GeoQuery helpers live in `Sources/FirestoreGeoQuery` and are re-exported by `Sources/FirestoreAPI/FirestoreGeoQueryExports.swift`.
-- Mongo-compatible query document builders live in `Sources/FirestoreMongoCore`, are exposed as the explicit `FirestoreMongoCore` product, and are re-exported by `Sources/FirestoreAPI/FirestoreMongoCoreExports.swift` only for compatibility.
+- Mongo-compatible query document builders live in `Sources/FirestoreMongo`, are exposed as the explicit `FirestoreMongo` product, and are re-exported by `Sources/FirestoreAPI/FirestoreMongoExports.swift` only for compatibility.
 - grpc-swift runtime code lives in `Sources/FirestoreGRPCTransport`.
 
 The remaining problem is no longer generated output, Codable helpers, Admin Codable conveniences, Pipeline builders, Pipeline RPC translation, Native GeoQuery, Mongo-compatible query documents, low-level gRPC call execution, authentication contracts, gRPC-backed Admin construction, or Listen reducer code living directly beside public model values. Further reductions in cognitive cost should be conservative file-level splits inside existing targets unless a new concern brings a distinct dependency set. Future Mongo-compatible Admin facade and transport work remains a separate product/facade decision from day one.
@@ -39,9 +39,9 @@ Wasm support is bounded by the host transport contract documented in `docs/Fires
 ```mermaid
 flowchart LR
   A["FirestoreAPI compatibility product"] --> B["FirestoreAPI facade target"]
-  AA["FirestoreAdminServer product"] --> AB["FirestoreAdminServer facade target"]
-  AC["FirestoreMongoCore product"] --> T["FirestoreMongoCore (implemented)"]
-  B --> O["FirestoreAdmin (implemented)"]
+  AA["FirestoreAdmin product"] --> AB["FirestoreAdmin re-export target"]
+  AC["FirestoreMongo product"] --> T["FirestoreMongo (implemented)"]
+  B --> O["FirestoreAdminCore (implemented)"]
   B --> P["FirestoreAdminGRPCBootstrap (implemented)"]
   B --> C["FirestoreCore (implemented slice)"]
   B --> Q["FirestoreAuthCore (implemented)"]
@@ -51,7 +51,7 @@ flowchart LR
   B --> L["FirestoreRuntimeSupport (implemented)"]
   B --> M["FirestoreCodable (implemented)"]
   B --> N["FirestoreGeoQuery (implemented)"]
-  B --> T["FirestoreMongoCore (implemented)"]
+  B --> T["FirestoreMongo (implemented)"]
   B --> U["FirestoreAdminCodable (implemented)"]
   AB --> O
   AB --> P
@@ -106,7 +106,7 @@ The proto regeneration script now writes generated files into separate package-i
 - `--swift_opt=Visibility=Package`
 - `--grpc-swift-2_opt=Visibility=Package`
 
-This is the correct boundary for package-internal implementation targets: `FirestoreRPC` and `FirestoreGRPCTransport` can consume generated symbols, while the public `FirestoreAdminServer` and `FirestoreAPI` products still avoid exposing protobuf or gRPC types.
+This is the correct boundary for package-internal implementation targets: `FirestoreRPC` and `FirestoreGRPCTransport` can consume generated symbols, while the public `FirestoreAdmin` and `FirestoreAPI` products still avoid exposing protobuf or gRPC types.
 
 `Visibility=Public` should not be the default migration path. It is only acceptable as a temporary fallback if a future generator regression blocks `Package`, and it must be paired with non-product generated targets plus symbol-graph checks proving that public product declarations do not expose generated types.
 
@@ -129,14 +129,14 @@ As of 2026-06-27, generated Firestore protobuf messages and generated gRPC stubs
 - `FirestoreRuntimeSupport` owns package-only batch and Pipeline runtime protocols plus the compatibility composition `FirestoreRuntime`.
 - `FirestoreGRPCTransport` owns grpc-swift transport lifecycle, metadata construction, retry execution, generated client calls, and transport-specific error mapping. It depends on `FirestoreRuntimeConfig` for settings and retry policy and on `FirestoreAuthCore` token-provider contracts, not concrete credential providers.
 - `FirestoreCodable` owns `FirestoreEncoder`, `FirestoreDecoder`, Firestore property wrappers, and Codable convenience extensions for references, queries, and snapshots.
-- `FirestoreAdminCodable` owns SDK-style Codable convenience extensions for `FirestoreAdminWriteBatch`, `FirestoreAdminBulkWriter`, and `FirestoreAdminTransaction`. It depends on `FirestoreAdmin`, `FirestoreCodable`, and `FirestoreCore` so the Admin facade target does not directly depend on Codable conversion helpers.
+- `FirestoreAdminCodable` owns SDK-style Codable convenience extensions for `FirestoreAdminWriteBatch`, `FirestoreAdminBulkWriter`, and `FirestoreAdminTransaction`. It depends on `FirestoreAdminCore`, `FirestoreCodable`, and `FirestoreCore` so the Admin facade target does not directly depend on Codable conversion helpers.
 - `FirestoreGeoQuery` owns Native Firestore geohash range planning, `FirestoreGeoHash`, exact Swift distance filtering, and `geoQuery(...)` convenience extensions.
-- `FirestoreMongoCore` owns Mongo-compatible document values, GeoJSON point encoding, `$near` query document builders, and `2dsphere` index document builders. It depends on `FirestoreCore` only for shared value/error types and does not import Native RPC, Pipeline RPC, Native GeoQuery, protobuf, or grpc-swift modules.
-- `FirestoreAdmin` owns `FirestoreAdmin`, narrow Admin client protocols, the compatibility `FirestoreAdminClient` composition, `FirestoreAdminWriteBatch`, `FirestoreAdminBulkWriter`, public `FirestoreAdminWriteOperation` summaries for fake/adaptor callbacks, `FirestoreAdminTransaction`, `FirestoreAdminWriteBuffer`, and `TransactionError`.
-- `FirestoreAdminGRPCBootstrap` owns gRPC-backed `FirestoreAdmin` convenience construction, including service account, Application Default Credentials, emulator, custom access token provider, and grpc-swift transport runtime wiring.
-- `FirestoreAdminServer` owns the preferred server-side Admin import surface. It re-exports Admin, Admin Codable, gRPC bootstrap, Auth, Core, Codable, Pipeline, RuntimeConfig, and Native GeoQuery modules, but does not re-export `FirestoreMongoCore`, `FirestoreRPC`, `FirestorePipelineRPC`, `FirestoreGRPCTransport`, `FirestoreProtobuf`, `FirestoreGRPCStubs`, or `FirestoreRuntimeSupport`.
+- `FirestoreMongo` owns Mongo-compatible document values, GeoJSON point encoding, `$near` query document builders, and `2dsphere` index document builders. It depends on `FirestoreCore` only for shared value/error types and does not import Native RPC, Pipeline RPC, Native GeoQuery, protobuf, or grpc-swift modules.
+- `FirestoreAdminCore` owns `Firestore`, narrow Admin client protocols, the compatibility `FirestoreAdminClient` composition, `FirestoreAdminWriteBatch`, `FirestoreAdminBulkWriter`, public `FirestoreAdminWriteOperation` summaries for fake/adaptor callbacks, `FirestoreAdminTransaction`, `FirestoreAdminWriteBuffer`, and `TransactionError`. The old `FirestoreAdmin` facade type has been removed.
+- `FirestoreAdminGRPCBootstrap` owns gRPC-backed `Firestore` convenience construction, including service account, Application Default Credentials, emulator, custom access token provider, and grpc-swift transport runtime wiring.
+- `FirestoreAdmin` owns the preferred server-side Admin import surface. It re-exports Admin, Admin Codable, gRPC bootstrap, Auth, Core, Codable, Pipeline, RuntimeConfig, and Native GeoQuery modules, but does not re-export `FirestoreMongo`, `FirestoreRPC`, `FirestorePipelineRPC`, `FirestoreGRPCTransport`, `FirestoreProtobuf`, `FirestoreGRPCStubs`, or `FirestoreRuntimeSupport`.
 - `FirestoreAPI` re-exports `FirestoreAdmin` through `FirestoreAdminExports.swift`, `FirestoreAdminCodable` through `FirestoreAdminCodableExports.swift`, and `FirestoreAdminGRPCBootstrap` through `FirestoreAdminGRPCBootstrapExports.swift` so current users still import only `FirestoreAPI`.
-- `DocumentReference`, `CollectionReference`, `CollectionGroup`, `Query`, RPC response mappers, `FirestoreAdmin`, and `FirestoreGRPCTransportRuntime` hold or pass the narrowest capability they need instead of holding `any FirestoreRuntime`. Firestore Codable convenience lives in `Sources/FirestoreCodable/Cadable/*+Codable.swift`, keeping Core model files free of `FirestoreEncoder` and `FirestoreDecoder` calls. Admin Codable convenience lives in `Sources/FirestoreAdminCodable`, keeping the Admin facade target focused on server workflow behavior.
+- `DocumentReference`, `CollectionReference`, `CollectionGroup`, `Query`, RPC response mappers, `Firestore`, and `FirestoreGRPCTransportRuntime` hold or pass the narrowest capability they need instead of holding `any FirestoreRuntime`. Firestore Codable convenience lives in `Sources/FirestoreCodable/Cadable/*+Codable.swift`, keeping Core model files free of `FirestoreEncoder` and `FirestoreDecoder` calls. Admin Codable convenience lives in `Sources/FirestoreAdminCodable`, keeping the Admin facade target focused on server workflow behavior.
 
 ## Separation Candidates
 
@@ -151,16 +151,16 @@ As of 2026-06-27, generated Firestore protobuf messages and generated gRPC stubs
 | P0 | `FirestorePipelineRPC` | Implemented | `Sources/FirestorePipelineRPC/**` | `FirestoreCore`, `FirestorePipeline`, `FirestoreRPCSupport`, `FirestoreProtobuf`, SwiftProtobuf | Enterprise Pipeline request construction and response mapping have a separate change surface from Native Query/Write/Listen RPC. |
 | P0 | `FirestoreRuntimeSupport` | Implemented | `Sources/FirestoreRuntimeSupport/**` | `FirestoreCore`, `FirestorePipeline` | Facade composition and batch/Pipeline runtime seams are shared implementation contracts, not public API and not transport code. |
 | P0 | `FirestoreGRPCTransport` | Implemented | `Sources/FirestoreGRPCTransport/**` | GRPCCore, GRPCNIOTransportHTTP2, Logging, `FirestoreRuntimeConfig`, `FirestoreRuntimeSupport`, `FirestoreRPC`, `FirestoreGRPCStubs`, `FirestoreAuthCore` | Transport lifecycle, metadata, retry execution, and generated client calls are isolated from request construction, credential provider implementations, and public API types. |
-| P1 | `FirestoreAdmin` | Implemented | `Sources/FirestoreAdmin/FirestoreAdmin*.swift`, `Sources/FirestoreAdmin/TransactionError.swift` | `FirestoreCore`, `FirestorePipeline`, `FirestoreRuntimeSupport`, `FirestoreRuntimeConfig` | `FirestoreAPI` is now a compatibility import surface, not the owner of Admin workflow behavior. Admin has one reason to change: server-side Admin facade behavior. It no longer imports Auth, Codable conversion, or concrete gRPC transport modules. |
-| P1 | `FirestoreAdminCodable` | Implemented | `Sources/FirestoreAdminCodable/**` | `FirestoreAdmin`, `FirestoreCodable`, `FirestoreCore` | SDK-style Codable Admin overloads are an adapter over Admin builders and Firestore Codable conversion, not core Admin workflow behavior. Splitting the target removes a non-essential dependency from `FirestoreAdmin` while preserving the single-import `FirestoreAPI` facade. |
+| P1 | `FirestoreAdminCore` | Implemented | `Sources/FirestoreAdminCore/Firestore*.swift`, `Sources/FirestoreAdminCore/FirestoreAdmin*.swift`, `Sources/FirestoreAdminCore/TransactionError.swift` | `FirestoreCore`, `FirestorePipeline`, `FirestoreRuntimeSupport`, `FirestoreRuntimeConfig` | `FirestoreAPI` is now a compatibility import surface, not the owner of Admin workflow behavior. Admin has one reason to change: server-side Admin facade behavior. It no longer imports Auth, Codable conversion, or concrete gRPC transport modules. |
+| P1 | `FirestoreAdminCodable` | Implemented | `Sources/FirestoreAdminCodable/**` | `FirestoreAdminCore`, `FirestoreCodable`, `FirestoreCore` | SDK-style Codable Admin overloads are an adapter over Admin builders and Firestore Codable conversion, not core Admin workflow behavior. Splitting the target removes a non-essential dependency from `FirestoreAdminCore` while preserving the single-import `FirestoreAPI` facade. |
 | P1 | `FirestoreAuthCore` | Implemented | `Sources/FirestoreAuthCore/**` | Foundation only | Token provider contracts and Firestore OAuth scopes are shared by bootstrap and transport without forcing transport to depend on concrete credential provider code. |
 | P1 | `FirestoreAuth` | Implemented | `Sources/FirestoreAuth/Auth/**`, `Sources/FirestoreAuth/FirestoreAuthCoreExports.swift` | `FirestoreAuthCore`, `FirestoreCore`, CryptoExtras, FoundationNetworking | Credential parsing, OAuth token minting, metadata token lookup, metadata project ID lookup, and ADC resolution have a separate lifecycle and dependency set. |
 | P1 | `FirestoreCodable` | Implemented | `Sources/FirestoreCodable/**` | `FirestoreCore` | Codable conversion and property wrappers are SDK compatibility conveniences. Keeping them out of Core and the Admin facade lowers cognitive cost for query/RPC work. |
 | P2 | `FirestorePipeline` | Implemented | `Sources/FirestorePipeline/**` except RPC mapper/compiler | `FirestoreCore` | Enterprise Pipeline is large and distinct from Core `Query`. The target boundary reduces cognitive load while the Admin facade still exposes Pipeline entry points. |
 | P3 | `FirestoreGeoQuery` | Implemented | `Sources/FirestoreGeoQuery/**` | `FirestoreCore` | Native geohash GeoQuery is conceptually separate and must remain separate from Mongo-compatible geospatial APIs. |
-| P2 | `FirestoreAdminGRPCBootstrap` | Implemented | `Sources/FirestoreAdminGRPCBootstrap/FirestoreAdmin+gRPC.swift` | `FirestoreAdmin`, `FirestoreAuthCore`, `FirestoreAuth`, `FirestoreCore`, `FirestoreRuntimeConfig`, `FirestoreGRPCTransport` | The Admin facade owns server-side user workflow behavior without also owning concrete credential-provider or grpc-swift bootstrap dependencies. The bootstrap target keeps source-compatible construction APIs available through `FirestoreAPI` while isolating authentication and gRPC transport setup. |
-| P2 | `FirestoreAdminServer` | Implemented | `Sources/FirestoreAdminServer/**` | Admin, Auth, Core, Codable, Pipeline, RuntimeConfig, Native GeoQuery | The preferred server-side product should be narrower than the compatibility `FirestoreAPI` import. It excludes Mongo-compatible query documents and low-level RPC/transport implementation symbols from the re-exported public API surface while preserving one import for normal Admin applications. |
-| P2 | `FirestoreMongoCore` | Implemented | `Sources/FirestoreMongoCore/**` | `FirestoreCore` | Mongo-compatible query documents, `$near`, `$geometry`, `2dsphere`, and GeoJSON semantics are a different API contract from Native Firestore `StructuredQuery`, geohash GeoQuery, and Pipeline `geo_distance`. |
+| P2 | `FirestoreAdminGRPCBootstrap` | Implemented | `Sources/FirestoreAdminGRPCBootstrap/Firestore+gRPC.swift` | `FirestoreAdminCore`, `FirestoreAuthCore`, `FirestoreAuth`, `FirestoreCore`, `FirestoreRuntimeConfig`, `FirestoreGRPCTransport` | The Admin facade owns server-side user workflow behavior without also owning concrete credential-provider or grpc-swift bootstrap dependencies. The bootstrap target keeps source-compatible construction APIs available through `FirestoreAPI` while isolating authentication and gRPC transport setup. |
+| P2 | `FirestoreAdmin` | Implemented | `Sources/FirestoreAdmin/**` | Admin, Auth, Core, Codable, Pipeline, RuntimeConfig, Native GeoQuery | The preferred server-side product should be narrower than the compatibility `FirestoreAPI` import. It excludes Mongo-compatible query documents and low-level RPC/transport implementation symbols from the re-exported public API surface while preserving one import for normal Admin applications. |
+| P2 | `FirestoreMongo` | Implemented | `Sources/FirestoreMongo/**` | `FirestoreCore` | Mongo-compatible query documents, `$near`, `$geometry`, `2dsphere`, and GeoJSON semantics are a different API contract from Native Firestore `StructuredQuery`, geohash GeoQuery, and Pipeline `geo_distance`. |
 | Future | `FirestoreMongo...` Admin facade and transport | Pending | none yet | Mongo-compatible transport and request execution | MongoDB-compatible request execution must remain a separate product/facade, not extensions on Native `QueryPredicate`, `FirestoreGeoQuery`, Pipeline helpers, or `FirestoreGRPCTransport`. |
 
 ## Completed File-Level Separations
@@ -188,7 +188,7 @@ The target graph is now useful enough that the next reductions in cognitive load
 | Priority | Current owner | Suggested split | Target change | Rationale |
 |---|---|---|---|---|
 | P3 | Listen target-change/error helper | Consider extracting a shared helper only if `DocumentListenState` and `QueryListenState` begin duplicating target-change cause handling or resume-token policy beyond the current small branches. | No target change | Listen now has a dedicated folder-level reading path. A helper target or type should wait until duplication appears, because the current reducer files remain small enough to read directly. |
-| Future | Mongo-compatible Firestore transport | Create a separate Mongo-compatible facade and transport owner. | Add a separate target or product | Query document builders now live in `FirestoreMongoCore`; request execution still needs a separate transport because Mongo-compatible wire/API behavior is not the Firestore v1 gRPC transport. |
+| Future | Mongo-compatible Firestore transport | Create a separate Mongo-compatible facade and transport owner. | Add a separate target or product | Query document builders now live in `FirestoreMongo`; request execution still needs a separate transport because Mongo-compatible wire/API behavior is not the Firestore v1 gRPC transport. |
 
 ## Target Split Decision Matrix
 
@@ -202,7 +202,7 @@ The target graph is now useful enough that the next reductions in cognitive load
 | Query compiler internals | Not yet | These pieces all translate Native Firestore values to Firestore v1 protobuf. File splits are enough unless another target needs to reuse only one compiler family. |
 | Value encoding internals | Not yet | The encoder is protobuf-specific and belongs in `FirestoreRPC`; split files or helper structs before adding target complexity. |
 | Listen reducer internals | Folder/file split completed | Listen state is a coherent RPC reducer family. A subfolder and focused `QueryListenState` extension files are sufficient unless a non-gRPC transport reuses the same reducer without the rest of `FirestoreRPC`. |
-| Mongo-compatible query documents | Split completed | `FirestoreMongoCore` owns query documents, GeoJSON points, `$near`, and `2dsphere` declarations. Future request execution should not grow inside Native Query, Native GeoQuery, Pipeline, or `FirestoreGRPCTransport`. |
+| Mongo-compatible query documents | Split completed | `FirestoreMongo` owns query documents, GeoJSON points, `$near`, and `2dsphere` declarations. Future request execution should not grow inside Native Query, Native GeoQuery, Pipeline, or `FirestoreGRPCTransport`. |
 
 ## Non-Goals
 
@@ -210,7 +210,7 @@ The target graph is now useful enough that the next reductions in cognitive load
 - Do not move Mongo-compatible query concepts into Native Firestore modules.
 - Do not split every small value type into its own target. Excessive module count would raise build and navigation cost.
 - Do not make public API depend on `package` or generated types.
-- Do not move host-specific Wasm networking into Core, Admin workflow, Codable, Native Query, Native GeoQuery, MongoCore, or RPC compiler targets. Wasm runtime execution must enter through the Admin gRPC bootstrap transport boundary.
+- Do not move host-specific Wasm networking into Core, Admin workflow, Codable, Native Query, Native GeoQuery, FirestoreMongo, or RPC compiler targets. Wasm runtime execution must enter through the Admin gRPC bootstrap transport boundary.
 
 ## Migration Sequence
 
@@ -237,10 +237,10 @@ The target graph is now useful enough that the next reductions in cognitive load
 21. Completed: move Admin write-batch, bulk-writer, and transaction Codable convenience methods into dedicated extension files while keeping dictionary writes and transaction state control in the base files.
 22. Completed: move aggregation transport wrappers out of collection-reference pagination code and into `FirestoreGRPCRuntime+Aggregation.swift`.
 23. Completed: rename gRPC transport operation files from public model names to `FirestoreGRPCRuntime+...Operations.swift`.
-24. Completed: create `FirestoreMongoCore` for Mongo-compatible GeoJSON `$near` query documents and `2dsphere` index declarations, then re-export it from `FirestoreAPI`.
+24. Completed: create `FirestoreMongo` for Mongo-compatible GeoJSON `$near` query documents and `2dsphere` index declarations, then re-export it from `FirestoreAPI`.
 25. Completed: create `FirestoreAdminCodable`, move Admin Codable convenience extensions there, remove the direct `FirestoreCodable` dependency from `FirestoreAdmin`, and re-export the target from `FirestoreAPI`.
 26. Completed: create `FirestoreRuntimeConfig`, move `FirestoreSettings`, retry policy/execution helpers, log level, and authentication mode there, remove those server-runtime configuration types from `FirestoreCore`, and re-export the target from `FirestoreAPI`.
-27. Completed: create `FirestoreAdminServer` as the preferred server-side Admin product that excludes Mongo-compatible query documents and low-level RPC/transport modules from its re-export surface.
+27. Completed: create `FirestoreAdmin` as the preferred server-side Admin product that excludes Mongo-compatible query documents and low-level RPC/transport modules from its re-export surface.
 
 ## Required Gates After Each Step
 
@@ -248,7 +248,7 @@ The target graph is now useful enough that the next reductions in cognitive load
 - `perl -e 'alarm shift; exec @ARGV' 120 xcodebuild -scheme FirebaseAPI-Package -destination 'platform=macOS' test -only-testing:FirebaseAPITests/ServerSideAPISafetyTests -quiet`
 - `bash scripts/check-release-readiness.sh`
 - Public symbol graph must not expose protobuf, grpc-swift transport, or internal query-planning symbols.
-- Native Query, GeoQuery, and Pipeline source must remain free of Mongo-compatible `$near`, `2dsphere`, BSON, and GeoJSON query-builder concepts; those concepts belong in `FirestoreMongoCore` until a future Mongo-compatible transport target exists.
+- Native Query, GeoQuery, and Pipeline source must remain free of Mongo-compatible `$near`, `2dsphere`, BSON, and GeoJSON query-builder concepts; those concepts belong in `FirestoreMongo` until a future Mongo-compatible transport target exists.
 
 ## Expected Developer Benefit
 
