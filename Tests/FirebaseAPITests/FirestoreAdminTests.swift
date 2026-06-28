@@ -511,6 +511,64 @@ struct FirestoreAdminTests {
         #expect(didReachTransport)
     }
 
+    @Test("FirestoreAdmin host-managed authentication requires custom transport")
+    func testFirestoreAdminHostManagedAuthenticationRequiresCustomTransport() throws {
+        do {
+            _ = try FirestoreAdmin(
+                projectId: "test",
+                settings: .hostManagedAuthentication()
+            )
+            Issue.record("Expected host-managed authentication to require a custom transport")
+        } catch FirestoreError.invalidConfiguration(let message) {
+            #expect(message.contains("requires a custom transport"))
+        }
+    }
+
+    @Test("FirestoreAdmin custom host transport owns host-managed authentication")
+    func testFirestoreAdminCustomHostTransportOwnsHostManagedAuthentication() async throws {
+        let settings = FirestoreSettings.hostManagedAuthentication()
+        let firestore = FirestoreAdmin(
+            projectId: "test",
+            transport: MockClientTransport(),
+            settings: settings
+        )
+        let reference = try firestore.document("users/user123")
+        let batch = firestore.batch()
+        batch.setData(["name": "Ada"], forDocument: reference)
+
+        var didReachTransport = false
+        do {
+            try await batch.commit()
+        } catch FirestoreError.rpcError(let error) {
+            didReachTransport = error.code == .unimplemented
+                && settings.authenticationMode == .hostManaged
+        } catch {
+            didReachTransport = false
+        }
+
+        #expect(didReachTransport)
+    }
+
+    @Test("FirestoreAdmin host-managed authentication rejects access token provider")
+    func testFirestoreAdminHostManagedAuthenticationRejectsAccessTokenProvider() async throws {
+        let firestore = FirestoreAdmin(
+            projectId: "test",
+            transport: MockClientTransport(),
+            settings: .hostManagedAuthentication(),
+            accessTokenProvider: StaticAccessTokenProvider()
+        )
+        let reference = try firestore.document("users/user123")
+        let batch = firestore.batch()
+        batch.setData(["name": "Ada"], forDocument: reference)
+
+        do {
+            try await batch.commit()
+            Issue.record("Expected host-managed authentication to reject access token provider")
+        } catch FirestoreError.invalidConfiguration(let message) {
+            #expect(message.contains("cannot be combined"))
+        }
+    }
+
     @Test("FirestoreAdmin validates server-side authentication settings before transport startup")
     func testFirestoreAdminValidatesServerSideAuthenticationSettingsBeforeTransportStartup() throws {
         do {
@@ -528,6 +586,16 @@ struct FirestoreAdminTests {
             Issue.record("Expected disabled authentication configuration error")
         } catch FirestoreError.invalidConfiguration(let message) {
             #expect(message.contains("Disabled Firestore authentication is only supported"))
+        }
+
+        do {
+            _ = try FirestoreAdmin(
+                projectId: "test",
+                settings: .hostManagedAuthentication()
+            )
+            Issue.record("Expected host-managed authentication configuration error")
+        } catch FirestoreError.invalidConfiguration(let message) {
+            #expect(message.contains("requires a custom transport"))
         }
     }
 

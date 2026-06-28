@@ -56,4 +56,8 @@ for target in "${targets[@]}"; do
   "${SWIFT_COMMAND[@]}" build --disable-sandbox --swift-sdk "$WASM_SDK" --target "$target"
 done
 
+if [[ "${RUN_WASM_SMOKE:-1}" == "1" ]]; then
+  bash "$ROOT_DIR/scripts/run-wasm-admin-smoke.sh"
+fi
+
 printf 'Wasm-compatible Firestore target checks passed.\n'

@@ -62,12 +62,47 @@ public struct FirestoreSettings: Sendable {
         return settings
     }
 
-    package func validateAuthenticationBoundary(hasAccessTokenProvider: Bool) throws {
+    public static func hostManagedAuthentication(
+        host: String = "firestore.googleapis.com",
+        port: Int = 443,
+        usesSSL: Bool = true,
+        timeout: Duration = .seconds(30),
+        maxRetryAttempts: Int = 5,
+        retryStrategy: FirestoreRetryStrategy = .exponentialBackoff(),
+        logLevel: FirestoreLogLevel = .info
+    ) -> FirestoreSettings {
+        FirestoreSettings(
+            host: host,
+            port: port,
+            usesSSL: usesSSL,
+            timeout: timeout,
+            maxRetryAttempts: maxRetryAttempts,
+            retryStrategy: retryStrategy,
+            logLevel: logLevel,
+            authenticationMode: .hostManaged
+        )
+    }
+
+    package func validateAuthenticationBoundary(
+        hasAccessTokenProvider: Bool,
+        allowsHostManagedAuthentication: Bool = false
+    ) throws {
         switch authenticationMode {
         case .required:
             guard hasAccessTokenProvider else {
                 throw FirestoreError.invalidConfiguration(
-                    "Firestore authentication is required. Use service account credentials, application default credentials, a custom access token provider, or emulator settings."
+                    "Firestore authentication is required. Use service account credentials, application default credentials, a custom access token provider, host-managed authentication with a custom transport, or emulator settings."
+                )
+            }
+        case .hostManaged:
+            guard allowsHostManagedAuthentication else {
+                throw FirestoreError.invalidConfiguration(
+                    "Host-managed Firestore authentication requires a custom transport."
+                )
+            }
+            guard !hasAccessTokenProvider else {
+                throw FirestoreError.invalidConfiguration(
+                    "Host-managed Firestore authentication cannot be combined with an access token provider."
                 )
             }
         case .disabled:

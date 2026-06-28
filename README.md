@@ -17,8 +17,8 @@ This repository includes the [googleapis](https://github.com/googleapis/googleap
 - ✅ **Vector Search**: Core `findNearest` query support plus Firestore Pipeline vector nearest and distance functions
 - ✅ **GeoQuery**: Native Firestore geohash range queries with GeoPoint distance filtering
 - ✅ **Mongo-Compatible Geo Query Documents**: Separate Mongo-compatible GeoJSON `$near` query and `2dsphere` index builders without mixing them into Native Query
-- ✅ **Transport-backed Runtime**: Default gRPC runtime plus explicit custom `ClientTransport` injection for host-provided runtimes
-- ✅ **Wasm Admin Build Surface**: `FirestoreAdminServer` and `FirestoreAPI` build for WASI with a host-provided `ClientTransport` runtime boundary
+- ✅ **Transport-backed Runtime**: Default gRPC runtime plus explicit custom `ClientTransport` injection and `FirestoreSettings.hostManagedAuthentication(...)` for host-provided runtimes
+- ✅ **Wasm Admin Build Surface**: `FirestoreAdminServer` and `FirestoreAPI` build for WASI with a host-provided `ClientTransport` runtime and authentication boundary
 - ✅ **Swift 6 Ready**: Full concurrency support with `async/await` and `Sendable`
 - ✅ **Type-safe Encoding/Decoding**: FirestoreEncoder and FirestoreDecoder for seamless Swift type conversion
 - ✅ **Property Wrappers**: `@DocumentID`, `@ReferencePath`, `@ExplicitNull`, and `@ServerTimestamp` for Firestore-specific behaviors
@@ -387,7 +387,7 @@ The test suite uses **Swift Testing** framework (not XCTest):
 perl -e 'alarm shift; exec @ARGV' 90 xcodebuild -scheme FirebaseAPI-Package -destination 'platform=macOS' test
 ```
 
-The current suite should pass with 403 tests across 19 suites.
+The current suite should pass with 406 tests across 19 suites.
 
 To run the full local release-readiness gate:
 

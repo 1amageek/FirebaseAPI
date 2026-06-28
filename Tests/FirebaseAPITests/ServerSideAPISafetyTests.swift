@@ -275,7 +275,7 @@ struct ServerSideAPISafetyTests {
             "Individual document writes, atomic batches, and transactions must compile through `WriteCompiler` to `Commit`",
             "non-atomic bulk writes must compile through `BatchWriteCompiler` to `BatchWrite`",
             "`FirestoreAdminGRPCBootstrap` validates authentication before built-in transport startup",
-            "Custom host transports can own authentication attachment",
+            "Custom host transports can own authentication attachment only when callers use `FirestoreSettings.hostManagedAuthentication(...)`",
             "disabled authentication is accepted only for emulator settings and is rejected for Google APIs hosts",
             "DocumentReference and CollectionReference qualified resource names are owned by core reference types",
             "Runtime protocol conformance, database ownership validation, and operation dispatch only",
@@ -955,7 +955,15 @@ struct ServerSideAPISafetyTests {
             "FirestoreMongoCore must not depend on Native RPC, Pipeline RPC, Native GeoQuery, protobuf, or grpc-swift transport",
             "StructuredQuery",
             "ExecutePipeline",
-            "swift package dump-symbol-graph --minimum-access-level public --skip-synthesized-members",
+            "emit_public_product_symbol_graphs",
+            "swift build --quiet --product FirestoreAPI",
+            "swift build --quiet --product FirestoreAdminServer",
+            "swift build --quiet --product FirestoreMongoCore",
+            "swift symbolgraph-extract",
+            "for module in FirestoreAPI FirestoreAdminServer FirestoreMongoCore",
+            "GeneratedModuleMaps",
+            "../networking .build/checkouts",
+            "Sources/*/include/module.modulemap",
             "public symbol graph must not expose protobuf, gRPC transport, or internal planning symbols",
             "clearPersistence|enableNetwork|disableNetwork|waitForPendingWrites|ListenerRegistration|snapshotsInSync",
             "PersistentCache|MemoryCache|LocalCache|cacheSettings|terminate\\\\(",
@@ -1041,6 +1049,10 @@ struct ServerSideAPISafetyTests {
             contentsOf: rootURL.appending(path: "scripts/check-wasm-compatible-targets.sh"),
             encoding: .utf8
         )
+        let wasmSmokeScript = try String(
+            contentsOf: rootURL.appending(path: "scripts/run-wasm-admin-smoke.sh"),
+            encoding: .utf8
+        )
         let releaseReadinessScript = try String(
             contentsOf: rootURL.appending(path: "scripts/check-release-readiness.sh"),
             encoding: .utf8
@@ -1052,6 +1064,8 @@ struct ServerSideAPISafetyTests {
             "`FirestoreAdminServer` and `FirestoreAPI` now compile",
             "The supported runtime path for Wasm",
             "Provide a `GRPCCore.ClientTransport` implemented by the host environment",
+            "`FirestoreSettings.hostManagedAuthentication(...)`",
+            "`scripts/run-wasm-admin-smoke.sh`",
             "Direct NIO Posix networking",
             "explicit unavailable stubs"
         ]
@@ -1090,6 +1104,9 @@ struct ServerSideAPISafetyTests {
         #expect(wasmCheckScript.contains("CLANG_MODULE_CACHE_PATH"))
         #expect(wasmCheckScript.contains("SWIFTPM_MODULECACHE_OVERRIDE"))
         #expect(wasmCheckScript.contains("--disable-sandbox --swift-sdk"))
+        #expect(wasmCheckScript.contains("run-wasm-admin-smoke.sh"))
+        #expect(wasmSmokeScript.contains("FirestoreSettings.hostManagedAuthentication"))
+        #expect(wasmSmokeScript.contains("Smoke transport reached host-managed authentication boundary"))
         #expect(!releaseReadinessScript.contains("check-wasm-compatible-targets.sh"))
     }
 

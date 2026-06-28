@@ -31,6 +31,94 @@ assert_no_matches() {
   fi
 }
 
+add_unique_modulemap_argument() {
+  local modulemap="$1"
+  local seen_modules="$2"
+
+  local module
+  module="$(sed -nE 's/^[[:space:]]*(framework[[:space:]]+)?module[[:space:]]+([^[:space:]\{]+).*/\2/p' "$modulemap" | head -n 1)"
+  [[ -n "$module" ]] || return 0
+
+  if grep -Fxq "$module" "$seen_modules"; then
+    return 0
+  fi
+
+  printf '%s\n' "$module" >> "$seen_modules"
+  printf '%s\n' "-Xcc"
+  printf '%s\n' "-fmodule-map-file=$modulemap"
+}
+
+emit_public_product_symbol_graphs() {
+  local symbol_graph_dir=".build/out/symbolgraph"
+  local build_products_dir
+  local sdk_path
+  local target_triple
+  local seen_modules
+  local modulemap_args=()
+  local include_args=()
+  local module_search_args=()
+
+  swift build --quiet --product FirestoreAPI >/dev/null
+  swift build --quiet --product FirestoreAdminServer >/dev/null
+  swift build --quiet --product FirestoreMongoCore >/dev/null
+
+  build_products_dir="$(swift build --show-bin-path)"
+  sdk_path="$(xcrun --sdk macosx --show-sdk-path)"
+  target_triple="$(swift -print-target-info | /usr/bin/python3 -c 'import json, sys; print(json.load(sys.stdin)["target"]["triple"])')"
+  seen_modules="$(mktemp)"
+
+  rm -rf "$symbol_graph_dir"
+  mkdir -p "$symbol_graph_dir"
+
+  module_search_args+=("-I" "$build_products_dir")
+  if [[ -d "$build_products_dir/Modules" ]]; then
+    module_search_args+=("-I" "$build_products_dir/Modules")
+  fi
+
+  while IFS= read -r module_map_dir; do
+    module_search_args+=("-I" "$module_map_dir")
+    while IFS= read -r modulemap; do
+      while IFS= read -r argument; do
+        modulemap_args+=("$argument")
+      done < <(add_unique_modulemap_argument "$modulemap" "$seen_modules")
+    done < <(find "$module_map_dir" -maxdepth 1 -name '*.modulemap' -type f | sort)
+  done < <(find .build -path '*GeneratedModuleMaps' -type d ! -path '*webassembly*' ! -path '*wasm32*' 2>/dev/null | sort)
+
+  for source_root in ../networking .build/checkouts; do
+    [[ -d "$source_root" ]] || continue
+
+    while IFS= read -r include_dir; do
+      include_args+=("-Xcc" "-I$include_dir")
+    done < <(find "$source_root" -path '*/Sources/*/include' -type d 2>/dev/null | sort -u)
+
+    while IFS= read -r modulemap; do
+      while IFS= read -r argument; do
+        modulemap_args+=("$argument")
+      done < <(add_unique_modulemap_argument "$modulemap" "$seen_modules")
+    done < <(find "$source_root" -path '*/Sources/*/include/module.modulemap' -type f 2>/dev/null | sort)
+  done
+
+  rm -f "$seen_modules"
+
+  for module in FirestoreAPI FirestoreAdminServer FirestoreMongoCore; do
+    swift symbolgraph-extract \
+      -module-name "$module" \
+      "${module_search_args[@]}" \
+      -target "$target_triple" \
+      -sdk "$sdk_path" \
+      "${include_args[@]}" \
+      "${modulemap_args[@]}" \
+      -minimum-access-level public \
+      -skip-synthesized-members \
+      -output-dir "$symbol_graph_dir"
+  done
+
+  if ! find "$symbol_graph_dir" -maxdepth 1 -name 'Firestore*.symbols.json' -type f | grep -q .; then
+    printf 'Release readiness check failed: public Firestore symbol graphs were not generated\n' >&2
+    exit 1
+  fi
+}
+
 printf 'Checking whitespace-sensitive diffs...\n'
 git diff --check
 
@@ -89,7 +177,7 @@ assert_no_matches \
   rg -n "import FirestoreGeoQuery|import FirestorePipeline|import FirestoreRPC|import FirestorePipelineRPC|import FirestoreProtobuf|import FirestoreGRPCStubs|import FirestoreGRPCTransport|import GRPCCore|import GRPCProtobuf|import GRPCNIOTransport|Google_Firestore|Google_Protobuf|SwiftProtobuf|ClientTransport|RPCError|StructuredQuery|ExecutePipeline|QueryCompiler|QueryPredicateFilterCompiler|PipelineCompiler" Sources/FirestoreMongoCore -S
 
 printf 'Checking public symbol graph surface...\n'
-swift package dump-symbol-graph --minimum-access-level public --skip-synthesized-members >/dev/null
+emit_public_product_symbol_graphs >/dev/null
 assert_no_matches \
   "public symbol graph must not expose protobuf, gRPC transport, or internal planning symbols" \
   rg -n "Google_Firestore|Google_Protobuf|SwiftProtobuf|GRPCCore|GRPCClient|ClientTransport|ClientRequest|ClientResponse|RPCError|FirestoreGRPCRuntime|FirestoreRPCExecutor|FirestoreListenStreamExecutor|FirestoreRuntime\\\"|FirestoreTransactionRuntime\\\"|DocumentRequestCompiler|TransactionRequestCompiler|QueryCompiler|WriteCompiler|BatchWriteCompiler|PartitionQueryCompiler|PipelineCompiler|ReadResponseMapper|PipelineResponseMapper|QueryPredicateFilterCompiler|ListenTargetBuilder|ListenRequestStreamController|DocumentListenState|QueryListenState|ListenStreamCoordinator|WriteData|QueryPredicate|AggregateField\\.Operation|AggregateField\",\"operation|AggregateField\",\"fieldPath|AggregateField\",\"alias|PipelineValue\\.Storage|PipelineValue\\.storage|PipelineValue\\.pipeline\\(|PipelineExplainStats\",\"rawTypeURL|PipelineExplainStats\",\"rawData|PipelineExplainStats\",\"init\\(outputFormat:text:json:rawTypeURL:rawData:\\)|ServiceAccountCredentials\",\"privateKey|ServiceAccountCredentials\",\"privateKeyId|ServiceAccountCredentials\",\"tokenURI|where\\(field|where\\(isEqualTo|where\\(isNotEqualTo|where\\(isLessThan|where\\(isLessThanOrEqualTo|where\\(isGreaterThan|where\\(isGreaterThanOrEqualTo|where\\(arrayContains|where\\(arrayContainsAny|where\\(in:|where\\(notIn:|clearPersistence|enableNetwork|disableNetwork|waitForPendingWrites|ListenerRegistration|snapshotsInSync|addSnapshotsInSyncListener|PersistentCache|MemoryCache|LocalCache|cacheSettings|terminate\\(" .build/out/symbolgraph -S

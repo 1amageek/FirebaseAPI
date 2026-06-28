@@ -2,6 +2,20 @@
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
+import Foundation
+
+let manifestDirectoryURL = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+
+func localOrForkDependency(_ repository: String, localPath: String) -> Package.Dependency {
+    let resolvedLocalPath = URL(fileURLWithPath: localPath, relativeTo: manifestDirectoryURL)
+        .standardizedFileURL
+        .path
+    if FileManager.default.fileExists(atPath: resolvedLocalPath) {
+        return .package(path: resolvedLocalPath)
+    }
+
+    return .package(url: "https://github.com/1amageek/\(repository).git", branch: "main")
+}
 
 let package = Package(
     name: "FirebaseAPI",
@@ -20,12 +34,12 @@ let package = Package(
             targets: ["FirestoreMongoCore"]),
     ],
     dependencies: [
-        .package(path: "../networking/swift-protobuf"),
-        .package(path: "../networking/swift-crypto"),
-        .package(path: "../networking/grpc-swift-2"),
-        .package(path: "../networking/grpc-swift-nio-transport"),
-        .package(path: "../networking/grpc-swift-protobuf"),
-        .package(path: "../networking/swift-log")
+        localOrForkDependency("swift-protobuf", localPath: "../networking/swift-protobuf"),
+        localOrForkDependency("swift-crypto", localPath: "../networking/swift-crypto"),
+        localOrForkDependency("grpc-swift-2", localPath: "../networking/grpc-swift-2"),
+        localOrForkDependency("grpc-swift-nio-transport", localPath: "../networking/grpc-swift-nio-transport"),
+        localOrForkDependency("grpc-swift-protobuf", localPath: "../networking/grpc-swift-protobuf"),
+        localOrForkDependency("swift-log", localPath: "../networking/swift-log")
     ],
     targets: [
         .target(

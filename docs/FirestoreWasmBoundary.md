@@ -15,7 +15,7 @@ The supported runtime path for Wasm is:
 1. Import `FirestoreAdminServer` or `FirestoreAPI`.
 2. Provide a `GRPCCore.ClientTransport` implemented by the host environment.
 3. Construct `FirestoreAdmin` with the public custom-transport initializer.
-4. Provide authentication through an `AccessTokenProvider`, let the host transport attach authentication, or use emulator settings for unauthenticated local smoke checks.
+4. Use service credentials, ADC, a custom access token provider, `FirestoreSettings.hostManagedAuthentication(...)` for host-attached authentication, or emulator settings for unauthenticated local checks.
 
 ## Verified Compatible Targets
 
@@ -40,7 +40,7 @@ The following targets are expected to build with `swift-6.3.1-RELEASE_wasm`:
 | `FirestoreAuth` | Service-account and ADC authentication types; default HTTP requesters are unavailable without host HTTP support |
 | `FirestoreGRPCStubs` | Generated grpc-swift client stubs |
 | `FirestoreGRPCTransport` | Runtime adapter from Admin operations to grpc-swift transport abstractions |
-| `FirestoreAdminGRPCBootstrap` | Public Admin construction for credentials, emulator, ADC, and custom host transports |
+| `FirestoreAdminGRPCBootstrap` | Public Admin construction for credentials, emulator, ADC, custom access token providers, and custom host transports |
 | `FirestoreAdminServer` | Preferred server-side Admin import |
 | `FirestoreAPI` | Compatibility all-in-one import |
 
@@ -66,12 +66,12 @@ Run:
 bash scripts/check-wasm-compatible-targets.sh
 ```
 
-This check builds the Admin/API target set with `swift-6.3.1-RELEASE_wasm`. A runtime smoke check should construct `FirestoreAdmin` with a host-provided `ClientTransport`; directly using the default Posix bootstrap on WASI should fail with an explicit transport error.
+This check builds the Admin/API target set with `swift-6.3.1-RELEASE_wasm` and runs `scripts/run-wasm-admin-smoke.sh` by default. The runtime smoke constructs `FirestoreAdmin` with a host-provided `ClientTransport` and `FirestoreSettings.hostManagedAuthentication(...)`, then executes a batch commit until the smoke transport reports an explicit unimplemented RPC. Directly using the default Posix bootstrap on WASI should fail with an explicit transport error.
 
 ## Remaining Runtime Work
 
 | Component | Required boundary |
 |---|---|
 | Production Wasm transport | Host implementation of `GRPCCore.ClientTransport`, such as a JavaScript bridge, WASI host function bridge, or server proxy |
-| Production Wasm authentication | Host transport authentication, host HTTP bridge, or pre-issued token provider for OAuth token exchange |
+| Production Wasm authentication | `FirestoreSettings.hostManagedAuthentication(...)` for host transport authentication, a host HTTP bridge, or a pre-issued token provider for OAuth token exchange |
 | Direct NIO Posix networking | Not supported by WASI; kept as explicit unavailable stubs |
