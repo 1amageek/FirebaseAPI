@@ -41,6 +41,8 @@ package final class FirestoreGRPCRuntime<Transport: ClientTransport>: Sendable {
                 connectionLogger.info("Starting gRPC connections...")
                 try await grpcClient.runConnections()
                 connectionLogger.info("gRPC connections completed")
+            } catch let error as RuntimeError where error.code == .clientIsStopped {
+                connectionLogger.debug("gRPC connections stopped before startup completed: \(error)")
             } catch {
                 connectionLogger.error("Failed to run gRPC connections: \(error)")
             }

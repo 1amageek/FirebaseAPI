@@ -111,8 +111,8 @@ struct GoogleAuthTests {
         #expect(await requester.requestCount() == 1)
         #expect(provider.scope.value == FirestoreAccessScope.cloudPlatform.value)
         #expect(request.value(forHTTPHeaderField: "Metadata-Flavor") == "Google")
-        #expect(request.url?.path == "/computeMetadata/v1/instance/service-accounts/default/token")
-        #expect(request.url?.query == nil)
+        #expect(request.url.path == "/computeMetadata/v1/instance/service-accounts/default/token")
+        #expect(request.url.query == nil)
     }
 
     @Test("Application Default Credentials load service account JSON")
@@ -315,8 +315,8 @@ struct GoogleAuthTests {
         #expect(projectID == "metadata-project")
         #expect(await requester.requestCount() == 1)
         #expect(request.value(forHTTPHeaderField: "Metadata-Flavor") == "Google")
-        #expect(request.url?.path == "/computeMetadata/v1/project/project-id")
-        #expect(request.url?.query == nil)
+        #expect(request.url.path == "/computeMetadata/v1/project/project-id")
+        #expect(request.url.query == nil)
     }
 
     @Test("Application Default Credentials resolve project ID from metadata server")
@@ -499,9 +499,9 @@ private actor DelayedOAuthTokenRequester {
 }
 
 private actor RecordingMetadataTokenRequester {
-    private var requests: [URLRequest] = []
+    private var requests: [FirestoreAuthHTTPRequest] = []
 
-    func request(_ request: URLRequest) async throws -> MetadataServerAccessTokenProvider.MetadataTokenResponse {
+    func request(_ request: FirestoreAuthHTTPRequest) async throws -> MetadataServerAccessTokenProvider.MetadataTokenResponse {
         requests.append(request)
         return MetadataServerAccessTokenProvider.MetadataTokenResponse(
             accessToken: "metadata-access-token",
@@ -514,7 +514,7 @@ private actor RecordingMetadataTokenRequester {
         requests.count
     }
 
-    func lastRequest() throws -> URLRequest {
+    func lastRequest() throws -> FirestoreAuthHTTPRequest {
         guard let request = requests.last else {
             throw FirestoreError.invalidConfiguration("No metadata token request was recorded.")
         }
@@ -523,9 +523,9 @@ private actor RecordingMetadataTokenRequester {
 }
 
 private actor RecordingMetadataProjectIDRequester {
-    private var requests: [URLRequest] = []
+    private var requests: [FirestoreAuthHTTPRequest] = []
 
-    func request(_ request: URLRequest) async throws -> String {
+    func request(_ request: FirestoreAuthHTTPRequest) async throws -> String {
         requests.append(request)
         return "metadata-project\n"
     }
@@ -534,7 +534,7 @@ private actor RecordingMetadataProjectIDRequester {
         requests.count
     }
 
-    func lastRequest() throws -> URLRequest {
+    func lastRequest() throws -> FirestoreAuthHTTPRequest {
         guard let request = requests.last else {
             throw FirestoreError.invalidConfiguration("No metadata project ID request was recorded.")
         }

@@ -85,11 +85,11 @@ public actor MetadataServerAccessTokenProvider: AccessTokenProvider {
         }
     }
 
-    private func makeTokenRequest() throws -> URLRequest {
+    private func makeTokenRequest() throws -> FirestoreAuthHTTPRequest {
         let tokenURL = try metadataURL(
             path: "instance/service-accounts/default/token"
         )
-        var request = URLRequest(url: tokenURL)
+        var request = FirestoreAuthHTTPRequest(url: tokenURL)
         request.httpMethod = "GET"
         request.addValue("Google", forHTTPHeaderField: "Metadata-Flavor")
         return request
@@ -109,8 +109,9 @@ public actor MetadataServerAccessTokenProvider: AccessTokenProvider {
         return url
     }
 
-    private static func defaultTokenRequester(_ request: URLRequest) async throws -> MetadataTokenResponse {
-        let (data, response) = try await URLSession.shared.data(for: request)
+    private static func defaultTokenRequester(_ request: FirestoreAuthHTTPRequest) async throws -> MetadataTokenResponse {
+        #if canImport(FoundationNetworking) || canImport(Darwin)
+        let (data, response) = try await URLSession.shared.data(for: request.urlRequest())
         guard let httpResponse = response as? HTTPURLResponse else {
             throw FirestoreError.invalidAccessToken("Metadata server returned a non-HTTP response.")
         }
@@ -121,13 +122,16 @@ public actor MetadataServerAccessTokenProvider: AccessTokenProvider {
             )
         }
         return try JSONDecoder().decode(MetadataTokenResponse.self, from: data)
+        #else
+        throw FirestoreError.invalidAccessToken("Metadata server token requests are not available on this platform.")
+        #endif
     }
 
     static var defaultTokenRequesterForADC: MetadataTokenRequester {
         Self.defaultTokenRequester
     }
 
-    typealias MetadataTokenRequester = @Sendable (URLRequest) async throws -> MetadataTokenResponse
+    typealias MetadataTokenRequester = @Sendable (FirestoreAuthHTTPRequest) async throws -> MetadataTokenResponse
 
     struct MetadataTokenResponse: Decodable, Sendable {
         let accessToken: String

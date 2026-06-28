@@ -32,6 +32,8 @@ File-level responsibility boundaries are already present:
 
 The remaining problem is no longer generated output, Codable helpers, Admin Codable conveniences, Pipeline builders, Pipeline RPC translation, Native GeoQuery, Mongo-compatible query documents, low-level gRPC call execution, authentication contracts, gRPC-backed Admin construction, or Listen reducer code living directly beside public model values. Further reductions in cognitive cost should be conservative file-level splits inside existing targets unless a new concern brings a distinct dependency set. Future Mongo-compatible Admin facade and transport work remains a separate product/facade decision from day one.
 
+Wasm support is bounded by the host transport contract documented in `docs/FirestoreWasmBoundary.md`: the Admin/API targets build for the selected Wasm SDK, while runtime networking requires a host-provided `GRPCCore.ClientTransport`. Direct NIO Posix networking remains unavailable on WASI and is represented by explicit transport errors.
+
 ## Proposed Target Graph
 
 ```mermaid
@@ -208,6 +210,7 @@ The target graph is now useful enough that the next reductions in cognitive load
 - Do not move Mongo-compatible query concepts into Native Firestore modules.
 - Do not split every small value type into its own target. Excessive module count would raise build and navigation cost.
 - Do not make public API depend on `package` or generated types.
+- Do not move host-specific Wasm networking into Core, Admin workflow, Codable, Native Query, Native GeoQuery, MongoCore, or RPC compiler targets. Wasm runtime execution must enter through the Admin gRPC bootstrap transport boundary.
 
 ## Migration Sequence
 

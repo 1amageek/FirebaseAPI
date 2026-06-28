@@ -120,12 +120,13 @@ public actor ServiceAccountAccessTokenProvider: AccessTokenProvider {
     }
 
     private static func defaultTokenRequester(tokenURI: URL, body: Data) async throws -> OAuthTokenResponse {
-        var request = URLRequest(url: tokenURI)
+        var request = FirestoreAuthHTTPRequest(url: tokenURI)
         request.httpMethod = "POST"
         request.httpBody = body
         request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        #if canImport(FoundationNetworking) || canImport(Darwin)
+        let (data, response) = try await URLSession.shared.data(for: request.urlRequest())
         guard let httpResponse = response as? HTTPURLResponse else {
             throw FirestoreError.invalidAccessToken("OAuth token endpoint returned a non-HTTP response.")
         }
@@ -137,6 +138,9 @@ public actor ServiceAccountAccessTokenProvider: AccessTokenProvider {
         }
 
         return try JSONDecoder().decode(OAuthTokenResponse.self, from: data)
+        #else
+        throw FirestoreError.invalidAccessToken("OAuth token requests are not available on this platform.")
+        #endif
     }
 
     static func formEncodedBody(_ values: [String: String]) throws -> Data {

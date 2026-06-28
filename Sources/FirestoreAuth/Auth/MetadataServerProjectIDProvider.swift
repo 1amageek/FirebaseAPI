@@ -37,9 +37,9 @@ public struct MetadataServerProjectIDProvider: Sendable {
         return projectID
     }
 
-    private func makeProjectIDRequest() throws -> URLRequest {
+    private func makeProjectIDRequest() throws -> FirestoreAuthHTTPRequest {
         let projectIDURL = try metadataURL(path: "project/project-id")
-        var request = URLRequest(url: projectIDURL)
+        var request = FirestoreAuthHTTPRequest(url: projectIDURL)
         request.httpMethod = "GET"
         request.addValue("Google", forHTTPHeaderField: "Metadata-Flavor")
         return request
@@ -54,8 +54,9 @@ public struct MetadataServerProjectIDProvider: Sendable {
         return url
     }
 
-    private static func defaultProjectIDRequester(_ request: URLRequest) async throws -> String {
-        let (data, response) = try await URLSession.shared.data(for: request)
+    private static func defaultProjectIDRequester(_ request: FirestoreAuthHTTPRequest) async throws -> String {
+        #if canImport(FoundationNetworking) || canImport(Darwin)
+        let (data, response) = try await URLSession.shared.data(for: request.urlRequest())
         guard let httpResponse = response as? HTTPURLResponse else {
             throw FirestoreError.invalidConfiguration("Metadata server returned a non-HTTP response.")
         }
@@ -69,11 +70,14 @@ public struct MetadataServerProjectIDProvider: Sendable {
             throw FirestoreError.invalidConfiguration("Metadata server project ID response was not UTF-8.")
         }
         return projectID
+        #else
+        throw FirestoreError.invalidConfiguration("Metadata server project ID requests are not available on this platform.")
+        #endif
     }
 
     static var defaultProjectIDRequesterForADC: MetadataProjectIDRequester {
         Self.defaultProjectIDRequester
     }
 
-    typealias MetadataProjectIDRequester = @Sendable (URLRequest) async throws -> String
+    typealias MetadataProjectIDRequester = @Sendable (FirestoreAuthHTTPRequest) async throws -> String
 }

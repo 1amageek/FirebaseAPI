@@ -61,22 +61,3 @@ private actor MockClientTransportState {
         shuttingDown = true
     }
 }
-
-extension FirestoreAdmin {
-    convenience init<Transport: ClientTransport>(
-        projectId: String,
-        databaseId: String = "(default)",
-        transport: Transport,
-        settings: FirestoreSettings = FirestoreSettings(),
-        accessTokenProvider: (any AccessTokenProvider & Sendable)? = nil
-    ) {
-        let transportRuntime = FirestoreGRPCTransportFactory.make(
-            projectId: projectId,
-            databaseId: databaseId,
-            transport: transport,
-            settings: settings,
-            accessTokenProvider: accessTokenProvider
-        )
-        self.init(transportRuntime: transportRuntime)
-    }
-}

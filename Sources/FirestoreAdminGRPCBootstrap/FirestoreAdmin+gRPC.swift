@@ -5,6 +5,7 @@ import FirestoreAuth
 import FirestoreCore
 import FirestoreGRPCTransport
 import FirestoreRuntimeConfig
+import GRPCCore
 
 extension FirestoreAdmin {
     public convenience init(
@@ -113,6 +114,23 @@ extension FirestoreAdmin {
             ),
             accessTokenProvider: nil
         )
+    }
+
+    public convenience init(
+        projectId: String,
+        databaseId: String = "(default)",
+        transport: some ClientTransport,
+        settings: FirestoreSettings = FirestoreSettings(),
+        accessTokenProvider: (any AccessTokenProvider & Sendable)? = nil
+    ) {
+        let transportRuntime = FirestoreGRPCTransportFactory.make(
+            projectId: projectId,
+            databaseId: databaseId,
+            transport: transport,
+            settings: settings,
+            accessTokenProvider: accessTokenProvider
+        )
+        self.init(transportRuntime: transportRuntime)
     }
 
     public convenience init(

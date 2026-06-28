@@ -274,7 +274,8 @@ struct ServerSideAPISafetyTests {
             "generated `createDocument`, `updateDocument`, `deleteDocument`, or `write` methods",
             "Individual document writes, atomic batches, and transactions must compile through `WriteCompiler` to `Commit`",
             "non-atomic bulk writes must compile through `BatchWriteCompiler` to `BatchWrite`",
-            "`FirestoreAdminGRPCBootstrap` validates authentication before transport startup",
+            "`FirestoreAdminGRPCBootstrap` validates authentication before built-in transport startup",
+            "Custom host transports can own authentication attachment",
             "disabled authentication is accepted only for emulator settings and is rejected for Google APIs hosts",
             "DocumentReference and CollectionReference qualified resource names are owned by core reference types",
             "Runtime protocol conformance, database ownership validation, and operation dispatch only",
@@ -1026,6 +1027,72 @@ struct ServerSideAPISafetyTests {
         #expect(liveSmokeTest.contains("databaseId: configuration.databaseID"))
     }
 
+    @Test("Wasm support remains bounded by host transport")
+    func testWasmSupportRemainsBoundedByHostTransport() throws {
+        let rootURL = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let boundaryDocument = try String(
+            contentsOf: rootURL.appending(path: "docs/FirestoreWasmBoundary.md"),
+            encoding: .utf8
+        )
+        let wasmCheckScript = try String(
+            contentsOf: rootURL.appending(path: "scripts/check-wasm-compatible-targets.sh"),
+            encoding: .utf8
+        )
+        let releaseReadinessScript = try String(
+            contentsOf: rootURL.appending(path: "scripts/check-release-readiness.sh"),
+            encoding: .utf8
+        )
+
+        let requiredBoundaryTokens = [
+            "Admin/API targets build for WASI",
+            "runtime requires a host-provided gRPC `ClientTransport`",
+            "`FirestoreAdminServer` and `FirestoreAPI` now compile",
+            "The supported runtime path for Wasm",
+            "Provide a `GRPCCore.ClientTransport` implemented by the host environment",
+            "Direct NIO Posix networking",
+            "explicit unavailable stubs"
+        ]
+        for token in requiredBoundaryTokens {
+            #expect(boundaryDocument.contains(token), "Wasm boundary document should contain \(token).")
+        }
+
+        let expectedCompatibleTargets = [
+            "FirestoreCore",
+            "FirestoreMongoCore",
+            "FirestoreGeoQuery",
+            "FirestorePipeline",
+            "FirestoreCodable",
+            "FirestoreRuntimeConfig",
+            "FirestoreRuntimeSupport",
+            "FirestoreProtobuf",
+            "FirestoreRPCSupport",
+            "FirestoreRPC",
+            "FirestorePipelineRPC",
+            "FirestoreAdmin",
+            "FirestoreAdminCodable",
+            "FirestoreAuthCore",
+            "FirestoreAuth",
+            "FirestoreGRPCStubs",
+            "FirestoreGRPCTransport",
+            "FirestoreAdminGRPCBootstrap",
+            "FirestoreAdminServer",
+            "FirestoreAPI"
+        ]
+        for target in expectedCompatibleTargets {
+            #expect(boundaryDocument.contains("`\(target)`"), "Wasm boundary document should list \(target).")
+            #expect(wasmCheckScript.contains("  \(target)\n"), "Wasm check script should build \(target).")
+        }
+
+        #expect(wasmCheckScript.contains("swift-6.3.1-RELEASE_wasm"))
+        #expect(wasmCheckScript.contains("CLANG_MODULE_CACHE_PATH"))
+        #expect(wasmCheckScript.contains("SWIFTPM_MODULECACHE_OVERRIDE"))
+        #expect(wasmCheckScript.contains("--disable-sandbox --swift-sdk"))
+        #expect(!releaseReadinessScript.contains("check-wasm-compatible-targets.sh"))
+    }
+
     @Test("Generated protobuf and gRPC targets remain package-internal implementation targets")
     func testGeneratedProtoTargetsRemainPackageInternalImplementationTargets() throws {
         let rootURL = URL(fileURLWithPath: #filePath)
@@ -1048,6 +1115,24 @@ struct ServerSideAPISafetyTests {
         #expect(packageManifest.contains("\"FirestoreGRPCStubs\""))
         #expect(!packageManifest.contains("name: \"FirestoreProtobuf\",\n            targets: [\"FirestoreProtobuf\"]"))
         #expect(!packageManifest.contains("name: \"FirestoreGRPCStubs\",\n            targets: [\"FirestoreGRPCStubs\"]"))
+
+        guard
+            let grpcTransportTargetStart = packageManifest.range(
+                of: "        .target(\n            name: \"FirestoreGRPCTransport\""
+            ),
+            let grpcTransportTargetEnd = packageManifest[grpcTransportTargetStart.upperBound...]
+                .range(of: "        .target(\n            name: \"FirestoreAPI\"")
+        else {
+            Issue.record("Package.swift should contain a FirestoreGRPCTransport target before FirestoreAPI.")
+            return
+        }
+        let grpcTransportTargetBlock = String(
+            packageManifest[grpcTransportTargetStart.lowerBound..<grpcTransportTargetEnd.lowerBound]
+        )
+        #expect(grpcTransportTargetBlock.contains(".product(name: \"GRPCCore\", package: \"grpc-swift-2\")"))
+        #expect(grpcTransportTargetBlock.contains(".product(name: \"GRPCNIOTransportHTTP2\", package: \"grpc-swift-nio-transport\")"))
+        #expect(!grpcTransportTargetBlock.contains(".product(name: \"GRPCProtobuf\", package: \"grpc-swift-protobuf\")"))
+        #expect(!grpcTransportTargetBlock.contains(".product(name: \"SwiftProtobuf\", package: \"swift-protobuf\")"))
 
         #expect(generationScript.contains("OLD_PROTO_DIR=\"$ROOT_DIR/Sources/FirestoreAPI/Proto\""))
         #expect(generationScript.contains("PROTO_MESSAGE_DIR=\"$ROOT_DIR/Sources/FirestoreProtobuf/Proto\""))
@@ -1622,8 +1707,8 @@ struct ServerSideAPISafetyTests {
         #expect(packageSource.contains("\"FirestoreAuth\""))
     }
 
-    @Test("FirestoreAdmin transport injection remains an internal test seam")
-    func testFirestoreAdminTransportInjectionRemainsInternalTestSeam() throws {
+    @Test("FirestoreAdmin host transport injection stays in gRPC bootstrap")
+    func testFirestoreAdminHostTransportInjectionStaysInGRPCBootstrap() throws {
         let rootURL = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
             .deletingLastPathComponent()
@@ -1667,9 +1752,11 @@ struct ServerSideAPISafetyTests {
         #expect(!adminSource.contains("import FirestoreGRPCTransport"))
         #expect(!adminSource.contains("import FirestoreAuth"))
         #expect(adminGRPCBootstrapSource.contains("public convenience init("))
+        #expect(adminGRPCBootstrapSource.contains("import GRPCCore"))
+        #expect(adminGRPCBootstrapSource.contains("transport: some ClientTransport"))
+        #expect(adminGRPCBootstrapSource.contains("accessTokenProvider: (any AccessTokenProvider & Sendable)? = nil"))
         #expect(adminGRPCBootstrapSource.contains("FirestoreGRPCTransportFactory.make("))
-        #expect(!adminGRPCBootstrapSource.contains("ClientTransport"))
-        #expect(!adminGRPCBootstrapSource.contains("transport: Transport"))
+        #expect(adminGRPCBootstrapSource.contains("transport: transport"))
         #expect(transportFactorySource.contains("package static func make<Transport: ClientTransport>("))
         #expect(transportFactorySource.contains("transport: Transport"))
         #expect(adminSource.contains("referenceRuntime: any FirestoreReferenceRuntime"))
@@ -1688,17 +1775,6 @@ struct ServerSideAPISafetyTests {
         #expect(!adminSource.contains("let runtime: any FirestoreRuntime"))
         #expect(!transportFactorySource.contains("package let runtime: any FirestoreRuntime"))
         #expect(!adminGRPCBootstrapSource.contains("transportRuntime.runtime"))
-
-        let forbiddenPublicTransportTokens = [
-            "public convenience init<Transport",
-            "public init<Transport",
-            "public convenience init(projectId: String, transport:",
-            "public init(projectId: String, transport:"
-        ]
-        for token in forbiddenPublicTransportTokens {
-            #expect(!adminGRPCBootstrapSource.contains(token), "FirestoreAdmin transport injection should stay internal and must not expose \(token).")
-            #expect(!transportFactorySource.contains(token), "FirestoreGRPCTransportFactory transport seam should stay package-only and must not expose \(token).")
-        }
 
         for source in [adminSource, clientSource] {
             #expect(!source.contains("ClientTransport"))
